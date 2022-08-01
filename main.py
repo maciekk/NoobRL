@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-#tileset = tcod.tileset.load_tilesheet("Bedstead-20-df.png", 16, 16, tcod.tileset.CHARMAP_CP437)
 import copy
 import traceback
 
@@ -26,7 +25,12 @@ def main() -> None:
     max_items_per_room = 2
 
     tileset = tcod.tileset.load_tilesheet(
-        "Bedstead-20-df.png", 16, 16, tcod.tileset.CHARMAP_CP437
+        # "dejavu10x10_gs_tc.png", 32, 8,
+        "Bedstead-20-df.png", 16, 16,
+        # "Curses_1920x900.png", 16, 16,
+        # "Curses_24pt_cleartype_ThomModifications.png", 16, 16,
+        # tcod.tileset.CHARMAP_TCOD
+        tcod.tileset.CHARMAP_CP437
     )
 
     player = copy.deepcopy(entity_factories.player)
