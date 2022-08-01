@@ -347,7 +347,7 @@ class HistoryViewer(EventHandler):
 
         # Render the message log using the cursor parameter.
         self.engine.message_log.render_messages(
-            log_console,a
+            log_console,
             1,
             1,
             log_console.width - 2,
