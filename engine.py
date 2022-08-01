@@ -1,32 +1,40 @@
-from typing import Set, Iterable, Any
+from __future__ import annotations
 
-from tcod.context import Context
+from typing import TYPE_CHECKING
+
 from tcod.console import Console
 from tcod.map import compute_fov
 
-from entity import Entity
-from game_map import GameMap
-from input_handlers import EventHandler
+import exceptions
+from input_handlers import MainGameEventHandler
+from message_log import MessageLog
+from render_functions import (
+    render_bar,
+    render_names_at_mouse_location,
+)
+
+if TYPE_CHECKING:
+    from entity import Actor
+    from game_map import GameMap
+    from input_handlers import EventHandler
 
 
 class Engine:
-    def __init__(self, entities: Set[Entity], event_handler: EventHandler, game_map: GameMap, player: Entity):
-        self.entities = entities
-        self.event_handler = event_handler
-        self.game_map = game_map
+    game_map: GameMap
+
+    def __init__(self, player: Actor):
+        self.event_handler: EventHandler = MainGameEventHandler(self)
+        self.message_log = MessageLog()
+        self.mouse_location = (0, 0)
         self.player = player
-        self.update_fov()
 
-    def handle_events(self, events: Iterable[Any]) -> None:
-        for event in events:
-            action = self.event_handler.dispatch(event)
-
-            if action is None:
-                continue
-
-            action.perform(self, self.player)
-
-            self.update_fov()  # Update the FOV before the players next action.
+    def handle_enemy_turns(self) -> None:
+        for entity in set(self.game_map.actors) - {self.player}:
+            if entity.ai:
+                try:
+                    entity.ai.perform()
+                except exceptions.Impossible:
+                    pass  # Ignore impossible action exceptions from AI.
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the players point of view."""
@@ -38,14 +46,16 @@ class Engine:
         # If a tile is "visible" it should be added to "explored".
         self.game_map.explored |= self.game_map.visible
 
-    def render(self, console: Console, context: Context) -> None:
+    def render(self, console: Console) -> None:
         self.game_map.render(console)
 
-        for entity in self.entities:
-            # Only print entities that are in the FOV
-            if self.game_map.visible[entity.x, entity.y]:
-                console.print(entity.x, entity.y, entity.char, fg=entity.color)
+        self.message_log.render(console=console, x=21, y=45, width=40, height=5)
 
-        context.present(console)
+        render_bar(
+            console=console,
+            current_value=self.player.fighter.hp,
+            maximum_value=self.player.fighter.max_hp,
+            total_width=20,
+        )
 
-        console.clear()
+        render_names_at_mouse_location(console=console, x=21, y=44, engine=self)
