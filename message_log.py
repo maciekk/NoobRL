@@ -1,10 +1,10 @@
-from typing import Iterable, List, Reversible, Tuple
+from typing import Iterable, List, Reversible, Tuple, TYPE_CHECKING
 import textwrap
 
 import tcod
 
 import color
-
+import sounds
 
 class Message:
     def __init__(self, text: str, fg: Tuple[int, int, int]):
@@ -21,7 +21,8 @@ class Message:
 
 
 class MessageLog:
-    def __init__(self) -> None:
+    def __init__(self, engine = None) -> None:
+        self.engine = engine
         self.messages: List[Message] = []
 
     def add_message(
@@ -36,6 +37,10 @@ class MessageLog:
             self.messages[-1].count += 1
         else:
             self.messages.append(Message(text, fg))
+
+        # Play any associated SFX.
+        if self.engine is not None and self.engine.audio_mixer is not None:
+            sounds.maybe_play_sfx(text, self.engine.audio_mixer)
 
     def render(
         self, console: tcod.Console, x: int, y: int, width: int, height: int,

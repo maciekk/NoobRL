@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from tcod.console import Console
 from tcod.map import compute_fov
+import tcod.sdl.audio
 
 import exceptions
 from input_handlers import MainGameEventHandler
@@ -24,9 +25,10 @@ class Engine:
 
     def __init__(self, player: Actor):
         self.event_handler: EventHandler = MainGameEventHandler(self)
-        self.message_log = MessageLog()
+        self.message_log = MessageLog(engine = self)
         self.mouse_location = (0, 0)
         self.player = player
+        self.audio_mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open())
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
