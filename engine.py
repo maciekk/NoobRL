@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import lzma
+import pickle
 from typing import TYPE_CHECKING
 
 from tcod.console import Console
 from tcod.map import compute_fov
-import tcod.sdl.audio
 
 import exceptions
 from message_log import MessageLog
@@ -21,11 +22,10 @@ if TYPE_CHECKING:
 class Engine:
     game_map: GameMap
 
-    def __init__(self, player: Actor):
-        self.message_log = MessageLog(engine = self)
+    def __init__(self, player: Actor, mixer):
+        self.message_log = MessageLog(mixer=mixer)
         self.mouse_location = (0, 0)
         self.player = player
-        self.audio_mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open())
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
@@ -58,3 +58,12 @@ class Engine:
         )
 
         render_names_at_mouse_location(console=console, x=21, y=44, engine=self)
+
+    def save_as(self, filename: str) -> None:
+        """Save this Engine instance as a compressed file."""
+        # First, wipe the mixer, as it is not picklable.
+        self.message_log.mixer = None
+
+        save_data = lzma.compress(pickle.dumps(self))
+        with open(filename, "wb") as f:
+            f.write(save_data)

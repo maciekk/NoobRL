@@ -21,8 +21,8 @@ class Message:
 
 
 class MessageLog:
-    def __init__(self, engine = None) -> None:
-        self.engine = engine
+    def __init__(self, mixer = None) -> None:
+        self.mixer = mixer
         self.messages: List[Message] = []
 
     def add_message(
@@ -39,8 +39,8 @@ class MessageLog:
             self.messages.append(Message(text, fg))
 
         # Play any associated SFX.
-        if self.engine is not None and self.engine.audio_mixer is not None:
-            sounds.maybe_play_sfx(text, self.engine.audio_mixer)
+        if self.mixer is not None:
+            sounds.maybe_play_sfx(text, self.mixer)
 
     def render(
         self, console: tcod.Console, x: int, y: int, width: int, height: int,
