@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import soundfile
 
 def _read_file(fname):
@@ -14,19 +15,38 @@ def _read_file(fname):
 
 
 EFFECTS = [
-    ("Hello and welcome", _read_file("sfx/CantinaBand3.wav")),
-    ("Player attacks", _read_file("sfx/mixkit-sword-cutting-flesh-2788.wav")),
-    ("attacks Player", _read_file("sfx/mixkit-metal-hit-woosh-1485.wav")),
-    ("is dead!", _read_file("sfx/mixkit-gore-video-game-blood-splash-263.wav")),
-    ("consume the Health Potion", _read_file("sfx/mixkit-sip-of-water-1307.wav")),
-    ("You picked up", _read_file("sfx/mixkit-retro-game-notification-212.wav")),
-    ("You died!", _read_file("sfx/mixkit-ominous-drums-227.wav")),
-    ("A lightning bolt strikes", _read_file("sfx/zapsplat_science_fiction_laser_hit_thud_zap_delay_001_65399.wav")),
+    ("Hello and welcome", [
+        _read_file("sfx/CantinaBand3.wav"),
+    ]),
+    ("Player attacks", [
+        _read_file("sfx/mixkit-sword-cutting-flesh-2788.wav"),
+     ]),
+    ("attacks Player", [
+        _read_file("sfx/mixkit-metal-hit-woosh-1485.wav"),
+     ]),
+    ("is dead!", [
+        _read_file("sfx/mixkit-gore-video-game-blood-splash-263.wav"),
+     ]),
+    ("consume the Health Potion", [
+        _read_file("sfx/mixkit-sip-of-water-1307.wav"),
+     ]),
+    ("You picked up", [
+        _read_file("sfx/mixkit-retro-game-notification-212.wav"),
+     ]),
+    ("You died!", [
+        _read_file("sfx/mixkit-ominous-drums-227.wav"),
+     ]),
+    ("A lightning bolt strikes", [
+        _read_file("sfx/zapsplat_science_fiction_laser_hit_thud_zap_delay_001_65399.wav"),
+        _read_file("sfx/bug-zapper-47300.wav"),
+        _read_file("sfx/electrocute-6247.wav"),
+     ]),
 ]
 
 
 def maybe_play_sfx(log_line, mixer):
-    for match_str, (sound, samplerate) in EFFECTS:
+    for match_str, sfx_options in EFFECTS:
         if match_str in log_line:
+            sound, samplerate = random.choice(sfx_options)
             mixer.play(mixer.device.convert(sound, samplerate))
             return
