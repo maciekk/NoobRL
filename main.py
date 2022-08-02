@@ -25,10 +25,13 @@ def main() -> None:
     max_items_per_room = 2
 
     tileset = tcod.tileset.load_tilesheet(
-        # "dejavu10x10_gs_tc.png", 32, 8,
-        "Bedstead-20-df.png", 16, 16,
-        # "Curses_1920x900.png", 16, 16,
-        # "Curses_24pt_cleartype_ThomModifications.png", 16, 16,
+        # "tilesets/dejavu10x10_gs_tc.png", 32, 8,
+        "tilesets/Bedstead-20-df.png", 16, 16,
+        # "tilesets/Shizzle_1280x500.png", 16, 16,
+        # "tilesets/TerminusAliased_handedit_gal.png", 16, 16,
+        # "tilesets/Curses_1920x900.png", 16, 16,
+        # "tilesets/Curses_24pt_cleartype_ThomModifications.png", 16, 16,
+        # "tilesets/Cooz_curses_14x16.png", 16, 16,
         # tcod.tileset.CHARMAP_TCOD
         tcod.tileset.CHARMAP_CP437
     )
