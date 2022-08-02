@@ -184,3 +184,15 @@ class BumpAction(ActionWithDirection):
 
         else:
             return MovementAction(self.entity, self.dx, self.dy).perform()
+
+class MovementRepeatedAction(MovementAction):
+    def perform(self):
+        # First, check if any monsters are visible (in which case do NOT move).
+        if self.engine.game_map.any_monsters_visible():
+            return None
+
+        try:
+            super().perform()
+            return True
+        except exceptions.Impossible:
+            return None

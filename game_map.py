@@ -47,6 +47,14 @@ class GameMap:
     def items(self) -> Iterator[Item]:
         yield from (entity for entity in self.entities if isinstance(entity, Item))
 
+    def any_monsters_visible(self):
+        for a in self.actors:
+            if a == self.engine.player:
+                continue
+            if self.visible[a.x, a.y]:
+                return True
+        return False
+
     def get_blocking_entity_at_location(
         self, location_x: int, location_y: int,
     ) -> Optional[Entity]:

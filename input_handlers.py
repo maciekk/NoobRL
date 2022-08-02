@@ -10,6 +10,8 @@ import actions
 from actions import (
     Action,
     BumpAction,
+    MovementAction,
+    MovementRepeatedAction,
     PickupAction,
     WaitAction,
 )
@@ -138,15 +140,20 @@ class EventHandler(BaseEventHandler):
         if action is None:
             return False
 
-        try:
-            action.perform()
-        except exceptions.Impossible as exc:
-            self.engine.message_log.add_message(exc.args[0], color.impossible)
-            return False  # Skip enemy turn on exceptions.
+        while True:
+            try:
+                should_repeat = action.perform()
+            except exceptions.Impossible as exc:
+                self.engine.message_log.add_message(exc.args[0], color.impossible)
+                return False  # Skip enemy turn on exceptions.
 
-        self.engine.handle_enemy_turns()
+            self.engine.handle_enemy_turns()
 
-        self.engine.update_fov()
+            self.engine.update_fov()
+
+            if should_repeat is None:
+                break
+
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
@@ -523,7 +530,10 @@ class MainGameEventHandler(EventHandler):
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
-            action = BumpAction(player, dx, dy)
+            if modifier & (tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT):
+                action = MovementRepeatedAction(player, dx, dy)
+            else:
+                action = BumpAction(player, dx, dy)
         elif key in WAIT_KEYS:
             action = WaitAction(player)
 
