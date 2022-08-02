@@ -7,7 +7,6 @@ from tcod.map import compute_fov
 import tcod.sdl.audio
 
 import exceptions
-from input_handlers import MainGameEventHandler
 from message_log import MessageLog
 from render_functions import (
     render_bar,
@@ -17,14 +16,12 @@ from render_functions import (
 if TYPE_CHECKING:
     from entity import Actor
     from game_map import GameMap
-    from input_handlers import EventHandler
 
 
 class Engine:
     game_map: GameMap
 
     def __init__(self, player: Actor):
-        self.event_handler: EventHandler = MainGameEventHandler(self)
         self.message_log = MessageLog(engine = self)
         self.mouse_location = (0, 0)
         self.player = player
