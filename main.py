@@ -8,11 +8,15 @@ import color
 from engine import Engine
 import entity_factories
 from procgen import generate_dungeon
+import tilesets
 
 
 def main() -> None:
     screen_width = 80
     screen_height = 50
+
+    # Set to '2' (for small tileset on high-res monitors).
+    scale_factor = 1
 
     map_width = 80
     map_height = 43
@@ -24,17 +28,7 @@ def main() -> None:
     max_monsters_per_room = 2
     max_items_per_room = 2
 
-    tileset = tcod.tileset.load_tilesheet(
-        # "tilesets/dejavu10x10_gs_tc.png", 32, 8,
-        "tilesets/Bedstead-20-df.png", 16, 16,
-        # "tilesets/Shizzle_1280x500.png", 16, 16,
-        # "tilesets/TerminusAliased_handedit_gal.png", 16, 16,
-        # "tilesets/Curses_1920x900.png", 16, 16,
-        # "tilesets/Curses_24pt_cleartype_ThomModifications.png", 16, 16,
-        # "tilesets/Cooz_curses_14x16.png", 16, 16,
-        # tcod.tileset.CHARMAP_TCOD
-        tcod.tileset.CHARMAP_CP437
-    )
+    tileset, scale_factor, player_char = tilesets.load_sheet("Curses_800")
 
     player = copy.deepcopy(entity_factories.player)
 
@@ -57,8 +51,8 @@ def main() -> None:
     )
 
     with tcod.context.new_terminal(
-        screen_width,
-        screen_height,
+        round(screen_width * scale_factor),
+        round(screen_height * scale_factor),
         tileset=tileset,
         title="Yet Another Roguelike Tutorial",
         vsync=True,
