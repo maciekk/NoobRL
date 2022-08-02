@@ -21,6 +21,7 @@ EFFECTS = [
     ("consume the Health Potion", _read_file("sfx/mixkit-sip-of-water-1307.wav")),
     ("You picked up", _read_file("sfx/mixkit-retro-game-notification-212.wav")),
     ("You died!", _read_file("sfx/mixkit-ominous-drums-227.wav")),
+    ("A lightning bolt strikes", _read_file("sfx/zapsplat_science_fiction_laser_hit_thud_zap_delay_001_65399.wav")),
 ]
 
 
