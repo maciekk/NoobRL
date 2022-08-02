@@ -184,8 +184,7 @@ class AskUserEventHandler(EventHandler):
         """Called when the user is trying to exit or cancel an action.
         By default this returns to the main event handler.
         """
-        self.engine.event_handler = MainGameEventHandler(self.engine)
-        return None
+        return MainGameEventHandler(self.engine)
 
 
 class InventoryEventHandler(AskUserEventHandler):
