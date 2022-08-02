@@ -15,13 +15,14 @@ from engine import Engine
 import entity_factories
 import input_handlers
 from procgen import generate_dungeon
+import sounds
 
 
 # Load the background image and remove the alpha channel.
 background_image = tcod.image.load("menu_background.png")[:, :, :3]
 
 
-def new_game() -> Engine:
+def new_game(mixer) -> Engine:
     """Return a brand new game session as an Engine instance."""
     map_width = 80
     map_height = 43
@@ -35,7 +36,6 @@ def new_game() -> Engine:
 
     player = copy.deepcopy(entity_factories.player)
 
-    mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open())
     engine = Engine(player=player, mixer=mixer)
 
     engine.game_map = generate_dungeon(
@@ -62,12 +62,15 @@ def load_game(filename: str) -> Engine:
     assert isinstance(engine, Engine)
 
     # Initialize mixer.
-    engine.message_log.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open())
+    engine.message_log.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open(channels=2))
 
     return engine
 
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
+    def __init__(self):
+        self.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open(channels=2))
+        self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav", self.mixer)
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the main menu on a background image."""
@@ -108,6 +111,7 @@ class MainMenu(input_handlers.BaseEventHandler):
         if event.sym in (tcod.event.K_q, tcod.event.K_ESCAPE):
             raise SystemExit()
         elif event.sym == tcod.event.K_c:
+            self.channel.stop()
             try:
                 return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
             except FileNotFoundError:
@@ -116,6 +120,7 @@ class MainMenu(input_handlers.BaseEventHandler):
                 traceback.print_exc()  # Print to stderr.
                 return input_handlers.PopupMessage(self, f"Failed to load save:\n{exc}")
         elif event.sym == tcod.event.K_n:
-            return input_handlers.MainGameEventHandler(new_game())
+            self.channel.stop()
+            return input_handlers.MainGameEventHandler(new_game(self.mixer))
 
         return None

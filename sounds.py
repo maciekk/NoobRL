@@ -57,3 +57,7 @@ def maybe_play_sfx(log_line, mixer):
             sound, samplerate = random.choice(sfx_options)
             mixer.play(mixer.device.convert(sound, samplerate))
             return
+
+def play(fname, mixer):
+    sound, samplerate = _read_file(fname)
+    return mixer.play(mixer.device.convert(sound, samplerate))
