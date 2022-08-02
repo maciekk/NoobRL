@@ -41,6 +41,13 @@ EFFECTS = [
         _read_file("sfx/bug-zapper-47300.wav"),
         _read_file("sfx/electrocute-6247.wav"),
      ]),
+    ("starts to stumble around", [
+        _read_file("sfx/evil-shreik-45560.wav"),
+    ]),
+    ("engulfed in a fiery explosion", [
+        _read_file("sfx/mixkit-fuel-explosion-1705.wav"),
+        _read_file("sfx/mixkit-explosion-with-rocks-debris-1703.wav"),
+    ]),
 ]
 
 
