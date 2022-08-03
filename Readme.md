@@ -36,7 +36,7 @@ This file is for storing ideas that may be added to the project only.
 ### Enemies
 - [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)
 - [ ] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
-
+- [ ] Enemy special powers (Ex: speed, strength, invisibility, etc...)
 ### Open Questions
 - [ ] should we regen health very slowly over time? perhaps a character trait?
 
