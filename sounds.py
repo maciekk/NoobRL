@@ -52,7 +52,12 @@ EFFECTS = [
     ]),
     ("You have been spotted by a dragon!", [
         _read_file("sfx/mixkit-giant-monster-roar-1972.wav"),
-        _read_file("sfx/569047__humanoide9000__evil-villian-theme.wav"),
+    ]),
+    ("You have been spotted by an ender dragon!", [
+        _read_file("sfx/dragon-roar-high-intensity-36564.wav"),
+    ]),
+    ("You have been spotted by a hydra!", [
+        _read_file("sfx/fire-breath-6922.wav"),
     ]),
     ("You leveled up!", [
         _read_file("sfx/winharpsichord-39642.wav")

@@ -105,8 +105,16 @@ class HostileEnemy(BaseAI):
             if not self.entity.noticed_player:
                 self.entity.noticed_player = True
                 if self.entity.name == "Dragon":
-                    Dragon_message = ("You have been spotted by a dragon!")
+                    Dragon_message = "You have been spotted by a dragon!"
                     Dragon_message_color = color.dragon_roar
+                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+                if self.entity.name == "Ender Dragon":
+                    Dragon_message = "You have been spotted by an ender dragon!"
+                    Dragon_message_color = color.dragon_roar_end
+                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+                if self.entity.name == "Hydra":
+                    Dragon_message = "You have been spotted by a hydra!"
+                    Dragon_message_color = color.hydra_roar
                     self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
             if self.entity.name == "Wizard":
                 if distance <= 3:
