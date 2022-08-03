@@ -166,7 +166,7 @@ class MeleeAction(ActionWithDirection):
             crit_text = " [CRIT!]"
         if damage > 0:
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points.{crit_text}", attack_color
+                f"{attack_desc} for {damage} hit points{crit_text}.", attack_color
             )
             target.fighter.hp -= damage
         else:

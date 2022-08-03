@@ -30,14 +30,18 @@ item_chances: Dict[int, List[Tuple[Entity, int]]] = {
     2: [(entity_factories.confusion_scroll, 10)],
     3: [(entity_factories.blink_scroll, 15)],
     4: [(entity_factories.lightning_scroll, 25), (entity_factories.sword, 5)],
-    6: [(entity_factories.fireball_scroll, 25), (entity_factories.chain_mail, 15)],
+    5: [(entity_factories.sword, 3), (entity_factories.long_sword, 3), (entity_factories.odachi, 2)],
+    6: [(entity_factories.fireball_scroll, 25), (entity_factories.chain_mail, 15),(entity_factories.steel_armor, 5)],
+    7: [(entity_factories.odachi, 4)],
+    8: [(entity_factories.steel_armor, 10)],
 }
 
 enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factories.orc, 80), (entity_factories.crawler, 20)],
-    3: [(entity_factories.troll, 15)],
-    5: [(entity_factories.troll, 30), (entity_factories.crawler, 35)],
-    6: [(entity_factories.wizard, 8), (entity_factories.troll, 35)],
+    0: [(entity_factories.orc, 80)],
+    2: [(entity_factories.crawler, 20)],
+    3: [(entity_factories.troll, 5)],
+    5: [(entity_factories.troll, 15), (entity_factories.crawler, 35)],
+    6: [(entity_factories.wizard, 8), (entity_factories.troll, 20)],
     7: [(entity_factories.troll, 60), (entity_factories.dragon, 3), (entity_factories.wizard, 12)],
     10: [(entity_factories.troll, 65), (entity_factories.dragon, 5)],
 }

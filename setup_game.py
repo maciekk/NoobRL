@@ -47,8 +47,9 @@ def new_game(mixer) -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message(
-        "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text
+        "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text,
     )
+    engine.message_log.add_message("Press 's' to view all possible keybinds!")
 
     dagger = copy.deepcopy(entity_factories.dagger)
     leather_armor = copy.deepcopy(entity_factories.leather_armor)

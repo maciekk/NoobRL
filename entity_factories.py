@@ -13,7 +13,7 @@ player = Actor(
     name="Player",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=30, base_defense=1, base_power=2),
+    fighter=Fighter(hp=15, base_defense=1, base_power=2),
     inventory=Inventory(capacity=26),
     level=Level(level_up_base=200),
 )
@@ -34,7 +34,7 @@ troll = Actor(
     name="Troll",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=16, base_defense=1, base_power=4),
+    fighter=Fighter(hp=17, base_defense=1, base_power=6),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
 )
@@ -44,7 +44,7 @@ dragon = Actor(
     name="Dragon",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=50, base_defense=2, base_power=10),
+    fighter=Fighter(hp=55, base_defense=2, base_power=14),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=900),
 )
@@ -54,7 +54,7 @@ wizard = Actor(
     name="Wizard",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=14, base_defense=1, base_power=10),
+    fighter=Fighter(hp=14, base_defense=1, base_power=9),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=300),
 )
@@ -64,9 +64,9 @@ crawler = Actor(
     name="Crawler",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=8, base_defense=1, base_power=4),
+    fighter=Fighter(hp=4, base_defense=0, base_power=4),
     inventory=Inventory(capacity=0),
-    level=Level(xp_given=75),
+    level=Level(xp_given=50),
 )
 
 confusion_scroll = Item(
@@ -91,7 +91,7 @@ health_potion = Item(
     char="!",
     color=(127, 0, 255),
     name="Health Potion",
-    consumable=consumable.HealingConsumable(amount=4),
+    consumable=consumable.HealingConsumable(amount=20),
 )
 lightning_scroll = Item(
     char="~",
@@ -100,19 +100,14 @@ lightning_scroll = Item(
     consumable=consumable.LightningDamageConsumable(damage=20, maximum_range=5),
 )
 
-dagger = Item(
-    char="/", color=(0, 191, 255), name="Dagger", equippable=equippable.Dagger()
-)
-
+#Swords go from up to down in power
+dagger = Item(char="/", color=(0, 191, 255), name="Dagger", equippable=equippable.Dagger()) #Worst
 sword = Item(char="/", color=(0, 191, 255), name="Sword", equippable=equippable.Sword())
+long_sword = Item(char="/", color=(0, 191, 255), name="Long Sword", equippable=equippable.LongSword())
+odachi = Item(char="/", color=(0, 191, 255), name="Odachi", equippable=equippable.Odachi()) #Best
 
-leather_armor = Item(
-    char="[",
-    color=(139, 69, 19),
-    name="Leather Armor",
-    equippable=equippable.LeatherArmor(),
-)
+#Armors go from up to down in defense
+leather_armor = Item(char="[", color=(139, 69, 19), name="Leather Armor", equippable=equippable.LeatherArmor()) #Worst
+chain_mail = Item(char="[", color=(139, 69, 19), name="Chain Mail", equippable=equippable.ChainMail())
+steel_armor = Item(char="[", color=(156, 156, 156), name="Steel Armor", equippable=equippable.SteelArmor()) #Best
 
-chain_mail = Item(
-    char="[", color=(139, 69, 19), name="Chain Mail", equippable=equippable.ChainMail()
-)
