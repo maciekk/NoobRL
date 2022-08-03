@@ -39,7 +39,10 @@ class BaseAI(Action):
         pathfinder.add_root((self.entity.x, self.entity.y))  # Start position.
 
         # Compute the path to the destination and remove the starting point.
-        path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+        if self.entity.name == "Banshee":
+            path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[2:].tolist()
+        else:
+            path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
 
         # Convert from List[List[int]] to List[Tuple[int, int]].
         return [(index[0], index[1]) for index in path]

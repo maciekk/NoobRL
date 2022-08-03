@@ -58,6 +58,16 @@ wizard = Actor(
     inventory=Inventory(capacity=0),
     level=Level(xp_given=300),
 )
+banshee = Actor(
+    char="b",
+    color=(110, 202, 255),
+    name="Banshee",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=8, base_defense=1, base_power=4),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=75),
+)
 
 confusion_scroll = Item(
     char="~",
