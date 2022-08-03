@@ -19,6 +19,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Simulate noise and monster hearing
 - [ ] Hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] add debugging console: spawn item, spawn monster, etc.
+- [ ] help button that tells all the keybinds
 
 ### Weapons/armor
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
