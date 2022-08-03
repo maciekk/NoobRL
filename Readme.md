@@ -35,6 +35,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] add sfx for crit hits
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
+- [ ] Higher crit chance for dragon enemy or overall powerful mobs
 
 ### DONE
 - [x] Wizards
