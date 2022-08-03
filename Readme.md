@@ -14,6 +14,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] have function to examine item in inventory
 - [ ] perhaps ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
+- [ ] Item weights and maximum carry weight
+- [ ] hunger and food items
 
 ### Weapons
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
