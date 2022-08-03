@@ -17,7 +17,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Item weights and maximum carry weight
 - [ ] hunger and food items
 - [ ] Simulate noise and monster hearing
-- [ ] Hidden traps
+- [ ] Hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
+- [ ] add debugging console: spawn item, spawn monster, etc.
 
 ### Weapons/armor
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
@@ -30,7 +31,6 @@ This file is for storing ideas that may be added to the project only.
 ### Magic (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add potion: Clairvoyance - Lets you see the whole map for 1 turn
-- [ ] add scroll: Blink (and/or general Teleport)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 
 ### Enemies
@@ -50,5 +50,6 @@ This file is for storing ideas that may be added to the project only.
 - [x] Wizards
 - [x] fully heal on level up!
 - [x] expand Look function (around level) to provide more info (incl. HP left on monster, maybe attack power, def)
+- [x] add scroll: Blink (and/or general Teleport)
 
 

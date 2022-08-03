@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import Optional, TYPE_CHECKING
 
 import actions
@@ -88,6 +89,24 @@ class HealingConsumable(Consumable):
             self.consume()
         else:
             raise Impossible(f"Your health is already full.")
+
+class BlinkConsumable(Consumable):
+    def activate(self, action: actions.ItemAction) -> None:
+        max_range = 5  # TODO: parametrize this (JSON, etc)
+
+        # TODO: make this more robust; e.g., ask GameMap to give you all possible free locations within max_range.
+        max_tries = 10
+        for i in range(max_tries):
+            dx, dy = random.randint(-max_range, max_range), random.randint(-max_range, max_range)
+            x = self.engine.player.x + dx
+            y = self.engine.player.y + dy
+            if (self.engine.game_map.tiles["walkable"][x, y] and
+                    self.engine.game_map.get_blocking_entity_at_location(x, y) is None):
+                self.engine.message_log.add_message("You blinked.")
+                self.engine.player.x, self.engine.player.y = x, y
+                self.consume()
+                return
+        self.engine.message_log.add_message("Mysterious force prevents you from blinking.")
 
 class FireballDamageConsumable(Consumable):
     def __init__(self, damage: int, radius: int):

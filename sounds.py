@@ -55,6 +55,10 @@ EFFECTS = [
     ]),
     ("You leveled up!", [
         _read_file("sfx/winharpsichord-39642.wav")
+    ]),
+    ("You blinked.", [
+        _read_file("sfx/teleport-36569.wav"),
+        _read_file("sfx/PM_FN_Spawns_Portals_Teleports_5.wav"),
     ])
 ]
 
