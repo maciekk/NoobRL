@@ -36,13 +36,11 @@ This file is for storing ideas that may be added to the project only.
 
 ### Enemies
 - [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)
-- [ ] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
 - [ ] Enemy special powers (Ex: speed, strength, invisibility, etc...)
 ### Open Questions
 - [ ] should we regen health very slowly over time? perhaps a character trait?
 
 ### Miscellaneous
-- [ ] add sfx for crit hits
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 - [ ] Higher crit chance for dragon enemy or overall powerful mobs
@@ -52,5 +50,6 @@ This file is for storing ideas that may be added to the project only.
 - [x] fully heal on level up!
 - [x] expand Look function (around level) to provide more info (incl. HP left on monster, maybe attack power, def)
 - [x] add scroll: Blink (and/or general Teleport)
-
+- [x] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
+- [x] add sfx for crit hits
 

@@ -18,11 +18,12 @@ EFFECTS = [
     ("Hello and welcome", [
         _read_file("sfx/CantinaBand3.wav"),
     ]),
-    ("Player attacks", [
+    ("hit points.", [
         _read_file("sfx/mixkit-sword-cutting-flesh-2788.wav"),
-     ]),
-    ("attacks Player", [
         _read_file("sfx/mixkit-metal-hit-woosh-1485.wav"),
+     ]),
+    ("hit points [CRIT!]", [
+        _read_file("sfx/mixkit-samurai-sword-impact-2789.wav"),
      ]),
     ("is dead!", [
         _read_file("sfx/mixkit-gore-video-game-blood-splash-263.wav"),
