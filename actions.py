@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
@@ -12,12 +13,14 @@ if TYPE_CHECKING:
 
 
 def compute_damage(attack_power, defense, crit_chance=0.05, crit_mult=1.5):
+    is_crit = False
     damage = attack_power - defense
     if random.random() <= crit_chance:
+        is_crit = True
         damage *= crit_mult
         if damage <= 0:
             damage = 1
-    return damage
+    return math.ceil(damage), is_crit
 
 class Action:
     def __init__(self, entity: Actor) -> None:
@@ -150,17 +153,20 @@ class MeleeAction(ActionWithDirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
 
-        damage = compute_damage(self.entity.fighter.power, target.fighter.defense)
+        damage, is_crit = compute_damage(self.entity.fighter.power, target.fighter.defense)
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
+        crit_text = ""
         if self.entity is self.engine.player:
             attack_color = color.player_atk
         else:
             attack_color = color.enemy_atk
-
+        if is_crit:
+            attack_color = color.crit_atk
+            crit_text = " [CRIT!]"
         if damage > 0:
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points.", attack_color
+                f"{attack_desc} for {damage} hit points.{crit_text}", attack_color
             )
             target.fighter.hp -= damage
         else:
@@ -171,14 +177,18 @@ class MeleeAction(ActionWithDirection):
 class RangedAttackAction(ActionWithDirection):
     def perform(self) -> None:
         target = self.engine.player
-        damage = compute_damage(self.entity.fighter.power, target.fighter.defense)
+        damage, is_crit = compute_damage(self.entity.fighter.power, target.fighter.defense)
 
         attack_desc = f"{self.entity.name.capitalize()} zaps {target.name}"
+        crit_text = ""
         attack_color = color.enemy_atk
+        if is_crit:
+            attack_color = color.crit_atk
+            crit_text = " [CRIT!]"
 
         if damage > 0:
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points.", attack_color
+                f"{attack_desc} for {damage} hit points.{crit_text}", attack_color
             )
             target.fighter.hp -= damage
         else:
