@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
@@ -9,6 +10,14 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity, Item
 
+
+def compute_damage(attack_power, defense, crit_chance=0.05, crit_mult=1.5):
+    damage = attack_power - defense
+    if random.random() <= crit_chance:
+        damage *= crit_mult
+        if damage <= 0:
+            damage = 1
+    return damage
 
 class Action:
     def __init__(self, entity: Actor) -> None:
@@ -141,7 +150,7 @@ class MeleeAction(ActionWithDirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
 
-        damage = self.entity.fighter.power - target.fighter.defense
+        damage = compute_damage(self.entity.fighter.power, target.fighter.defense)
 
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
         if self.entity is self.engine.player:
@@ -162,7 +171,7 @@ class MeleeAction(ActionWithDirection):
 class RangedAttackAction(ActionWithDirection):
     def perform(self) -> None:
         target = self.engine.player
-        damage = self.entity.fighter.power - target.fighter.defense
+        damage = compute_damage(self.entity.fighter.power, target.fighter.defense)
 
         attack_desc = f"{self.entity.name.capitalize()} zaps {target.name}"
         attack_color = color.enemy_atk

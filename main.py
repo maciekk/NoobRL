@@ -22,7 +22,7 @@ def main() -> None:
     # Set to '2' (for small tileset on high-res monitors).
     scale_factor = 1
 
-    tileset, scale_factor, player_char = tilesets.load_sheet("Curses_800")
+    tileset, scale_factor, player_char = tilesets.load_sheet("Bedstead")
 
     handler: input_handlers.BaseEventHandler = setup_game.MainMenu()
 
