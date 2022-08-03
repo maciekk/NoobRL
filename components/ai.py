@@ -39,7 +39,7 @@ class BaseAI(Action):
         pathfinder.add_root((self.entity.x, self.entity.y))  # Start position.
 
         # Compute the path to the destination and remove the starting point.
-        if self.entity.name == "Banshee":
+        if self.entity.name == "Crawler":
             path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[2:].tolist()
         else:
             path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
@@ -111,6 +111,9 @@ class HostileEnemy(BaseAI):
             if self.entity.name == "Wizard":
                 if distance <= 3:
                     return RangedAttackAction(self.entity, dx, dy).perform()
+            if self.entity.name == "Crawler":
+                if distance <= 2:
+                    return MeleeAction(self.entity, dx, dy).perform()
 
             if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
