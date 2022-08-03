@@ -635,52 +635,41 @@ class HistoryViewer(EventHandler):
             return MainGameEventHandler(self.engine)
         return None
 
-class ViewKeybinds(EventHandler):
+class ViewKeybinds(AskUserEventHandler):
     """Print the history on a larger window which can be navigated."""
-
-    def __init__(self, engine: Engine):
-        super().__init__(engine)
-        self.log_length = len(engine.message_log.messages)
-        self.cursor = self.log_length - 1
-
+    TITLE = "KEYBOARD SHORTCUTS"
+    TEXT = [
+        "v: View History",
+        "s: view keybinds",
+        "g: Pick up item on the ground",
+        "i: view and use inventory items",
+        "d: drop items in inventory",
+        "c: view character stats",
+        "SHIFT + period: Enter next dungeon",
+        "Press V to view!",
+    ]
     def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)  # Draw the main state as the background.
+        super().on_render(console)
 
-        log_console = tcod.Console(console.width - 6, console.height - 6)
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
 
-        # Draw a frame with a custom banner title.
-        log_console.draw_frame(0, 0, log_console.width, log_console.height)
-        log_console.print_box(
-            0, 0, log_console.width, 1, "┤Keybinds├", alignment=tcod.CENTER
+        y = 0
+
+        width = 38
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=len(self.TEXT)+2,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
-        self.engine.message_log.add_message(
-            "v: View History\n"
-            "s: view keybinds\n"
-            "g: Pick up item on the ground\n"
-            "i: view and use inventory items\n"
-            "d: drop items in inventory\n"
-            "c: view character stats\n"
-            "SHIFT + period: Enter next dungeon\n"
-            "Press V to view!"
-        )
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainGameEventHandler]:
-        # Fancy conditional movement to make it feel right.
-        if event.sym in CURSOR_Y_KEYS:
-            adjust = CURSOR_Y_KEYS[event.sym]
-            if adjust < 0 and self.cursor == 0:
-                # Only move from the top to the bottom when you're on the edge.
-                self.cursor = self.log_length - 1
-            elif adjust > 0 and self.cursor == self.log_length - 1:
-                # Same with bottom to top movement.
-                self.cursor = 0
-            else:
-                # Otherwise move while staying clamped to the bounds of the history log.
-                self.cursor = max(0, min(self.cursor + adjust, self.log_length - 1))
-        elif event.sym == tcod.event.K_HOME:
-            self.cursor = 0  # Move directly to the top message.
-        elif event.sym == tcod.event.K_END:
-            self.cursor = self.log_length - 1  # Move directly to the last message.
-        else:  # Any other key moves back to the main game state.
-            return MainGameEventHandler(self.engine)
-        return None
+        for i, line in enumerate(self.TEXT):
+            console.print(x=x + 1, y=y + 1 + i, string=line)
