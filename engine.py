@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from tcod.console import Console
 from tcod.map import compute_fov
 
+import color
 import exceptions
 from message_log import MessageLog
 import render_functions
@@ -50,8 +51,22 @@ class Engine:
 
         render_functions.render_bar(
             console=console,
+            name="HP",
             current_value=self.player.fighter.hp,
             maximum_value=self.player.fighter.max_hp,
+            color_fg=color.hp_bar_filled,
+            color_bg=color.hp_bar_empty,
+            x=0, y=45,
+            total_width=20,
+        )
+        render_functions.render_bar(
+            console=console,
+            name="XP",
+            current_value=self.player.level.current_xp,
+            maximum_value=self.player.level.experience_to_next_level,
+            color_fg=color.xp_bar_filled,
+            color_bg=color.xp_bar_empty,
+            x=0, y=46,
             total_width=20,
         )
 
