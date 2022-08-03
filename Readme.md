@@ -7,7 +7,6 @@ TODO: project description
 This file is for storing ideas that may be added to the project only.
 
 ### IMPORTANT
-- [ ] fully heal on level up!
 - [ ] expand Look function (around level) to provide more info (incl. HP left on monsnter, maybe attack power, def)
 - [ ] variable damage on weapons (e.g., 1d10)
 
@@ -39,3 +38,4 @@ This file is for storing ideas that may be added to the project only.
 
 ### DONE
 - [x] Wizards
+- [x] fully heal on level up!

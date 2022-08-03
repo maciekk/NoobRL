@@ -51,6 +51,9 @@ class Level(BaseComponent):
 
         self.current_level += 1
 
+        # Also heal on level up.
+        self.parent.fighter.hp = self.parent.fighter.max_hp
+
     def increase_max_hp(self, amount: int = 20) -> None:
         self.parent.fighter.max_hp += amount
         self.parent.fighter.hp += amount
