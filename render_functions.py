@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
 
 import color
+from entity import Actor
 
 if TYPE_CHECKING:
     from tcod import Console
@@ -10,12 +11,19 @@ if TYPE_CHECKING:
     from game_map import GameMap
 
 
+def entity_brief(entity) -> str:
+    """Provides a brief summary of entity."""
+    s = f"{entity.name}"
+    if isinstance(entity, Actor):
+        s += f"[{entity.fighter.hp}/{entity.fighter.max_hp}]"
+    return s
+
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
 
     names = ", ".join(
-        entity.name for entity in game_map.entities if entity.x == x and entity.y == y
+        entity_brief(entity) for entity in game_map.entities if entity.x == x and entity.y == y
     )
 
     return names.capitalize()

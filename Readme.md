@@ -7,7 +7,6 @@ TODO: project description
 This file is for storing ideas that may be added to the project only.
 
 ### IMPORTANT
-- [ ] expand Look function (around level) to provide more info (incl. HP left on monsnter, maybe attack power, def)
 - [ ] variable damage on weapons (e.g., 1d10)
 
 ### General
@@ -20,7 +19,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
 - [ ] armour and weapon propreties that affect crit_chance and crit_mult
-- [ ] More equipment/weapons
+- [ ] More types of weapons
+- [ ] More types of armour (maybe separate: chest, helmet, gloves, etc)
 
 ### Magic (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
@@ -39,3 +39,4 @@ This file is for storing ideas that may be added to the project only.
 ### DONE
 - [x] Wizards
 - [x] fully heal on level up!
+- [x] expand Look function (around level) to provide more info (incl. HP left on monster, maybe attack power, def)
