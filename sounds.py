@@ -29,6 +29,7 @@ EFFECTS = [
      ]),
     ("consume the Health Potion", [
         _read_file("sfx/mixkit-sip-of-water-1307.wav"),
+        _read_file("sfx/water_drinkwav-14601.wav"),
      ]),
     ("You picked up", [
         _read_file("sfx/mixkit-retro-game-notification-212.wav"),
