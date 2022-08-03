@@ -159,6 +159,24 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} but does no damage.", attack_color
             )
 
+class RangedAttackAction(ActionWithDirection):
+    def perform(self) -> None:
+        target = self.engine.player
+        damage = self.entity.fighter.power - target.fighter.defense
+
+        attack_desc = f"{self.entity.name.capitalize()} zaps {target.name}"
+        attack_color = color.enemy_atk
+
+        if damage > 0:
+            self.engine.message_log.add_message(
+                f"{attack_desc} for {damage} hit points.", attack_color
+            )
+            target.fighter.hp -= damage
+        else:
+            self.engine.message_log.add_message(
+                f"{attack_desc} but does no damage.", attack_color
+            )
+
 
 class MovementAction(ActionWithDirection):
     def perform(self) -> None:

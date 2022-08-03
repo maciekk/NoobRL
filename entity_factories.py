@@ -54,7 +54,7 @@ wizard = Actor(
     name="Wizard",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
-    fighter=Fighter(hp=14, base_defense=1, base_power=6),
+    fighter=Fighter(hp=14, base_defense=1, base_power=10),
     inventory=Inventory(capacity=0),
     level=Level(xp_given=300),
 )

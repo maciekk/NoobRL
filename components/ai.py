@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np  # type: ignore
 import tcod
 
-from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction
+from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction, RangedAttackAction
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -105,6 +105,10 @@ class HostileEnemy(BaseAI):
                     Dragon_message = ("You have been spotted by a dragon!")
                     Dragon_message_color = color.dragon_roar
                     self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+            if self.entity.name == "Wizard":
+                if distance <= 3:
+                    return RangedAttackAction(self.entity, dx, dy).perform()
+
             if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
 
