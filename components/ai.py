@@ -111,6 +111,9 @@ class HostileEnemy(BaseAI):
             if self.entity.name == "Wizard":
                 if distance <= 3:
                     return RangedAttackAction(self.entity, dx, dy).perform()
+            if self.entity.name == "Banshee":
+                if distance <= 2:
+                    return MeleeAction(self.entity, dx, dy).perform()
 
             if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
