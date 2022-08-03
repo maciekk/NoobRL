@@ -34,7 +34,7 @@ EFFECTS = [
     ("You picked up", [
         _read_file("sfx/mixkit-retro-game-notification-212.wav"),
      ]),
-    ("You died!", [
+    ("You are dead", [
         _read_file("sfx/mixkit-ominous-drums-227.wav"),
      ]),
     ("A lightning bolt strikes", [
