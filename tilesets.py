@@ -13,7 +13,13 @@ TILESETS = [
     ("Cooz_curses_14x16.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
     ("Nice_curses_10x12.png", (16, 16, tcod.tileset.CHARMAP_CP437), 2, "@"),
     ("Yoshis_island.png", (16, 16, tcod.tileset.CHARMAP_CP437), 2, "@"),
+    ("Tocky_square_10x10.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
+    ("Terminus.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
+    ("Cheepicus_12x12.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
+    ("Cheepicus_14x14.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
+    ("Talryth_square_15x15.png", (16, 16, tcod.tileset.CHARMAP_CP437), 1, "@"),
 ]
+
 
 def load_sheet(name):
     for (fname, (x, y, charmap), sfactor, player_char) in TILESETS:
