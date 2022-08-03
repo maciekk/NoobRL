@@ -1,4 +1,8 @@
-# Ideas
+# Hello world!
+
+TODO: project description
+
+## Ideas
 
 This file is for storing ideas that may be added to the project only.
 
