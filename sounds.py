@@ -48,6 +48,10 @@ EFFECTS = [
         _read_file("sfx/mixkit-fuel-explosion-1705.wav"),
         _read_file("sfx/mixkit-explosion-with-rocks-debris-1703.wav"),
     ]),
+    ("You have been spotted by a dragon!", [
+        _read_file("sfx/mixkit-giant-monster-roar-1972.wav"),
+        _read_file("sfx/569047__humanoide9000__evil-villian-theme.wav"),
+    ]),
 ]
 
 

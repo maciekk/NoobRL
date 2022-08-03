@@ -125,6 +125,8 @@ class Actor(Entity):
         self.level = level
         self.level.parent = self
 
+        self.noticed_player = False
+
     @property
     def is_alive(self) -> bool:
         """Returns True as long as this actor can perform actions."""

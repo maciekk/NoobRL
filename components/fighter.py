@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import color
+import color, random
 from components.base_component import BaseComponent
 from render_order import RenderOrder
 
@@ -52,11 +52,15 @@ class Fighter(BaseComponent):
             return 0
 
     def die(self) -> None:
+        # Add more to deathmessagelist
+        deathmessagelist = [
+            "impaled", "blown to smithereens", "sliced down", "beat to death", "butchered"
+        ]
         if self.engine.player is self.parent:
-            death_message = "You died!"
+            death_message = f"You were {deathmessagelist[random.randint(0, 3)]}"
             death_message_color = color.player_die
         else:
-            death_message = f"{self.parent.name} is dead!"
+            death_message = f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
             death_message_color = color.enemy_die
 
         self.parent.char = "%"

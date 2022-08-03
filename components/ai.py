@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import random
+import random, color
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import numpy as np  # type: ignore
@@ -24,7 +24,7 @@ class BaseAI(Action):
         cost = np.array(self.entity.gamemap.tiles["walkable"], dtype=np.int8)
 
         for entity in self.entity.gamemap.entities:
-            # Check that an enitiy blocks movement and the cost isn't zero (blocking.)
+            # Check that an entity blocks movement and the cost isn't zero (blocking.)
             if entity.blocks_movement and cost[entity.x, entity.y]:
                 # Add to the cost of a blocked position.
                 # A lower number means more enemies will crowd behind each other in
@@ -98,6 +98,13 @@ class HostileEnemy(BaseAI):
         distance = max(abs(dx), abs(dy))  # Chebyshev distance.
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+            # Give actor chance to notice player, if that has not happened yet.
+            if not self.entity.noticed_player:
+                self.entity.noticed_player = True
+                if self.entity.name == "Dragon":
+                    Dragon_message = ("You have been spotted by a dragon!")
+                    Dragon_message_color = color.dragon_roar
+                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
             if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
 

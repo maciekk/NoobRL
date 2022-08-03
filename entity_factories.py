@@ -38,6 +38,26 @@ troll = Actor(
     inventory=Inventory(capacity=0),
     level=Level(xp_given=100),
 )
+dragon = Actor(
+    char="D",
+    color=(255, 0, 0),
+    name="Dragon",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=50, base_defense=2, base_power=10),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=900),
+)
+wizard = Actor(
+    char="W",
+    color=(255, 0, 255),
+    name="Wizard",
+    ai_cls=HostileEnemy,
+    equipment=Equipment(),
+    fighter=Fighter(hp=14, base_defense=1, base_power=6),
+    inventory=Inventory(capacity=0),
+    level=Level(xp_given=300),
+)
 
 confusion_scroll = Item(
     char="~",
