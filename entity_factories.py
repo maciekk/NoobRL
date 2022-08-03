@@ -58,10 +58,10 @@ wizard = Actor(
     inventory=Inventory(capacity=0),
     level=Level(xp_given=300),
 )
-banshee = Actor(
-    char="b",
+crawler = Actor(
+    char="c",
     color=(110, 202, 255),
-    name="Banshee",
+    name="Crawler",
     ai_cls=HostileEnemy,
     equipment=Equipment(),
     fighter=Fighter(hp=8, base_defense=1, base_power=4),
