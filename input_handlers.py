@@ -129,6 +129,7 @@ class EventHandler(BaseEventHandler):
                 # The player was killed sometime during or after the action.
                 return GameOverEventHandler(self.engine)
             elif self.engine.player.level.requires_level_up:
+                self.engine.message_log.add_message("You leveled up!", stack=False)
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)  # Return to the main handler.
         return self
