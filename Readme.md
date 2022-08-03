@@ -16,6 +16,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] perhaps ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
 - [ ] Item weights and maximum carry weight
 - [ ] hunger and food items
+- [ ] Simulate noise and monster hearing
+- [ ] Hidden traps
 
 ### Weapons
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
@@ -28,7 +30,10 @@ This file is for storing ideas that may be added to the project only.
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add potion: Clairvoyance - Lets you see the whole map for 1 turn
 - [ ] add scroll: Blink (and/or general Teleport)
-- [ ] maybe: magic proficiency skill, which multiplies damage of all magical effects
+- [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
+
+### Enemies
+- [ ] Banshee(Do not attack, but if seen, will scream and alert within a given radius)
 
 ### Open Questions
 - [ ] should we regen health very slowly over time? perhaps a character trait?
@@ -43,3 +48,5 @@ This file is for storing ideas that may be added to the project only.
 - [x] Wizards
 - [x] fully heal on level up!
 - [x] expand Look function (around level) to provide more info (incl. HP left on monster, maybe attack power, def)
+
+
