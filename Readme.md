@@ -19,12 +19,13 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Simulate noise and monster hearing
 - [ ] Hidden traps
 
-### Weapons
+### Weapons/armor
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
 - [ ] armour and weapon propreties that affect crit_chance and crit_mult
 - [ ] More types of weapons
 - [ ] More types of armour (maybe separate: chest, helmet, gloves, etc)
+- [ ] Weapon and armor enchantments
 
 ### Magic (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
@@ -33,7 +34,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 
 ### Enemies
-- [ ] Banshee(Do not attack, but if seen, will scream and alert within a given radius)
+- [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)
+- [ ] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
 
 ### Open Questions
 - [ ] should we regen health very slowly over time? perhaps a character trait?
