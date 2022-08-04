@@ -1,3 +1,6 @@
+import copy
+import json
+
 from components.ai import HostileEnemy
 from components import consumable, equippable
 from components.equipment import Equipment
@@ -5,6 +8,54 @@ from components.fighter import Fighter
 from components.inventory import Inventory
 from components.level import Level
 from entity import Actor, Item
+
+CONSUMABLE_MAP = {
+    "ConfusionConsumable": consumable.ConfusionConsumable,
+    "BlinkConsumable": consumable.BlinkConsumable,
+    "HealingConsumable": consumable.HealingConsumable,
+    "LightningDamageConsumable": consumable.LightningDamageConsumable,
+    "FireballDamageConsumable": consumable.FireballDamageConsumable,
+}
+EQUIPPABLE_MAP = {
+    "Dagger": equippable.Dagger,
+    "Sword": equippable.Sword,
+    "LongSword": equippable.LongSword,
+    "Odachi": equippable.Odachi,
+    "LeatherArmor": equippable.LeatherArmor,
+    "ChainMail": equippable.ChainMail,
+    "SteelArmor": equippable.SteelArmor,
+}
+class ItemFactory:
+    def __init__(self):
+        self.entities = {}
+
+    def load_items(self, fname):
+        with open(fname) as file:
+            data = json.load(file)
+        for item in data:
+            id = item["id"]
+            if id in self.entities:
+                raise f"Redefining entity '{id}'!"
+            if "consumable" in item:
+                cons_d = copy.deepcopy(item["consumable"])
+                cons_t = CONSUMABLE_MAP[cons_d["name"]]
+                del cons_d["name"]
+                cons_v = cons_t(**cons_d)
+            else:
+                cons_v = None
+            if "equippable" in item:
+                equi_d = copy.deepcopy(item["equippable"])
+                equi_t = EQUIPPABLE_MAP[equi_d["name"]]
+                del equi_d["name"]
+                equi_v = equi_t(**equi_d)
+            else:
+                equi_v = None
+            self.entities[id] = Item(
+                name=item["name"],
+                char=item["char"],
+                color=item["color"],
+                consumable=cons_v,
+                equippable=equi_v)
 
 
 player = Actor(
@@ -86,7 +137,7 @@ blink_scroll = Item(
     char="~",
     color=(128, 0, 255),
     name="Blink Scroll",
-    consumable=consumable.BlinkConsumable(),
+    consumable=consumable.BlinkConsumable(range=5),
 )
 health_potion = Item(
     char="!",

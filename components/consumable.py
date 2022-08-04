@@ -91,11 +91,13 @@ class HealingConsumable(Consumable):
             raise Impossible(f"Your health is already full.")
 
 class BlinkConsumable(Consumable):
-    def activate(self, action: actions.ItemAction) -> None:
-        max_range = 5  # TODO: parametrize this (JSON, etc)
+    def __init__(self, range: int):
+        self.range = 5
 
+    def activate(self, action: actions.ItemAction) -> None:
         # TODO: make this more robust; e.g., ask GameMap to give you all possible free locations within max_range.
         max_tries = 10
+        max_range = self.range
         for i in range(max_tries):
             dx, dy = random.randint(-max_range, max_range), random.randint(-max_range, max_range)
             x = self.engine.player.x + dx

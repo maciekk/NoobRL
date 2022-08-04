@@ -1,0 +1,117 @@
+[
+  {
+    "id": "potion_heal",
+    "name": "Health Potion",
+    "char": "!",
+    "color": [255, 0, 100],
+    "consumable": {
+      "name": "HealingConsumable",
+      "amount": 20
+    }
+  },
+  {
+    "id": "scroll_confusion",
+    "name": "Scroll of Confusion",
+    "char": "~",
+    "color": [207, 63, 255],
+    "consumable": {
+      "name": "ConfusionConsumable",
+      "number_of_turns": 10
+    }
+  },
+  {
+    "id": "scroll_fireball",
+    "name": "Fireball Scroll",
+    "char": "~",
+    "color": [255, 0, 0],
+    "consumable": {
+      "name": "FireballDamageConsumable",
+      "damage": 12,
+      "radius": 3
+    }
+  },
+  {
+    "id": "scroll_blink",
+    "name": "Scroll of Blink",
+    "char": "~",
+    "color": [128, 0, 255],
+    "consumable": {
+      "name": "BlinkConsumable",
+      "range": 5
+    }
+  },
+  {
+    "id": "scroll_lightning",
+    "name": "Lightning Scroll",
+    "char": "~",
+    "color": [32, 64, 255],
+    "consumable": {
+      "name": "LightningDamageConsumable",
+      "damage": 20,
+      "maximum_range": 5
+    }
+  },
+  {
+    "id": "w_dagger",
+    "name": "Dagger",
+    "char": "/",
+    "color": [0, 191, 255],
+    "equippable": {
+      "name": "Dagger"
+    }
+  },
+  {
+    "id": "w_sword",
+    "name": "Sword",
+    "char": "/",
+    "color": [0, 191, 255],
+    "equippable": {
+      "name": "Sword"
+    }
+  },
+  {
+    "id": "w_long_sword",
+    "name": "Long Sword",
+    "char": "/",
+    "color": [0, 191, 255],
+    "equippable": {
+      "name": "LongSword"
+    }
+  },
+  {
+    "id": "w_odachi",
+    "name": "Odachi",
+    "char": "/",
+    "color": [0, 191, 255],
+    "equippable": {
+      "name": "Odachi"
+    }
+  },
+  {
+    "id": "a_leather",
+    "name": "Leather Armor",
+    "char": "[",
+    "color": [139, 69, 19],
+    "equippable": {
+      "name": "LeatherArmor"
+    }
+  },
+  {
+    "id": "a_chain_mail",
+    "name": "Chain Mail",
+    "char": "[",
+    "color": [139, 69, 19],
+    "equippable": {
+      "name": "ChainMail"
+    }
+  },
+  {
+    "id": "a_steel_armor",
+    "name": "Steel Armor",
+    "char": "[",
+    "color": [156, 156, 156],
+    "equippable": {
+      "name": "SteelArmor"
+    }
+  }
+]
