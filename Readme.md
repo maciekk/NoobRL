@@ -52,7 +52,6 @@ This file is for storing ideas that may be added to the project only.
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
-- [ ] Higher crit chance for dragon enemy or overall powerful mobs
 - [ ] add ability to go back in levels (e.g., when left stash upstairs)
 
 ### DONE
@@ -62,4 +61,5 @@ This file is for storing ideas that may be added to the project only.
 - [x] add scroll: Blink (and/or general Teleport)
 - [x] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
 - [x] add sfx for crit hits
+- [x] Higher crit chance for dragon enemy or overall powerful mobs
 
