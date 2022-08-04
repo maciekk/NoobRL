@@ -38,7 +38,7 @@ def main() -> None:
             while True:
                 root_console.clear()
                 handler.on_render(console=root_console)
-                context.present(root_console)
+                context.present(root_console, keep_aspect=True, integer_scaling=False)
 
                 try:
                     for event in tcod.event.wait():
