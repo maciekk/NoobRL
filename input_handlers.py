@@ -560,6 +560,15 @@ class MainGameEventHandler(EventHandler):
         # No valid key was pressed
         return action
 
+    def ev_textinput(self, event: tcod.event.TextInput):
+        match event:
+            # We cannot trigger the following on ev_keydown as the subsequent TextInput will pollute text field.
+            case tcod.event.TextInput(text=text):
+                if text == "q":
+                    return DebugHandler(self.engine)
+
+        return None
+
 
 class GameOverEventHandler(EventHandler):
     def on_quit(self) -> None:
@@ -673,3 +682,7 @@ class ViewKeybinds(AskUserEventHandler):
 
         for i, line in enumerate(self.TEXT):
             console.print(x=x + 1, y=y + 1 + i, string=line)
+
+
+# Import at end, to avoid circular dependency.
+from debug import DebugHandler
