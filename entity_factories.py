@@ -39,9 +39,15 @@ troll = Actor(
     level=Level(xp_given=100),
 )
 #Kinds of dragons
-dragon = Actor(char="D", color=(255, 0, 0), name="Dragon", ai_cls=HostileEnemy, equipment=Equipment(), fighter=Fighter(hp=55, base_defense=2, base_power=12), inventory=Inventory(capacity=0), level=Level(xp_given=900))
-ender_dragon = Actor(char="D", color=(210, 87, 255), name="Ender Dragon", ai_cls=HostileEnemy, equipment=Equipment(), fighter=Fighter(hp=35, base_defense=0, base_power=17), inventory=Inventory(capacity=0), level=Level(xp_given=900))
-hydra = Actor(char="H", color=(0, 224, 150), name="Hydra", ai_cls=HostileEnemy, equipment=Equipment(), fighter=Fighter(hp=45, base_defense=1, base_power=14), inventory=Inventory(capacity=0), level=Level(xp_given=900))
+dragon = Actor(char="D", color=(255, 0, 0), name="Dragon", ai_cls=HostileEnemy, equipment=Equipment(),
+               fighter=Fighter(hp=55, base_defense=2, base_power=12), inventory=Inventory(capacity=0),
+               level=Level(xp_given=900))
+ender_dragon = Actor(char="D", color=(210, 87, 255), name="Ender Dragon", ai_cls=HostileEnemy, equipment=Equipment(),
+                     fighter=Fighter(hp=35, base_defense=0, base_power=17), inventory=Inventory(capacity=0),
+                     level=Level(xp_given=900))
+hydra = Actor(char="H", color=(0, 224, 150), name="Hydra", ai_cls=HostileEnemy, equipment=Equipment(),
+              fighter=Fighter(hp=45, base_defense=1, base_power=14), inventory=Inventory(capacity=0),
+              level=Level(xp_given=900))
 
 wizard = Actor(
     char="W",
