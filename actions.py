@@ -5,12 +5,12 @@ import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
+import entity
 import exceptions
 
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Actor, Entity, Item
-
 
 def compute_damage(attack_power, defense, crit_chance=0.05, crit_mult=1.5):
     is_crit = False
@@ -153,8 +153,11 @@ class MeleeAction(ActionWithDirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
 
-        damage, is_crit = compute_damage(self.entity.fighter.power, target.fighter.defense)
-
+        if self.entity.name == "Dragon" or self.entity.name == "Ender Dragon" or self.entity.name == "Hydra":
+            crit_chance = 0.3
+        else:
+            crit_chance = 0.05
+        damage, is_crit = compute_damage(self.entity.fighter.power, target.fighter.defense, crit_chance)
         attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
         crit_text = ""
         if self.entity is self.engine.player:
