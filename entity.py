@@ -5,6 +5,7 @@ import json
 import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
+import components.ai
 from render_order import RenderOrder
 
 if TYPE_CHECKING:
@@ -36,6 +37,9 @@ EQUIPPABLE_MAP = {
     "LeatherArmor": equippable.LeatherArmor,
     "ChainMail": equippable.ChainMail,
     "SteelArmor": equippable.SteelArmor,
+}
+AI_MAP = {
+    "HostileEnemy": components.ai.HostileEnemy,
 }
 
 class Entity:
@@ -193,7 +197,6 @@ class ItemManager:
             data = f.read()
             for item in json.loads(data):
                 id = item.pop('id')
-                #name = item.pop('name')
                 d = item.get('consumable', None)
                 if d:
                     consumable_class = CONSUMABLE_MAP[d.pop('name')]
@@ -203,3 +206,34 @@ class ItemManager:
                     equippable_class = EQUIPPABLE_MAP[d.pop('name')]
                     item['equippable'] = equippable_class(**d)
                 self.items[id] = Item(**item)
+
+    def clone(self, name: string) -> Item:
+        return copy.deepcopy(self.items[name])
+
+class MonsterManager:
+    def __init__(self, fname: string):
+        self.monsters = {}
+        self.load(fname)
+
+    def load(self, fname: string):
+        with open(fname, 'r') as f:
+            data = f.read()
+            for item in json.loads(data):
+                id = item.pop('id')
+                item['ai_cls'] = AI_MAP[item.pop('ai_cls')]
+                d = item.get('equipment', None)
+                if d is not None:
+                    item['equipment'] = components.equipment.Equipment(**d)
+                d = item.get('fighter', None)
+                if d:
+                    item['fighter'] = components.fighter.Fighter(**d)
+                d = item.get('inventory', None)
+                if d:
+                    item['inventory'] = components.inventory.Inventory(**d)
+                d = item.get('level', None)
+                if d:
+                    item['level'] = components.level.Level(**d)
+                self.monsters[id] = Actor(**item)
+
+    def clone(self, name: string) -> Actor:
+        return copy.deepcopy(self.monsters[name])

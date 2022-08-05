@@ -36,14 +36,14 @@ item_chances: Dict[int, List[Tuple[string, int]]] = {
     8: [('steel_armor', 10)],
 }
 
-enemy_chances: Dict[int, List[Tuple[Entity, int]]] = {
-    0: [(entity_factories.orc, 80)],
-    2: [(entity_factories.crawler, 20)],
-    3: [(entity_factories.troll, 5)],
-    5: [(entity_factories.troll, 15), (entity_factories.crawler, 35)],
-    6: [(entity_factories.wizard, 8), (entity_factories.troll, 20)],
-    7: [(entity_factories.troll, 60), (entity_factories.dragon, 1), (entity_factories.ender_dragon, 1), (entity_factories.hydra, 1), (entity_factories.wizard, 12)],
-    10: [(entity_factories.troll, 65), (entity_factories.dragon, 2), (entity_factories.ender_dragon, 2), (entity_factories.hydra, 2)],
+enemy_chances: Dict[int, List[Tuple[string, int]]] = {
+    0: [('orc', 80)],
+    2: [('crawler', 20)],
+    3: [('troll', 5)],
+    5: [('troll', 15), ('crawler', 35)],
+    6: [('wizard', 8), ('troll', 20)],
+    7: [('troll', 60), ('dragon', 1), ('ender_dragon', 1), ('hydra', 1), ('wizard', 12)],
+    10: [('troll', 65), ('dragon', 2), ('ender_dragon', 2), ('hydra', 2)],
 }
 
 def get_max_value_for_floor(
@@ -60,32 +60,6 @@ def get_max_value_for_floor(
     return current_value
 
 def get_entities_at_random(
-    weighted_chances_by_floor: Dict[int, List[Tuple[Entity, int]]],
-    number_of_entities: int,
-    floor: int,
-) -> List[Entity]:
-    entity_weighted_chances = {}
-
-    for key, values in weighted_chances_by_floor.items():
-        if key > floor:
-            break
-        else:
-            for value in values:
-                entity = value[0]
-                weighted_chance = value[1]
-
-                entity_weighted_chances[entity] = weighted_chance
-
-    entities = list(entity_weighted_chances.keys())
-    entity_weighted_chance_values = list(entity_weighted_chances.values())
-
-    chosen_entities = random.choices(
-        entities, weights=entity_weighted_chance_values, k=number_of_entities
-    )
-
-    return chosen_entities
-
-def get_entities_at_random_new(
     engine: Engine,
     weighted_chances_by_floor: Dict[int, List[Tuple[string, int]]],
     number_of_entities: int,
@@ -98,9 +72,11 @@ def get_entities_at_random_new(
             break
         else:
             for value in values:
-                entity = engine.item_manager.items[value[0]]
+                id = value[0]
+                entity = engine.item_manager.items.get(id)
+                if entity is None:
+                    entity = engine.monster_manager.monsters.get(id)
                 weighted_chance = value[1]
-
                 entity_weighted_chances[entity] = weighted_chance
 
     entities = list(entity_weighted_chances.keys())
@@ -151,9 +127,9 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
     )
 
     monsters: List[Entity] = get_entities_at_random(
-        enemy_chances, number_of_monsters, floor_number
+        dungeon.engine, enemy_chances, number_of_monsters, floor_number
     )
-    items: List[Entity] = get_entities_at_random_new(
+    items: List[Entity] = get_entities_at_random(
         dungeon.engine, item_chances, number_of_items, floor_number
     )
 

@@ -42,7 +42,7 @@
   },
   {
     "id": "p_heal",
-    "name": "potion of Healing",
+    "name": "Health Potion",
     "char": "!",
     "color": [127, 0, 255],
     "consumable": {

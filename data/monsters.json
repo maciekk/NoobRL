@@ -1,0 +1,162 @@
+[
+  {
+    "id": "player",
+    "name": "Player",
+    "char": "@",
+    "color": [255, 255, 255],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 15,
+      "base_defense": 1,
+      "base_power": 2
+    },
+    "inventory":{
+      "capacity": 26
+    },
+    "level": {
+      "level_up_base": 200
+    }
+  },
+  {
+    "id": "orc",
+    "name": "Orc",
+    "char": "o",
+    "color": [63, 127, 63],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 10,
+      "base_defense": 0,
+      "base_power": 3
+    },
+    "inventory": {
+      "capacity": 8
+    },
+    "level": {
+      "xp_given": 35
+    }
+  },
+  {
+    "id": "troll",
+    "name": "Troll",
+    "char": "T",
+    "color": [0, 127, 0],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 17,
+      "base_defense": 1,
+      "base_power": 6
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 100
+    }
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "char": "D",
+    "color": [255, 0, 0],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 55,
+      "base_defense": 2,
+      "base_power": 12
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 900
+    }
+  },
+  {
+    "id": "ender_dragon",
+    "name": "Ender Dragon",
+    "char": "D",
+    "color": [210, 87, 255],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 35,
+      "base_defense": 0,
+      "base_power": 17
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 900
+    }
+  },
+  {
+    "id": "hydra",
+    "name": "Hydra",
+    "char": "H",
+    "color": [0, 224, 150],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 45,
+      "base_defense": 1,
+      "base_power": 14
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 900
+    }
+  },
+  {
+    "id": "wizard",
+    "name": "Wizard",
+    "char": "W",
+    "color": [255, 0, 255],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 14,
+      "base_defense": 1,
+      "base_power": 9
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 300
+    }
+  },
+  {
+    "id": "crawler",
+    "name": "Crawler",
+    "char": "c",
+    "color": [110, 202, 255],
+    "ai_cls": "HostileEnemy",
+    "equipment": {
+    },
+    "fighter": {
+      "hp": 4,
+      "base_defense": 0,
+      "base_power": 4
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 50
+    }
+  }
+]

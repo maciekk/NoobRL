@@ -31,9 +31,7 @@ def new_game(mixer) -> Engine:
     room_min_size = 6
     max_rooms = 30
 
-    player = copy.deepcopy(entity_factories.player)
-
-    engine = Engine(player=player, mixer=mixer)
+    engine = Engine(mixer=mixer)
 
     engine.game_world = GameWorld(
         engine=engine,
@@ -51,9 +49,10 @@ def new_game(mixer) -> Engine:
     )
     engine.message_log.add_message("Press 's' to view all possible keybinds!")
 
-    dagger = copy.deepcopy(entity_factories.dagger)
-    leather_armor = copy.deepcopy(entity_factories.leather_armor)
+    dagger = engine.item_manager.clone('dagger')
+    leather_armor = engine.item_manager.clone('leather_armor')
 
+    player = engine.player
     dagger.parent = player.inventory
     leather_armor.parent = player.inventory
 
