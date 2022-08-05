@@ -516,17 +516,23 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
 
 class MainGameEventHandler(EventHandler):
+    def __init__(self, engine: Engine):
+        super().__init__(engine)
+        self.turn = 0
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         action: Optional[Action] = None
 
         key = event.sym
         modifier = event.mod
+        do_advance_turn = False
 
         player = self.engine.player
 
         if key == tcod.event.K_PERIOD and modifier & (
             tcod.event.KMOD_LSHIFT | tcod.event.KMOD_RSHIFT
         ):
+            do_advance_turn = True
             return actions.TakeStairsAction(player)
 
         if key in MOVE_KEYS:
@@ -535,19 +541,19 @@ class MainGameEventHandler(EventHandler):
                 action = MovementRepeatedAction(player, dx, dy)
             else:
                 action = BumpAction(player, dx, dy)
+            do_advance_turn = True
         elif key in WAIT_KEYS:
             action = WaitAction(player)
-
+            do_advance_turn = True
         elif key == tcod.event.K_ESCAPE:
             raise SystemExit()
         elif key == tcod.event.K_v:
             return HistoryViewer(self.engine)
         elif key == tcod.event.K_s:
             return ViewKeybinds(self.engine)
-
         elif key == tcod.event.K_g:
             action = PickupAction(player)
-
+            do_advance_turn = True
         elif key == tcod.event.K_i:
             return InventoryActivateHandler(self.engine)
         elif key == tcod.event.K_d:
@@ -556,6 +562,10 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.K_SLASH:
             return LookHandler(self.engine)
+
+        if do_advance_turn:
+            self.turn += 1
+            self.engine.apply_timed_effects()
 
         # No valid key was pressed
         return action

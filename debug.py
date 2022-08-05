@@ -9,10 +9,13 @@ from game_map import GameMap
 from input_handlers import AskUserEventHandler, MainGameEventHandler
 
 def spawn_entity(name, game_map: GameMap, x: int, y: int):
-    if not hasattr(entity_factories, name):
+    entity = game_map.engine.item_manager.clone(name)
+    if entity is None:
+        entity = game_map.engine.monster_manager.clone(name)
+    if entity is None:
         game_map.engine.message_log.add_message(f"Uknonwn object '{name}' requested.")
         return None
-    return entity_factories.__getattribute__(name).spawn(game_map, x, y)
+    return entity.spawn(game_map, x, y)
 
 class DebugHandler(AskUserEventHandler):
     """Debug menu."""

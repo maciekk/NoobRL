@@ -5,6 +5,7 @@ from typing import Optional, TYPE_CHECKING
 import actions
 import color
 import components.ai
+from components.effect import Effect, RageEffect
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
@@ -97,24 +98,15 @@ class RageConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        cooldown = False
-        if not cooldown:
-            consumer.fighter.base_power += self.amount
-            self.engine.message_log.add_message(
-                f"You are filled in with rage! (Damage increased by +1)",
-                color.damage_increased
-            )
-            self.consume()
-
-            if cooldown:
-                cooldown = False
-                self.engine.message_log.add_message(
-                    "You calmed down."
-                )
-                consumer.fighter.base_power /= 1.5
-        else:
-            raise Impossible(f"Woah there, don't want to get too angry do you?")
-
+        eff = RageEffect(dmg_mult=self.amount, duration=10)
+        consumer.effects.append(eff)
+        eff.parent = consumer
+        self.engine.message_log.add_message(
+            f"You are filled in with rage! (Damage increased by +1)",
+            color.damage_increased
+        )
+        eff.activate()
+        self.consume()
 
 class BlinkConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:

@@ -92,3 +92,8 @@ class Engine:
         save_data = lzma.compress(pickle.dumps(self))
         with open(filename, "wb") as f:
             f.write(save_data)
+
+    def apply_timed_effects(self):
+        for entity in set(self.game_map.actors):
+            for eff in entity.effects:
+                eff.apply_turn()

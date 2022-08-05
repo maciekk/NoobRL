@@ -159,6 +159,8 @@ class Actor(Entity):
         self.level = level
         self.level.parent = self
 
+        self.effects = []
+
         self.noticed_player = False
 
     @property
@@ -262,4 +264,8 @@ class MonsterManager:
                 self.monsters[id] = Actor(**item)
 
     def clone(self, name: string) -> Actor:
+        if name is None:
+            return None
+        if name not in self.monsters:
+            return None
         return copy.deepcopy(self.monsters[name])
