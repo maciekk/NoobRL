@@ -48,20 +48,6 @@ def new_game(mixer) -> Engine:
         "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text,
     )
     engine.message_log.add_message("Press 's' to view all possible keybinds!")
-
-    dagger = engine.item_manager.clone('dagger')
-    leather_armor = engine.item_manager.clone('leather_armor')
-
-    player = engine.player
-    dagger.parent = player.inventory
-    leather_armor.parent = player.inventory
-
-    player.inventory.items.append(dagger)
-    player.equipment.toggle_equip(dagger, add_message=False)
-
-    player.inventory.items.append(leather_armor)
-    player.equipment.toggle_equip(leather_armor, add_message=False)
-
     return engine
 
 def load_game(filename: str) -> Engine:

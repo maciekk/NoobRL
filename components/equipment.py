@@ -44,11 +44,19 @@ class Equipment(BaseComponent):
         return self.weapon == item or self.armor == item
 
     def unequip_message(self, item_name: str) -> None:
+        if self.parent is None:
+            return
+        if self.parent.gamemap is None:
+            return
         self.parent.gamemap.engine.message_log.add_message(
             f"You remove the {item_name}."
         )
 
     def equip_message(self, item_name: str) -> None:
+        if self.parent is None:
+            return
+        if self.parent.gamemap is None:
+            return
         self.parent.gamemap.engine.message_log.add_message(
             f"You equip the {item_name}."
         )

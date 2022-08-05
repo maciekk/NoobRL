@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import json
 import math
+import string
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 import components.ai
@@ -47,7 +48,7 @@ class Entity:
     A generic object to represent players, enemies, items, etc.
     """
 
-    parent: Union[GameMap, Inventory]
+    parent: Union[GameMap, Inventory, None]
 
     def __init__(
         self,
@@ -71,9 +72,13 @@ class Entity:
             # If parent isn't provided now then it will be set later.
             self.parent = parent
             parent.entities.add(self)
+        else:
+            self.parent = None
 
     @property
-    def gamemap(self) -> GameMap:
+    def gamemap(self) -> Optional[GameMap]:
+        if self.parent is None:
+            return None
         return self.parent.gamemap
 
     def spawn(self: T, gamemap: GameMap, x: int, y: int) -> T:
@@ -91,7 +96,7 @@ class Entity:
         self.y = y
         if gamemap:
             if hasattr(self, "parent"):  # Possibly uninitialized.
-                if self.parent is self.gamemap:
+                if self.parent is not None and self.parent is self.gamemap:
                     self.gamemap.entities.remove(self)
             self.parent = gamemap
             gamemap.entities.add(self)
@@ -136,14 +141,19 @@ class Actor(Entity):
 
         self.ai: Optional[BaseAI] = ai_cls(self)
 
+        self.inventory = inventory
+        self.inventory.parent = self
+
         self.equipment: Equipment = equipment
         self.equipment.parent = self
 
+        if self.equipment.armor:
+            self.take_and_equip(self.equipment.armor)
+        if self.equipment.weapon:
+            self.take_and_equip(self.equipment.weapon)
+
         self.fighter = fighter
         self.fighter.parent = self
-
-        self.inventory = inventory
-        self.inventory.parent = self
 
         self.level = level
         self.level.parent = self
@@ -154,6 +164,14 @@ class Actor(Entity):
     def is_alive(self) -> bool:
         """Returns True as long as this actor can perform actions."""
         return bool(self.ai)
+
+    def take(self, item: Item) -> None:
+        self.inventory.add(item)
+
+    def take_and_equip(self, item: Item) -> None:
+        self.take(item)
+        self.equipment.toggle_equip(item)
+
 
 
 class Item(Entity):
@@ -207,12 +225,17 @@ class ItemManager:
                     item['equippable'] = equippable_class(**d)
                 self.items[id] = Item(**item)
 
-    def clone(self, name: string) -> Item:
+    def clone(self, name: Optional[string]) -> Optional[Item]:
+        if name is None:
+            return None
+        if name not in self.items:
+            return None
         return copy.deepcopy(self.items[name])
 
 class MonsterManager:
-    def __init__(self, fname: string):
+    def __init__(self, fname: string, item_manager: ItemManager):
         self.monsters = {}
+        self.item_manager = item_manager
         self.load(fname)
 
     def load(self, fname: string):
@@ -223,6 +246,8 @@ class MonsterManager:
                 item['ai_cls'] = AI_MAP[item.pop('ai_cls')]
                 d = item.get('equipment', None)
                 if d is not None:
+                    d['armor'] = self.item_manager.clone(d.get('armor'))
+                    d['weapon'] = self.item_manager.clone(d.get('weapon'))
                     item['equipment'] = components.equipment.Equipment(**d)
                 d = item.get('fighter', None)
                 if d:

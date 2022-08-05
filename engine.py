@@ -27,8 +27,8 @@ class Engine:
         self.message_log = MessageLog(mixer=mixer)
         self.mouse_location = (0, 0)
         self.item_manager = ItemManager("data/items.json")
-        self.monster_manager = MonsterManager("data/monsters.json")
-        self.player = copy.deepcopy(self.monster_manager.monsters['player'])
+        self.monster_manager = MonsterManager("data/monsters.json", self.item_manager)
+        self.player = self.monster_manager.clone('player')
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:

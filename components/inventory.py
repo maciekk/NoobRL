@@ -15,6 +15,13 @@ class Inventory(BaseComponent):
         self.capacity = capacity
         self.items: List[Item] = []
 
+    def add(self, item: Item) -> bool:
+        if len(self.items) >= self.capacity:
+            self.engine.message_log.add_message(f"You have no inventory space left to take {item.name}.")
+            return False
+        self.items.append(item)
+        return True
+
     def drop(self, item: Item) -> None:
         """
         Removes an item from the inventory and restores it to the game map, at the player's current location.
