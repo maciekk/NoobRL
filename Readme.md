@@ -37,7 +37,7 @@ This file is for storing ideas that may be added to the project only.
 ### Magic (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add potion: Clairvoyance - Lets you see the whole map for 1 turn
-- [ ] add scroll: Blink (and/or general Teleport)
+- [ ] add scroll: Teleport (user-controlled target, must be in explored space)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 - [ ] scrolls & potions should initially have generic descriptions (e.g., red potion),
       and player has to figure out item type based on effects.]

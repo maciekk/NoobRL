@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import math
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
@@ -16,8 +17,26 @@ if TYPE_CHECKING:
     from components.level import Level
     from game_map import GameMap
 
+from components import consumable, equippable
+
 T = TypeVar("T", bound="Entity")
 
+CONSUMABLE_MAP = {
+    "ConfusionConsumable": consumable.ConfusionConsumable,
+    "HealingConsumable": consumable.HealingConsumable,
+    "BlinkConsumable": consumable.BlinkConsumable,
+    "FireballDamageConsumable": consumable.FireballDamageConsumable,
+    "LightningDamageConsumable": consumable.LightningDamageConsumable,
+}
+EQUIPPABLE_MAP = {
+    "Dagger": equippable.Dagger,
+    "Sword": equippable.Sword,
+    "LongSword": equippable.LongSword,
+    "Odachi": equippable.Odachi,
+    "LeatherArmor": equippable.LeatherArmor,
+    "ChainMail": equippable.ChainMail,
+    "SteelArmor": equippable.SteelArmor,
+}
 
 class Entity:
     """
@@ -163,3 +182,24 @@ class Item(Entity):
 
         if self.equippable:
             self.equippable.parent = self
+
+class ItemManager:
+    def __init__(self, fname: string):
+        self.items = {}
+        self.load(fname)
+
+    def load(self, fname: string):
+        with open(fname, 'r') as f:
+            data = f.read()
+            for item in json.loads(data):
+                id = item.pop('id')
+                #name = item.pop('name')
+                d = item.get('consumable', None)
+                if d:
+                    consumable_class = CONSUMABLE_MAP[d.pop('name')]
+                    item['consumable'] = consumable_class(**d)
+                d = item.get('equippable', None)
+                if d:
+                    equippable_class = EQUIPPABLE_MAP[d.pop('name')]
+                    item['equippable'] = equippable_class(**d)
+                self.items[id] = Item(**item)

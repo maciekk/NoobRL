@@ -100,6 +100,7 @@ class BlinkConsumable(Consumable):
             dx, dy = random.randint(-max_range, max_range), random.randint(-max_range, max_range)
             x = self.engine.player.x + dx
             y = self.engine.player.y + dy
+            # TODO: check for out of bounds (x,y)
             if (self.engine.game_map.tiles["walkable"][x, y] and
                     self.engine.game_map.get_blocking_entity_at_location(x, y) is None):
                 self.engine.message_log.add_message("You blinked.")

@@ -5,7 +5,6 @@ import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
-import entity
 import exceptions
 
 if TYPE_CHECKING:

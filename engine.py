@@ -8,6 +8,7 @@ from tcod.console import Console
 from tcod.map import compute_fov
 
 import color
+from entity import ItemManager
 import exceptions
 from message_log import MessageLog
 import render_functions
@@ -25,6 +26,7 @@ class Engine:
         self.message_log = MessageLog(mixer=mixer)
         self.mouse_location = (0, 0)
         self.player = player
+        self.item_manager = ItemManager("data/items.json")
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
