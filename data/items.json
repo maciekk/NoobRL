@@ -50,6 +50,16 @@
       "amount": 20
     }
   },
+   {
+    "id": "p_damage",
+    "name": "Damage Potion",
+    "char": "!",
+    "color": [255, 0, 0],
+    "consumable": {
+      "name": "RageConsumable",
+      "amount": 1
+    }
+  },
   {
     "id": "dagger",
     "name": "Dagger",

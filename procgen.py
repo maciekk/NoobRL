@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
-import tcod
+import tcod, string
 
 import entity_factories
 from game_map import GameMap
@@ -28,12 +28,12 @@ max_monsters_by_floor = [
 item_chances: Dict[int, List[Tuple[string, int]]] = {
     0: [('p_heal', 35)],
     2: [('s_confusion', 10)],
-    3: [('s_blink', 15)],
+    3: [('s_blink', 15), ('p_damage', 1)],
     4: [('s_lightning', 25), ('sword', 5)],
-    5: [('sword', 3), ('long_sword', 3), ('odachi', 2)],
+    5: [('sword', 3), ('long_sword', 3), ('odachi', 2), ('p_damage', 3)],
     6: [('s_fireball', 25), ('chain_mail', 15), ('steel_armor', 5)],
     7: [('odachi', 4)],
-    8: [('steel_armor', 10)],
+    8: [('steel_armor', 10), ("p_damage", 6)],
 }
 
 enemy_chances: Dict[int, List[Tuple[string, int]]] = {

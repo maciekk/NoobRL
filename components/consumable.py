@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import random
+import random, time
 from typing import Optional, TYPE_CHECKING
-
 import actions
 import color
 import components.ai
@@ -38,6 +37,7 @@ class Consumable(BaseComponent):
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):
             inventory.items.remove(entity)
+
 
 class ConfusionConsumable(Consumable):
     def __init__(self, number_of_turns: int):
@@ -90,6 +90,32 @@ class HealingConsumable(Consumable):
         else:
             raise Impossible(f"Your health is already full.")
 
+
+class RageConsumable(Consumable):
+    def __init__(self, amount: int):
+        self.amount = amount
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        cooldown = False
+        if not cooldown:
+            consumer.fighter.base_power += self.amount
+            self.engine.message_log.add_message(
+                f"You are filled in with rage! (Damage increased by +1)",
+                color.damage_increased
+            )
+            self.consume()
+
+            if cooldown:
+                cooldown = False
+                self.engine.message_log.add_message(
+                    "You calmed down."
+                )
+                consumer.fighter.base_power /= 1.5
+        else:
+            raise Impossible(f"Woah there, don't want to get too angry do you?")
+
+
 class BlinkConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         max_range = 5  # TODO: parametrize this (JSON, etc)
@@ -108,6 +134,7 @@ class BlinkConsumable(Consumable):
                 self.consume()
                 return
         self.engine.message_log.add_message("Mysterious force prevents you from blinking.")
+
 
 class FireballDamageConsumable(Consumable):
     def __init__(self, damage: int, radius: int):

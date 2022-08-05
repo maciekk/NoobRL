@@ -65,6 +65,9 @@ EFFECTS = [
     ("You blinked.", [
         _read_file("sfx/teleport-36569.wav"),
         _read_file("sfx/PM_FN_Spawns_Portals_Teleports_5.wav"),
+    ]),
+    ("You are filled in with rage!", [
+        _read_file("sfx/mixkit-angry-dragon-roar-echo-1727.wav"),
     ])
 ]
 
