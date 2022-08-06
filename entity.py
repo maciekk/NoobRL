@@ -149,7 +149,7 @@ class Actor(Entity):
         self.inventory = inventory
         self.inventory.parent = self
 
-        self.equipment: Equipment = equipment
+        self.equipment = equipment
         self.equipment.parent = self
 
         if self.equipment.armor:
@@ -173,12 +173,13 @@ class Actor(Entity):
         return bool(self.ai)
 
     def take(self, item: Item) -> None:
-        self.inventory.add(item)
+        if item not in self.inventory.items:
+            self.inventory.add(item)
 
     def take_and_equip(self, item: Item) -> None:
         self.take(item)
-        self.equipment.toggle_equip(item)
-
+        if not self.equipment.item_is_equipped(item):
+            self.equipment.toggle_equip(item)
 
 
 class Item(Entity):
