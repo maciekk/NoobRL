@@ -12,7 +12,6 @@ import tcod.sdl.audio
 
 import color
 from engine import Engine
-import entity_factories
 from game_map import GameWorld
 import input_handlers
 import sounds

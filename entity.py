@@ -7,6 +7,10 @@ import string
 from typing import Optional, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
 import components.ai
+import components.equipment
+import components.fighter
+import components.inventory
+import components.level
 from render_order import RenderOrder
 
 if TYPE_CHECKING:

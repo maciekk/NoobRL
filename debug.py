@@ -3,8 +3,6 @@ from typing import Optional
 import tcod
 
 from engine import Engine
-from entity import Entity
-import entity_factories
 from game_map import GameMap
 from input_handlers import AskUserEventHandler, MainGameEventHandler
 
