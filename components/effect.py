@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from entity import Actor, Item
 
 
-class Effect(BaseComponent):
+class TimedEffect(BaseComponent):
     parent: Actor
 
     def __init__(self):
@@ -28,7 +28,7 @@ class Effect(BaseComponent):
         """Action to perform once effect wears off."""
         pass
 
-class RageEffect(Effect):
+class RageEffect(TimedEffect):
     def __init__(self, dmg_mult: float, duration: int):
         super().__init__()
         self.max_turns = duration

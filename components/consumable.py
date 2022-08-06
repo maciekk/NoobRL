@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-import random, time
+import random
 from typing import Optional, TYPE_CHECKING
 import actions
 import color
 import components.ai
-from components.effect import Effect, RageEffect
+from components.effect import RageEffect
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
@@ -27,7 +27,7 @@ class Consumable(BaseComponent):
         return actions.ItemAction(consumer, self.parent)
 
     def activate(self, action: actions.ItemAction) -> None:
-        """Invoke this items ability.
+        """Invoke this item's ability.
         `action` is the context for this activation.
         """
         raise NotImplementedError()
@@ -107,6 +107,7 @@ class RageConsumable(Consumable):
         )
         eff.activate()
         self.consume()
+
 
 class BlinkConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
