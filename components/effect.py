@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
-    from entity import Actor, Item
+    from entity import Actor
 
 
 class TimedEffect(BaseComponent):
@@ -15,7 +15,7 @@ class TimedEffect(BaseComponent):
         self.max_turns = 0
         self.turns_left = 0
 
-    def activitate(self) -> None:
+    def activate(self) -> None:
         self.turns_left = self.max_turns
 
     def apply_turn(self):
@@ -28,6 +28,7 @@ class TimedEffect(BaseComponent):
         """Action to perform once effect wears off."""
         pass
 
+
 class RageEffect(TimedEffect):
     def __init__(self, dmg_mult: float, duration: int):
         super().__init__()
@@ -35,7 +36,7 @@ class RageEffect(TimedEffect):
         self.dmg_mult = dmg_mult
 
     def activate(self):
-        super().activitate()
+        super().activate()
         self.parent.fighter.base_power *= self.dmg_mult
 
     def expire(self):
