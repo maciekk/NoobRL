@@ -11,9 +11,10 @@ if TYPE_CHECKING:
 class TimedEffect(BaseComponent):
     parent: Actor
 
-    def __init__(self):
+    def __init__(self, engine: Engine):
         self.max_turns = 0
         self.turns_left = 0
+        self.name = "<unknown>"
 
     def activate(self) -> None:
         self.turns_left = self.max_turns
@@ -30,10 +31,11 @@ class TimedEffect(BaseComponent):
 
 
 class RageEffect(TimedEffect):
-    def __init__(self, dmg_mult: float, duration: int):
-        super().__init__()
+    def __init__(self, engine: Engine, dmg_mult: float, duration: int):
+        super().__init__(engine)
         self.max_turns = duration
         self.dmg_mult = dmg_mult
+        self.name = "Rage"
 
     def activate(self):
         super().activate()

@@ -98,7 +98,7 @@ class RageConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        eff = RageEffect(dmg_mult=self.amount, duration=10)
+        eff = RageEffect(engine= self.engine, dmg_mult=self.amount, duration=10)
         consumer.effects.append(eff)
         eff.parent = consumer
         self.engine.message_log.add_message(

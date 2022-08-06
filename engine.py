@@ -29,6 +29,7 @@ class Engine:
         self.item_manager = ItemManager("data/items.json")
         self.monster_manager = MonsterManager("data/monsters.json", self.item_manager)
         self.player = self.monster_manager.clone('player')
+        self.turn = 1
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
@@ -73,16 +74,19 @@ class Engine:
             x=0, y=46,
             total_width=20,
         )
-
         render_functions.render_dungeon_level(
             console=console,
             dungeon_level=self.game_world.current_floor,
-            location=(0, 47),
+            location=(1, 47),
         )
-
         render_functions.render_names_at_mouse_location(
             console=console, x=21, y=44, engine=self
         )
+        y = 48
+        console.print(x=1, y=y, string=f"Turn: {self.turn}")
+        s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
+        console.print(x=1, y=y+1, string=s)
+
 
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""
@@ -97,3 +101,9 @@ class Engine:
         for entity in set(self.game_map.actors):
             for eff in entity.effects:
                 eff.apply_turn()
+
+    def end_turn(self):
+        self.apply_timed_effects()
+        self.handle_enemy_turns()
+        self.update_fov()
+        self.turn += 1
