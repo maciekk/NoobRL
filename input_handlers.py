@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import time
 
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
@@ -10,9 +11,9 @@ import actions
 from actions import (
     Action,
     BumpAction,
-    MovementAction,
     MovementRepeatedAction,
     PickupAction,
+    TargetMovementAction,
     WaitAction,
 )
 import color
@@ -63,6 +64,8 @@ CONFIRM_KEYS = {
     tcod.event.K_RETURN,
     tcod.event.K_KP_ENTER,
 }
+
+MIN_FRAME_INTERVAL = 0.01
 
 ActionOrHandler = Union[Action, "BaseEventHandler"]
 """An event handler return value which can trigger an action or switch active handlers.
@@ -149,8 +152,10 @@ class EventHandler(BaseEventHandler):
                 return False  # Skip enemy turn on exceptions.
 
             self.engine.end_turn()
-            if should_repeat is None:
+            if not should_repeat:
                 break
+
+            time.sleep(MIN_FRAME_INTERVAL)
 
         return True
 
@@ -464,6 +469,11 @@ class LookHandler(SelectIndexHandler):
         """Return to main handler."""
         return MainGameEventHandler(self.engine)
 
+class WalkChoiceHandler(SelectIndexHandler):
+    def on_index_selected(self, x: int, y: int):
+        return TargetMovementAction(self.engine.player, x, y)
+
+
 class SingleRangedAttackHandler(SelectIndexHandler):
     """Handles targeting a single enemy. Only the enemy selected will be affected."""
 
@@ -553,7 +563,8 @@ class MainGameEventHandler(EventHandler):
             return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.K_SLASH:
             return LookHandler(self.engine)
-
+        elif key == tcod.event.K_w:
+            return WalkChoiceHandler(self.engine)
         # No valid key was pressed
         return action
 
