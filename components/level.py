@@ -3,10 +3,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from components.base_component import BaseComponent
-import random
 if TYPE_CHECKING:
     from entity import Actor
 
+import dice
+
+HP_LEVEL_UP_DICE="5d2"
 
 class Level(BaseComponent):
     parent: Actor
@@ -54,7 +56,8 @@ class Level(BaseComponent):
         # Also heal on level up.
         self.parent.fighter.hp = self.parent.fighter.max_hp
 
-    def increase_max_hp(self, amount: int = random.randint(5, 10)) -> None:
+    def increase_max_hp(self) -> None:
+        amount = dice.roll(HP_LEVEL_UP_DICE)
         self.parent.fighter.max_hp += amount
         self.parent.fighter.hp += amount
 
