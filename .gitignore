@@ -1,2 +1,5 @@
 # Saved games
 *.sav
+*.un~
+tags
+__pycache__
