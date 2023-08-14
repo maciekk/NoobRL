@@ -24,11 +24,11 @@ def main() -> None:
 
     tileset, scale_factor, player_char = tilesets.load_sheet("Bedstead")
 
-    handler= setup_game.MainMenu()
+    handler = setup_game.MainMenu()
 
-    with tcod.context.new_terminal(
-        round(screen_width * scale_factor),
-        round(screen_height * scale_factor),
+    with tcod.context.new(
+        columns=round(screen_width * scale_factor),
+        rows=round(screen_height * scale_factor),
         tileset=tileset,
         title="Yet Another Roguelike Tutorial",
         vsync=True,
