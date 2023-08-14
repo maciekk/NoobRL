@@ -24,7 +24,7 @@ def main() -> None:
 
     tileset, scale_factor, player_char = tilesets.load_sheet("Bedstead")
 
-    handler: input_handlers.BaseEventHandler = setup_game.MainMenu()
+    handler= setup_game.MainMenu()
 
     with tcod.context.new_terminal(
         round(screen_width * scale_factor),
@@ -33,7 +33,8 @@ def main() -> None:
         title="Yet Another Roguelike Tutorial",
         vsync=True,
     ) as context:
-        root_console = tcod.Console(screen_width, screen_height, order="F")
+        # order="F" means [x, y] access to NumPy arrays (vs [y, x])
+        root_console = tcod.console.Console(screen_width, screen_height, order="F")
         try:
             while True:
                 root_console.clear()

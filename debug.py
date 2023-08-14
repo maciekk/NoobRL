@@ -21,7 +21,7 @@ class DebugHandler(AskUserEventHandler):
         super().__init__(engine)
         self.buffer = ""
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
         if self.engine.player.x <= 30:
