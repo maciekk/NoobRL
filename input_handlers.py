@@ -6,6 +6,7 @@ import time
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
 import tcod
+from tcod import libtcodpy
 
 import actions
 from actions import (
@@ -67,6 +68,11 @@ CONFIRM_KEYS = {
 
 MIN_FRAME_INTERVAL = 0.01
 
+# TODO: theoretically newer notation is preferred:
+#        Action | "BaseEventHandler"
+# See:
+#   https://docs.python.org/3/library/stdtypes.html#union-type
+
 ActionOrHandler = Union[Action, "BaseEventHandler"]
 """An event handler return value which can trigger an action or switch active handlers.
 
@@ -101,8 +107,8 @@ class PopupMessage(BaseEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         """Render the parent and dim the result, then print the message on top."""
         self.parent.on_render(console)
-        console.tiles_rgb["fg"] //= 8
-        console.tiles_rgb["bg"] //= 8
+        console.rgb["fg"] //= 8
+        console.rgb["bg"] //= 8
 
         console.print(
             console.width // 2,
@@ -110,7 +116,7 @@ class PopupMessage(BaseEventHandler):
             self.text,
             fg=color.white,
             bg=color.black,
-            alignment=tcod.CENTER,
+            alignment=libtcodpy.CENTER,
         )
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:

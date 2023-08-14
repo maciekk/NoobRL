@@ -16,10 +16,11 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
         print("Game saved.")
 
 def main() -> None:
-    screen_width = 80
-    screen_height = 50
+    n_cols = 80
+    n_rows = 50
 
     # Set to '2' (for small tileset on high-res monitors).
+    # TODO: fix; no longer scales
     scale_factor = 1
 
     tileset, scale_factor, player_char = tilesets.load_sheet("Bedstead")
@@ -27,14 +28,14 @@ def main() -> None:
     handler = setup_game.MainMenu()
 
     with tcod.context.new(
-        columns=round(screen_width * scale_factor),
-        rows=round(screen_height * scale_factor),
+        columns=round(n_cols * scale_factor),
+        rows=round(n_rows * scale_factor),
         tileset=tileset,
-        title="Yet Another Roguelike Tutorial",
+        title="NoobRL",
         vsync=True,
     ) as context:
         # order="F" means [x, y] access to NumPy arrays (vs [y, x])
-        root_console = tcod.console.Console(screen_width, screen_height, order="F")
+        root_console = tcod.console.Console(n_cols, n_rows, order="F")
         try:
             while True:
                 root_console.clear()
@@ -43,6 +44,8 @@ def main() -> None:
 
                 try:
                     for event in tcod.event.wait():
+                        # Populates TILE-based coords into the event, based on
+                        # extant PIXEL-based ones.
                         context.convert_event(event)
                         handler = handler.handle_events(event)
                 except Exception:  # Handle exceptions in game.
