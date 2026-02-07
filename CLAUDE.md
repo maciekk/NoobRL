@@ -9,7 +9,7 @@ NoobRL is a traditional turn-based roguelike dungeon crawler written in Python 3
 ## Running
 
 ```bash
-python3 main.py
+SDL_VIDEODRIVER=x11 python main.py
 ```
 
 Dependencies: `tcod`, `numpy`, `soundfile`. No requirements.txt exists; install manually via pip.
