@@ -26,7 +26,8 @@ def _open_mixer():
     """Try to open an audio mixer, returning None if no audio device is available."""
     try:
         return tcod.sdl.audio.BasicMixer(tcod.sdl.audio.get_default_playback().open(channels=2))
-    except RuntimeError:
+    except RuntimeError as e:
+        print(f"Warning: Could not open audio device: {e}. Running without sound.")
         return None
 
 
