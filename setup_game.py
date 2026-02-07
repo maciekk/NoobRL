@@ -57,14 +57,14 @@ def load_game(filename: str) -> Engine:
     assert isinstance(engine, Engine)
 
     # Initialize mixer.
-    engine.message_log.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open(channels=2))
+    engine.message_log.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.get_default_playback().open(channels=2))
 
     return engine
 
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
     def __init__(self):
-        self.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.open(channels=2))
+        self.mixer = tcod.sdl.audio.BasicMixer(tcod.sdl.audio.get_default_playback().open(channels=2))
         self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav", self.mixer)
 
     def on_render(self, console: tcod.Console) -> None:
