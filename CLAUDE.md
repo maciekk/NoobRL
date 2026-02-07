@@ -12,7 +12,7 @@ NoobRL is a traditional turn-based roguelike dungeon crawler written in Python 3
 SDL_VIDEODRIVER=x11 python main.py
 ```
 
-Dependencies: `tcod`, `numpy`, `soundfile`. No requirements.txt exists; install manually via pip.
+Dependencies: `tcod`, `numpy`, `pygame`. No requirements.txt exists; install manually via pip.
 
 There is no test suite, linter configuration, or formal build system. The Makefile only generates ctags (`make ctags`).
 
@@ -40,7 +40,7 @@ There is no test suite, linter configuration, or formal build system. The Makefi
 
 **Rendering**: `render_functions.py` + `game_map.py`. UI layout: game map fills most of the 80x50 console, stats bar (HP/XP/dungeon level/turn/effects) at bottom-left, message log at bottom-right.
 
-**Other modules**: `color.py` (color constants), `tile_types.py` (NumPy structured arrays for tiles), `sounds.py` (tcod audio mixer), `dice.py` (D&D dice notation parser, e.g. "5d2"), `tilesets.py`, `debug.py` (debug console handler).
+**Other modules**: `color.py` (color constants), `tile_types.py` (NumPy structured arrays for tiles), `sounds.py` (pygame.mixer audio), `dice.py` (D&D dice notation parser, e.g. "5d2"), `tilesets.py`, `debug.py` (debug console handler).
 
 ## Key Patterns
 
@@ -48,4 +48,4 @@ There is no test suite, linter configuration, or formal build system. The Makefi
 - **Entity spawning**: Templates loaded from JSON, cloned via `deepcopy`, placed on map with `entity.spawn()`.
 - **Handler state machine**: Game transitions (gameplay → inventory → targeting → back) are modeled by returning new handler instances from event methods.
 - **FOV/exploration**: `GameMap.visible` (current FOV) and `GameMap.explored` (persistent) are NumPy boolean arrays updated via `tcod.map.compute_fov`.
-- **Pickle-based saves**: Entire `Engine` is serialized. Non-picklable state (audio mixer) is restored on load.
+- **Pickle-based saves**: Entire `Engine` is serialized. Audio uses global `pygame.mixer`, not stored in Engine.

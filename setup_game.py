@@ -8,7 +8,7 @@ import traceback
 from typing import Optional
 
 import tcod
-import tcod.sdl.audio
+import pygame.mixer
 from tcod import libtcodpy
 
 import color
@@ -22,16 +22,16 @@ import sounds
 background_image = tcod.image.load("menu_background.png")[:, :, :3]
 
 
-def _open_mixer():
-    """Try to open an audio mixer, returning None if no audio device is available."""
+def _init_audio():
+    """Try to initialize pygame.mixer and load sound effects."""
     try:
-        return tcod.sdl.audio.BasicMixer(tcod.sdl.audio.get_default_playback().open(channels=2))
-    except RuntimeError as e:
+        pygame.mixer.init()
+        sounds.init()
+    except pygame.error as e:
         print(f"Warning: Could not open audio device: {e}. Running without sound.")
-        return None
 
 
-def new_game(mixer) -> Engine:
+def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
     map_width = 80
     map_height = 43
@@ -40,7 +40,7 @@ def new_game(mixer) -> Engine:
     room_min_size = 6
     max_rooms = 30
 
-    engine = Engine(mixer=mixer)
+    engine = Engine()
 
     engine.game_world = GameWorld(
         engine=engine,
@@ -64,17 +64,13 @@ def load_game(filename: str) -> Engine:
     with open(filename, "rb") as f:
         engine = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(engine, Engine)
-
-    # Initialize mixer.
-    engine.message_log.mixer = _open_mixer()
-
     return engine
 
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
     def __init__(self):
-        self.mixer = _open_mixer()
-        self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav", self.mixer) if self.mixer else None
+        _init_audio()
+        self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav")
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the main menu on a background image."""
@@ -127,6 +123,6 @@ class MainMenu(input_handlers.BaseEventHandler):
         elif event.sym == tcod.event.KeySym.n:
             if self.channel:
                 self.channel.stop()
-            return input_handlers.MainGameEventHandler(new_game(self.mixer))
+            return input_handlers.MainGameEventHandler(new_game())
 
         return None
