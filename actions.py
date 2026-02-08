@@ -236,6 +236,57 @@ class MovementRepeatedAction(MovementAction):
         except exceptions.Impossible:
             return None
 
+class CarefulMovementAction(MovementAction):
+    """Repeated movement that stops at intersections and side passages."""
+
+    def _walkable(self, x, y):
+        gm = self.engine.game_map
+        return gm.in_bounds(x, y) and gm.tiles["walkable"][x, y]
+
+    def perform(self):
+        if self.engine.game_map.any_monsters_visible():
+            return None
+
+        px, py = self.entity.x, self.entity.y
+        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+
+        # If already in an open room, just run until wall/monster.
+        current_neighbors = sum(1 for d in cardinal if self._walkable(px + d[0], py + d[1]))
+        if current_neighbors >= 3:
+            try:
+                super().perform()
+                return True
+            except exceptions.Impossible:
+                return None
+
+        dest_x, dest_y = self.dest_xy
+
+        # Stop before entering an intersection or open room.
+        dest_neighbors = sum(1 for d in cardinal if self._walkable(dest_x + d[0], dest_y + d[1]))
+        if dest_neighbors >= 3:
+            return None
+
+        # Stop before passing a new side passage.
+        if self.dx != 0 and self.dy != 0:
+            perp_dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        elif self.dx != 0:
+            perp_dirs = [(0, 1), (0, -1)]
+        else:
+            perp_dirs = [(1, 0), (-1, 0)]
+
+        before = {d for d in perp_dirs if self._walkable(px + d[0], py + d[1])}
+        after = {d for d in perp_dirs if self._walkable(dest_x + d[0], dest_y + d[1])}
+        if after - before:
+            return None
+
+        try:
+            super().perform()
+        except exceptions.Impossible:
+            return None
+
+        return True
+
+
 class TargetMovementAction(Action):
     def __init__(self, entity: Actor, x: int, y: int):
         super().__init__(entity)

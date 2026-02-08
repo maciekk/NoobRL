@@ -12,6 +12,7 @@ import actions
 from actions import (
     Action,
     BumpAction,
+    CarefulMovementAction,
     MovementRepeatedAction,
     PickupAction,
     TargetMovementAction,
@@ -547,7 +548,9 @@ class MainGameEventHandler(EventHandler):
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
-            if modifier & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL):
+            if modifier & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+                action = CarefulMovementAction(player, dx, dy)
+            elif modifier & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL):
                 action = MovementRepeatedAction(player, dx, dy)
             else:
                 action = BumpAction(player, dx, dy)
