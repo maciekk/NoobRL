@@ -134,10 +134,16 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
 
 
     for entity in monsters + items:
+        if entity is None:
+            print(f"WARNING: None entity in spawn list (floor {floor_number}, room at {room.x1},{room.y1})")
+            continue
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
+            if entity is None:
+                print(f"WARNING: None entity in dungeon (floor {floor_number}, room at {room.x1},{room.y1})")
+                continue
             entity.spawn(dungeon, x, y)
 
 
