@@ -164,6 +164,16 @@ class FireballDamageConsumable(Consumable):
         self.consume()
 
 
+class ClairvoyanceConsumable(Consumable):
+    def activate(self, action: actions.ItemAction) -> None:
+        self.engine.game_map.explored[:] = True
+        self.engine.message_log.add_message(
+            "The dungeon layout is revealed to you!",
+            color.status_effect_applied,
+        )
+        self.consume()
+
+
 class LightningDamageConsumable(Consumable):
     def __init__(self, damage: int, maximum_range: int):
         self.damage = damage

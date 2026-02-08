@@ -168,7 +168,7 @@ class EventHandler(BaseEventHandler):
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
         if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
-            self.engine.mouse_location = event.tile.x, event.tile.y
+            self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()
