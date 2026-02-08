@@ -57,6 +57,9 @@ _EFFECT_DEFS = [
     ]),
     ("You are filled in with rage!", [
         "sfx/mixkit-angry-dragon-roar-echo-1727.wav",
+    ]),
+    ("but does no damage.", [
+        "sfx/whoosh.wav",
     ])
 ]
 
