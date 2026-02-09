@@ -4,7 +4,7 @@ from typing import Tuple, TYPE_CHECKING
 
 import color
 import tile_types
-from entity import Actor
+from entity import Actor, Item
 
 if TYPE_CHECKING:
     from tcod import Console
@@ -17,6 +17,8 @@ def entity_brief(entity) -> str:
     s = f"{entity.name}"
     if isinstance(entity, Actor):
         s += f"[{entity.fighter.hp}/{entity.fighter.max_hp}]"
+    elif isinstance(entity, Item) and entity.stackable and entity.stack_count > 1:
+        s += f" (x{entity.stack_count})"
     return s
 
 def get_tile_name(x: int, y: int, game_map: GameMap) -> str:

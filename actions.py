@@ -53,14 +53,18 @@ class PickupAction(Action):
 
         for item in self.engine.game_map.items:
             if actor_location_x == item.x and actor_location_y == item.y:
-                if len(inventory.items) >= inventory.capacity:
+                # Stackable items can merge into an existing stack even when full.
+                can_stack = item.stackable and inventory.find_stack(item.name) is not None
+                if not can_stack and len(inventory.items) >= inventory.capacity:
                     raise exceptions.Impossible("Your inventory is full.")
 
+                pickup_count = item.stack_count
                 self.engine.game_map.entities.remove(item)
                 item.parent = self.entity.inventory
-                inventory.items.append(item)
+                inventory.add(item)
 
-                self.engine.message_log.add_message(f"You picked up the {item.name}!")
+                count_text = f" (x{pickup_count})" if item.stackable and pickup_count > 1 else ""
+                self.engine.message_log.add_message(f"You picked up the {item.name}{count_text}!")
                 return
 
         raise exceptions.Impossible("There is nothing here to pick up.")
@@ -87,11 +91,17 @@ class ItemAction(Action):
             self.item.consumable.activate(self)
 
 class DropItem(ItemAction):
+    def __init__(
+        self, entity: Actor, item: Item, target_xy: Optional[Tuple[int, int]] = None, count: int = 0
+    ):
+        super().__init__(entity, item, target_xy)
+        self.count = count
+
     def perform(self) -> None:
         if self.entity.equipment.item_is_equipped(self.item):
             self.entity.equipment.toggle_equip(self.item)
 
-        self.entity.inventory.drop(self.item)
+        self.entity.inventory.drop(self.item, self.count)
 
 class EquipAction(Action):
     def __init__(self, entity: Actor, item: Item):

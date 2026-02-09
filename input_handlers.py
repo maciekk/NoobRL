@@ -364,6 +364,9 @@ class InventoryEventHandler(AskUserEventHandler):
                 is_equipped = self.engine.player.equipment.item_is_equipped(item)
                 item_string = f"({item_key}) {item.name}"
 
+                if item.stackable and item.stack_count > 1:
+                    item_string = f"{item_string} (x{item.stack_count})"
+
                 if is_equipped:
                     item_string = f"{item_string} (E)"
 
@@ -410,8 +413,68 @@ class InventoryDropHandler(InventoryEventHandler):
     TITLE = "Select an item to drop"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        """Drop this item."""
+        """Drop this item, or ask how many for stacks."""
+        if item.stackable and item.stack_count > 1:
+            return DropQuantityHandler(self.engine, item)
         return actions.DropItem(self.engine.player, item)
+
+
+class DropQuantityHandler(AskUserEventHandler):
+    """Ask how many items to drop from a stack."""
+
+    def __init__(self, engine: Engine, item: Item):
+        super().__init__(engine)
+        self.item = item
+        self.text = ""
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        prompt = f"Drop how many {self.item.name}? (1-{self.item.stack_count})"
+        max_digits = len(str(self.item.stack_count))
+        # frame border (2) + prompt + space + max digits + cursor + padding
+        width = len(prompt) + max_digits + 4
+
+        console.draw_frame(
+            x=x, y=0, width=width, height=3,
+            title="Drop", clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+        console.print(x + 1, 1, f"{prompt} {self.text}_")
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return MainGameEventHandler(self.engine)
+        if key in CONFIRM_KEYS:
+            try:
+                count = int(self.text)
+            except ValueError:
+                self.engine.message_log.add_message("Enter a number.", color.invalid)
+                return None
+            if count < 1 or count > self.item.stack_count:
+                self.engine.message_log.add_message(
+                    f"Enter a number between 1 and {self.item.stack_count}.", color.invalid
+                )
+                return None
+            return actions.DropItem(self.engine.player, self.item, count=count)
+        if key == tcod.event.KeySym.BACKSPACE:
+            self.text = self.text[:-1]
+            return None
+        # Handle digit keys directly (0-9 have ASCII values 48-57).
+        try:
+            c = chr(key)
+            if c.isdigit():
+                self.text += c
+                return None
+        except (ValueError, OverflowError):
+            pass
+        return None
 
 
 class SelectIndexHandler(AskUserEventHandler):

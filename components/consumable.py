@@ -33,11 +33,13 @@ class Consumable(BaseComponent):
         raise NotImplementedError()
 
     def consume(self) -> None:
-        """Remove the consumed item from its containing inventory."""
+        """Decrement stack count; remove when it reaches 0."""
         entity = self.parent
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):
-            inventory.items.remove(entity)
+            entity.stack_count -= 1
+            if entity.stack_count <= 0:
+                inventory.items.remove(entity)
 
 
 class ConfusionConsumable(Consumable):

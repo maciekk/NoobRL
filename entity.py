@@ -227,6 +227,7 @@ class Item(Entity):
         name: str = "<Unnamed>",
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
+        stack_count: int = 1,
     ):
         super().__init__(
             x=x,
@@ -246,6 +247,12 @@ class Item(Entity):
 
         if self.equippable:
             self.equippable.parent = self
+
+        self.stack_count = stack_count
+
+    @property
+    def stackable(self) -> bool:
+        return self.consumable is not None and self.equippable is None
 
 class ItemManager:
     def __init__(self, fname: string):
