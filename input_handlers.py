@@ -542,8 +542,7 @@ class MainGameEventHandler(EventHandler):
         player = self.engine.player
 
         if key == tcod.event.KeySym.PERIOD and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
-        ):
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
             return actions.TakeStairsAction(player)
 
         if key in MOVE_KEYS:
@@ -558,9 +557,10 @@ class MainGameEventHandler(EventHandler):
             action = WaitAction(player)
         elif key == tcod.event.KeySym.ESCAPE:
             raise SystemExit()
-        elif key == tcod.event.KeySym.v:
+        elif key == tcod.event.KeySym.SEMICOLON:
             return HistoryViewer(self.engine)
-        elif key == tcod.event.KeySym.s:
+        elif key == tcod.event.KeySym.SLASH and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
             return ViewKeybinds(self.engine)
         elif key == tcod.event.KeySym.g:
             action = PickupAction(player)
@@ -570,7 +570,7 @@ class MainGameEventHandler(EventHandler):
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
             return CharacterScreenEventHandler(self.engine)
-        elif key == tcod.event.KeySym.SLASH:
+        elif key == tcod.event.KeySym.v:
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.w:
             return WalkChoiceHandler(self.engine)
@@ -665,14 +665,15 @@ class ViewKeybinds(AskUserEventHandler):
     """Print the history on a larger window which can be navigated."""
     TITLE = "KEYBOARD SHORTCUTS"
     TEXT = [
-        "v: View History",
-        "s: view keybinds",
-        "g: Pick up item on the ground",
-        "i: view and use inventory items",
-        "d: drop items in inventory",
-        "c: view character stats",
-        "SHIFT + period: Enter next dungeon",
-        "Press V to view!",
+        ";: log",
+        "?: keybinds",
+        "g: get item",
+        "i: inventory",
+        "d: drop",
+        "c: character stats",
+        ">: descend",
+        "v: examine dungeon",
+        "w: walk",
     ]
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
