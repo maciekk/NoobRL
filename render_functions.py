@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Tuple, TYPE_CHECKING
 
 import color
+import tile_types
 from entity import Actor
 
 if TYPE_CHECKING:
@@ -18,15 +19,33 @@ def entity_brief(entity) -> str:
         s += f"[{entity.fighter.hp}/{entity.fighter.max_hp}]"
     return s
 
+def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
+    tile = game_map.tiles[x, y]
+    if tile == tile_types.down_stairs:
+        return "stairs down"
+    elif tile == tile_types.wall:
+        return "wall"
+    elif tile == tile_types.floor:
+        return "floor"
+    return ""
+
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
 
-    names = ", ".join(
+    parts = []
+
+    entity_names = ", ".join(
         entity_brief(entity) for entity in game_map.entities if entity.x == x and entity.y == y
     )
+    if entity_names:
+        parts.append(entity_names)
 
-    return names.capitalize()
+    tile_name = get_tile_name(x, y, game_map)
+    if tile_name:
+        parts.append(f"({tile_name})")
+
+    return " ".join(parts).capitalize()
 
 
 def render_bar(
