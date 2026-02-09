@@ -257,6 +257,12 @@ class CarefulMovementAction(MovementAction):
         gm = self.engine.game_map
         return gm.in_bounds(x, y) and gm.tiles["walkable"][x, y]
 
+    def _on_interesting_tile(self) -> bool:
+        """True if the entity is standing on a notable dungeon feature."""
+        import tile_types
+        tile = self.engine.game_map.tiles[self.entity.x, self.entity.y]
+        return any(tile == t for t in tile_types.interesting_tiles)
+
     def perform(self):
         if self.engine.game_map.any_monsters_visible():
             return None
@@ -269,6 +275,8 @@ class CarefulMovementAction(MovementAction):
         if current_neighbors >= 3:
             try:
                 super().perform()
+                if self._on_interesting_tile():
+                    return None
                 return True
             except exceptions.Impossible:
                 return None
@@ -282,6 +290,8 @@ class CarefulMovementAction(MovementAction):
                 try:
                     super().perform()
                     self._has_moved = True
+                    if self._on_interesting_tile():
+                        return None
                     return True
                 except exceptions.Impossible:
                     return None
@@ -308,6 +318,8 @@ class CarefulMovementAction(MovementAction):
         except exceptions.Impossible:
             return None
 
+        if self._on_interesting_tile():
+            return None
         return True
 
 
