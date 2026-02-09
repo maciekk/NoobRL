@@ -11,7 +11,6 @@ This file is for storing ideas that may be added to the project only.
 ### IMPORTANT / FIXES / WIP
 - [ ] fix "view" command... shift-V doesn't work
 - [ ] maybe later add max stack size for consumables
-- [ ] fix Shift-motion, such that player DOES enter open room
 - [ ] maybe: ensure only one item spawned on dungeon ground (avoid hiding items)? design choice
 - [ ] review clairvoyance... only want room outlines, and fix stairs shown in upper left?
 - [ ] add debug ability to spawn named item (e.g., "potion of clairvoyance")
@@ -85,4 +84,5 @@ This file is for storing ideas that may be added to the project only.
 - [x] Higher crit chance for dragon enemy or overall powerful mobs
 - [x] help button that tells all the keybinds
 - [x] stack items (e.g., all potions of healing should take one inventory slot)
+- [x] fix Shift-motion, such that player DOES enter open room
 

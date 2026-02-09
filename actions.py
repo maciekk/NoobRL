@@ -249,6 +249,10 @@ class MovementRepeatedAction(MovementAction):
 class CarefulMovementAction(MovementAction):
     """Repeated movement that stops at intersections and side passages."""
 
+    def __init__(self, entity: Actor, dx: int, dy: int):
+        super().__init__(entity, dx, dy)
+        self._has_moved = False
+
     def _walkable(self, x, y):
         gm = self.engine.game_map
         return gm.in_bounds(x, y) and gm.tiles["walkable"][x, y]
@@ -271,10 +275,19 @@ class CarefulMovementAction(MovementAction):
 
         dest_x, dest_y = self.dest_xy
 
-        # Stop before entering an intersection or open room.
         dest_neighbors = sum(1 for d in cardinal if self._walkable(dest_x + d[0], dest_y + d[1]))
         if dest_neighbors >= 3:
-            return None
+            if not self._has_moved:
+                # First step from corridor into room: enter and keep running.
+                try:
+                    super().perform()
+                    self._has_moved = True
+                    return True
+                except exceptions.Impossible:
+                    return None
+            else:
+                # Was running through corridor; stop at boundary.
+                return None
 
         # Stop before passing a new side passage.
         if self.dx != 0 and self.dy != 0:
@@ -291,6 +304,7 @@ class CarefulMovementAction(MovementAction):
 
         try:
             super().perform()
+            self._has_moved = True
         except exceptions.Impossible:
             return None
 
