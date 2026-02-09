@@ -56,7 +56,7 @@ def new_game() -> Engine:
     engine.message_log.add_message(
         "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text,
     )
-    engine.message_log.add_message("Press 's' to view all possible keybinds!")
+    engine.message_log.add_message("Press '?' to view all possible keybinds!")
     return engine
 
 def load_game(filename: str) -> Engine:
