@@ -25,6 +25,8 @@ def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
     tile = game_map.tiles[x, y]
     if tile == tile_types.down_stairs:
         return "stairs down"
+    elif tile == tile_types.up_stairs:
+        return "stairs up"
     elif tile == tile_types.wall:
         return "wall"
     elif tile == tile_types.floor:

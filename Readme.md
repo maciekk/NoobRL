@@ -31,7 +31,6 @@ This file is for storing ideas that may be added to the project only.
 ### Map gen
 - [ ] Improved map generation
 - [ ] scrollable map (i.e., map larger than rendered window)
-- [ ] have upwards stairwells, but then regen levels (like in Angband)
 
 ### Weapons/armor
 - [ ] variable damage on weapons (e.g., 1d10)
@@ -71,7 +70,6 @@ This file is for storing ideas that may be added to the project only.
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
-- [ ] add ability to go back in levels (e.g., when left stash upstairs)
 
 ### DONE
 - [x] add potion: Clairvoyance
@@ -85,4 +83,5 @@ This file is for storing ideas that may be added to the project only.
 - [x] help button that tells all the keybinds
 - [x] stack items (e.g., all potions of healing should take one inventory slot)
 - [x] fix Shift-motion, such that player DOES enter open room
+- [x] have upwards stairwells, but then regen levels (like in Angband)
 

@@ -29,6 +29,7 @@ class GameMap:
             (width, height), fill_value=False, order="F"
         )  # Tiles the player has seen before
         self.downstairs_location = (0, 0)
+        self.upstairs_location = (0, 0)
 
     @property
     def gamemap(self) -> GameMap:
@@ -130,10 +131,10 @@ class GameWorld:
 
         self.current_floor = current_floor
 
-    def generate_floor(self) -> None:
+    def generate_floor(self, direction: int = 1) -> None:
         from procgen import generate_dungeon
 
-        self.current_floor += 1
+        self.current_floor += direction
 
         self.engine.game_map = generate_dungeon(
             max_rooms=self.max_rooms,
@@ -142,4 +143,5 @@ class GameWorld:
             map_width=self.map_width,
             map_height=self.map_height,
             engine=self.engine,
+            ascending=direction < 0,
         )

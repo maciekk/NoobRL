@@ -54,6 +54,12 @@ down_stairs = new_tile(
     dark=(ord(">"), (64, 64, 64), (0, 0, 0)),
     light=(ord(">"), (255, 255, 0), (32, 32, 0)),
 )
+up_stairs = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord("<"), (64, 64, 64), (0, 0, 0)),
+    light=(ord("<"), (255, 255, 0), (32, 32, 0)),
+)
 
 # Tiles that should cause careful movement to stop when stepped on.
-interesting_tiles = [down_stairs]
+interesting_tiles = [down_stairs, up_stairs]

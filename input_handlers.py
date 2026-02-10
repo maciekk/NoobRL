@@ -608,6 +608,10 @@ class MainGameEventHandler(EventHandler):
             tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
             return actions.TakeStairsAction(player)
 
+        if key == tcod.event.KeySym.COMMA and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+            return actions.TakeUpStairsAction(player)
+
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
             if modifier & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
@@ -735,6 +739,7 @@ class ViewKeybinds(AskUserEventHandler):
         "d: drop",
         "c: character stats",
         ">: descend",
+        "<: ascend",
         "v: examine dungeon",
         "w: walk",
     ]

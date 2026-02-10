@@ -130,6 +130,18 @@ class TakeStairsAction(Action):
         else:
             raise exceptions.Impossible("There are no stairs here.")
 
+class TakeUpStairsAction(Action):
+    def perform(self) -> None:
+        if (self.entity.x, self.entity.y) == self.engine.game_map.upstairs_location:
+            if self.engine.game_world.current_floor <= 1:
+                raise exceptions.Impossible("You cannot go further up.")
+            self.engine.game_world.generate_floor(direction=-1)
+            self.engine.message_log.add_message(
+                "You ascend the staircase.", color.ascend
+            )
+        else:
+            raise exceptions.Impossible("There are no stairs here.")
+
 class ActionWithDirection(Action):
     def __init__(self, entity: Actor, dx: int, dy: int):
         super().__init__(entity)

@@ -174,6 +174,7 @@ def generate_dungeon(
     map_width: int,
     map_height: int,
     engine: Engine,
+    ascending: bool = False,
 ) -> GameMap:
     """Generate a new dungeon map."""
     player = engine.player
@@ -182,6 +183,7 @@ def generate_dungeon(
     rooms: List[RectangularRoom] = []
 
     center_of_last_room = (0, 0)
+    center_of_first_room = (0, 0)
 
     for r in range(max_rooms):
         room_width = random.randint(room_min_size, room_max_size)
@@ -204,6 +206,7 @@ def generate_dungeon(
         if len(rooms) == 0:
             # The first room, where the player starts.
             player.place(*new_room.center, dungeon)
+            center_of_first_room = new_room.center
         else:  # All rooms after the first.
             # Dig out a tunnel between this room and the previous one.
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
@@ -212,10 +215,23 @@ def generate_dungeon(
 
         place_entities(new_room, dungeon, engine.game_world.current_floor)
 
-        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
-        dungeon.downstairs_location = center_of_last_room
-
         # Finally, append the new room to the list.
         rooms.append(new_room)
+
+    # Place staircases after all rooms and tunnels are dug.
+    if ascending:
+        # Came from below: downstairs at spawn only, upstairs at far end.
+        dungeon.tiles[center_of_first_room] = tile_types.down_stairs
+        dungeon.downstairs_location = center_of_first_room
+        if engine.game_world.current_floor > 1:
+            dungeon.tiles[center_of_last_room] = tile_types.up_stairs
+            dungeon.upstairs_location = center_of_last_room
+    else:
+        # Came from above (or initial): downstairs at far end, upstairs at spawn.
+        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
+        dungeon.downstairs_location = center_of_last_room
+        if engine.game_world.current_floor > 1:
+            dungeon.tiles[center_of_first_room] = tile_types.up_stairs
+            dungeon.upstairs_location = center_of_first_room
 
     return dungeon
