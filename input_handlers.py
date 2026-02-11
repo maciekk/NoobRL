@@ -345,19 +345,8 @@ class InventoryEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-
+        # Build item strings first to compute required width.
+        item_strings = []
         if number_of_items_in_inventory > 0:
             for i, item in enumerate(self.engine.player.inventory.items):
                 item_key = chr(ord("a") + i)
@@ -370,6 +359,24 @@ class InventoryEventHandler(AskUserEventHandler):
                 if is_equipped:
                     item_string = f"{item_string} (E)"
 
+                item_strings.append(item_string)
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        if item_strings:
+            for i, item_string in enumerate(item_strings):
                 console.print(x + 1, y + i + 1, item_string)
         else:
             console.print(x + 1, y + 1, "(Empty)")
