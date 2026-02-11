@@ -247,6 +247,32 @@ class BumpAction(ActionWithDirection):
             return MovementAction(self.entity, self.dx, self.dy).perform()
 
 class MovementRepeatedAction(MovementAction):
+    def _walkable(self, x, y):
+        gm = self.engine.game_map
+        return gm.in_bounds(x, y) and gm.tiles["walkable"][x, y]
+
+    def _find_corridor_turn(self):
+        """If the player is in a corridor, return the unique continuation direction."""
+        px, py = self.entity.x, self.entity.y
+        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        backward = (-self.dx, -self.dy)
+
+        # Don't follow turns near open areas (e.g. room corners).
+        for d in cardinal:
+            nx, ny = px + d[0], py + d[1]
+            if self._walkable(nx, ny):
+                if sum(1 for dd in cardinal if self._walkable(nx + dd[0], ny + dd[1])) >= 3:
+                    return None
+
+        options = [
+            d for d in cardinal
+            if d != backward and self._walkable(px + d[0], py + d[1])
+        ]
+
+        if len(options) == 1:
+            return options[0]
+        return None
+
     def perform(self):
         # First, check if any monsters are visible (in which case do NOT move).
         if self.engine.game_map.any_monsters_visible():
@@ -256,7 +282,21 @@ class MovementRepeatedAction(MovementAction):
             super().perform()
             return True
         except exceptions.Impossible:
-            return None
+            # Try to follow a corridor turn.
+            px, py = self.entity.x, self.entity.y
+            cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            neighbors = sum(1 for d in cardinal if self._walkable(px + d[0], py + d[1]))
+            if neighbors >= 3:
+                return None  # In open area, don't turn.
+            turn = self._find_corridor_turn()
+            if turn is None:
+                return None
+            self.dx, self.dy = turn
+            try:
+                super().perform()
+                return True
+            except exceptions.Impossible:
+                return None
 
 class CarefulMovementAction(MovementAction):
     """Repeated movement that stops at intersections and side passages."""
@@ -274,6 +314,33 @@ class CarefulMovementAction(MovementAction):
         import tile_types
         tile = self.engine.game_map.tiles[self.entity.x, self.entity.y]
         return any(tile == t for t in tile_types.interesting_tiles)
+
+    def _find_corridor_turn(self):
+        """If the player is in a corridor, return the unique continuation direction.
+
+        Looks at walkable cardinal neighbors, excludes the backward direction,
+        and returns (dx, dy) if exactly one forward/side option remains.
+        Returns None at dead ends, T-junctions, or open areas.
+        """
+        px, py = self.entity.x, self.entity.y
+        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        backward = (-self.dx, -self.dy)
+
+        # Don't follow turns near open areas (e.g. room corners).
+        for d in cardinal:
+            nx, ny = px + d[0], py + d[1]
+            if self._walkable(nx, ny):
+                if sum(1 for dd in cardinal if self._walkable(nx + dd[0], ny + dd[1])) >= 3:
+                    return None
+
+        options = [
+            d for d in cardinal
+            if d != backward and self._walkable(px + d[0], py + d[1])
+        ]
+
+        if len(options) == 1:
+            return options[0]
+        return None
 
     def perform(self):
         if self.engine.game_map.any_monsters_visible():
@@ -311,18 +378,28 @@ class CarefulMovementAction(MovementAction):
                 # Was running through corridor; stop at boundary.
                 return None
 
-        # Stop before passing a new side passage.
-        if self.dx != 0 and self.dy != 0:
-            perp_dirs = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        elif self.dx != 0:
-            perp_dirs = [(0, 1), (0, -1)]
-        else:
-            perp_dirs = [(1, 0), (-1, 0)]
+        # If the destination ahead is blocked, try to follow a corridor turn.
+        if not self._walkable(dest_x, dest_y):
+            turn = self._find_corridor_turn()
+            if turn is None:
+                return None
+            self.dx, self.dy = turn
+            dest_x, dest_y = self.dest_xy
 
-        before = {d for d in perp_dirs if self._walkable(px + d[0], py + d[1])}
-        after = {d for d in perp_dirs if self._walkable(dest_x + d[0], dest_y + d[1])}
-        if after - before:
-            return None
+            # Re-check: the new destination must also be a corridor tile.
+            dest_neighbors = sum(1 for d in cardinal if self._walkable(dest_x + d[0], dest_y + d[1]))
+            if dest_neighbors >= 3:
+                if not self._has_moved:
+                    try:
+                        super().perform()
+                        self._has_moved = True
+                        if self._on_interesting_tile():
+                            return None
+                        return True
+                    except exceptions.Impossible:
+                        return None
+                else:
+                    return None
 
         try:
             super().perform()
