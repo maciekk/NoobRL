@@ -1,6 +1,10 @@
 # NoobRL
 
-A traditional turn-based roguelike dungeon crawler written in Python using the [tcod](https://python-tcod.readthedocs.io/) library. Features procedurally generated dungeons, component-based entities, JSON-driven monster and item definitions, equipment, consumables, a leveling system, and full save/load support.
+A traditional turn-based roguelike dungeon crawler written in Python using the
+[tcod](https://python-tcod.readthedocs.io/) library. Features procedurally
+generated dungeons, component-based entities, JSON-driven monster and item
+definitions, equipment, consumables, a leveling system, and full save/load
+support.
 
 ![Screenshot](screenshot.png)
 
@@ -8,37 +12,39 @@ A traditional turn-based roguelike dungeon crawler written in Python using the [
 
 This file is for storing ideas that may be added to the project only.
 
-### IMPORTANT / FIXES / WIP
-- [ ] fix "view" command... shift-V doesn't work
-- [ ] maybe later add max stack size for consumables
-- [ ] maybe: ensure only one item spawned on dungeon ground (avoid hiding items)? design choice
-- [ ] add debug ability to spawn named item (e.g., "potion of clairvoyance")
-- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
+### FIXES / WIP
 - [ ] use different, appropriate sfx for wizard attack
-- [ ] for variety, each text trigger maps to a SET of sfx, not just one
+- [ ] add counters for how many of each monster you killed on current run
+- [ ] print stats on run finish (death), or using special command (part of 'c'?)
+- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 ### General
 - [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
-- [ ] perhaps ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
-- [ ] Item weights and maximum carry weight
+- [ ] for variety, each text trigger maps to a SET of sfx, not just one
+
+### Interesting Mechanics
+- [ ] simulate noise and monster hearing
 - [ ] hunger and food items
-- [ ] Simulate noise and monster hearing
-- [ ] Hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
-- [ ] add debugging console: spawn item, spawn monster, etc.
+- [ ] Item weights and maximum carry weight
+- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
+- [ ] incremental knowledge: ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
+- [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
+  - [ ] offer Scrolls of Identify to be found/bought, "identifying services"
+
+### Map Generation
+- [ ] improved map generation
+- [ ] avoid corridors two squares wide
+- [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] procgen chests with loot
 
-### Map gen
-- [ ] Improved map generation
-- [ ] scrollable map (i.e., map larger than rendered window)
-
-### Weapons/armor
+### Weapons & Armour
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
 - [ ] armour and weapon propreties that affect crit_chance and crit_mult
-- [ ] More types of weapons
-- [ ] More types of armour (maybe separate: chest, helmet, gloves, etc)
-- [ ] Weapon and armor enchantments
+- [ ] more types of weapons
+- [ ] more types of armour (maybe separate: chest, helmet, gloves, etc)
+- [ ] weapon and armor enchantments
 - [ ] vampiric weapons, weapon egos in general / rarities
 - [ ] armor set powers? P3
 
@@ -50,8 +56,10 @@ This file is for storing ideas that may be added to the project only.
 - [ ] scrolls & potions should initially have generic descriptions (e.g., red potion),
       and player has to figure out item type based on effects.]
 - [ ] rethink colours and glyphs used for consumables
-- [ ] perhaps anonymize consumables; i.e., nature of consumables not immediately known (like Nethack)
-  - [ ] Scrolls of Identify
+- [ ] digging tools, wands - modify the dungeon walls, but slow
+- [ ] wand of wishing - primarily for debugging purposes, allows spawning any item in the game
+  - [ ] wand of wishing should even spawn monsters
+- [ ] maybe later add max stack size for consumables
 
 ### Enemies
 - [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)
@@ -60,11 +68,8 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Find something useful to do with monster corpses (food? crafting?)
 
 ### UI
-- [ ] command which lists items and monsters that player can see from current > [!CAUTION]
-- [ ] have function to examine item in inventory
-
-### Open Questions
-- [ ] should we regen health very slowly over time? perhaps a character trait?
+- [ ] command which lists items and monsters that player can see from current location
+- [ ] have function to examine item in inventory; flavour text, stats, etc
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
@@ -85,3 +90,14 @@ This file is for storing ideas that may be added to the project only.
 - [x] fix Shift-motion, such that player DOES enter open room
 - [x] have upwards stairwells, but then regen levels (like in Angband)
 
+## Design Choices
+
+Open question:
+- item cardinality per floor square
+  - should dungeon floor be restricted to one item per square? (a la Nethack)
+  - items than would have to "spill" over many squares (e.g., monster dies and drops multiple items)
+  - or do we allow multiple items, a la CDDA?
+    - if so, need some way to indicate (in ASCII mode) squares that contain >1 item
+  - currently proceeding with latter choice (multi-item) but have not figured out representation
+- Should health auto-regenerate over time?
+  - maybe this is a choosable character trait
