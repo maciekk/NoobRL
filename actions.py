@@ -310,10 +310,13 @@ class CarefulMovementAction(MovementAction):
         return gm.in_bounds(x, y) and gm.tiles["walkable"][x, y]
 
     def _on_interesting_tile(self) -> bool:
-        """True if the entity is standing on a notable dungeon feature."""
+        """True if the entity is standing on a notable dungeon feature or item."""
         import tile_types
         tile = self.engine.game_map.tiles[self.entity.x, self.entity.y]
-        return any(tile == t for t in tile_types.interesting_tiles)
+        if any(tile == t for t in tile_types.interesting_tiles):
+            return True
+        px, py = self.entity.x, self.entity.y
+        return any(item.x == px and item.y == py for item in self.engine.game_map.items)
 
     def _find_corridor_turn(self):
         """If the player is in a corridor, return the unique continuation direction.
