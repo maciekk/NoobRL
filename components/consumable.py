@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 from typing import Optional, TYPE_CHECKING
+import numpy as np
 import actions
 import color
 import components.ai
@@ -168,7 +169,26 @@ class FireballDamageConsumable(Consumable):
 
 class ClairvoyanceConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
-        self.engine.game_map.explored[:] = True
+        game_map = self.engine.game_map
+        walkable = game_map.tiles["walkable"]
+        reveal = walkable.copy()
+        h, w = walkable.shape
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                if dx == 0 and dy == 0:
+                    continue
+                shifted = np.roll(np.roll(walkable, dy, axis=0), dx, axis=1)
+                # Zero out wrapped edges
+                if dy == -1:
+                    shifted[-1, :] = False
+                elif dy == 1:
+                    shifted[0, :] = False
+                if dx == -1:
+                    shifted[:, -1] = False
+                elif dx == 1:
+                    shifted[:, 0] = False
+                reveal |= shifted
+        game_map.explored |= reveal
         self.engine.message_log.add_message(
             "The dungeon layout is revealed to you!",
             color.status_effect_applied,

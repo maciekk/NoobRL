@@ -12,7 +12,6 @@ This file is for storing ideas that may be added to the project only.
 - [ ] fix "view" command... shift-V doesn't work
 - [ ] maybe later add max stack size for consumables
 - [ ] maybe: ensure only one item spawned on dungeon ground (avoid hiding items)? design choice
-- [ ] review clairvoyance... only want room outlines, and fix stairs shown in upper left?
 - [ ] add debug ability to spawn named item (e.g., "potion of clairvoyance")
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 - [ ] use different, appropriate sfx for wizard attack
@@ -72,6 +71,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] shop keepers
 
 ### DONE
+- [x] clairvoyance reveals only room outlines and corridors, not deep rock
 - [x] add potion: Clairvoyance
 - [x] Wizards
 - [x] fully heal on level up!
