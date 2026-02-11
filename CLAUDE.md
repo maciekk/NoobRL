@@ -30,7 +30,12 @@ There is no test suite, linter configuration, or formal build system. The Makefi
 - `AI` — `HostileEnemy` (pathfinding, range-based behavior per monster type), `ConfusedEnemy` (temporary wrapper)
 - `Inventory`, `Equipment`, `Equippable`, `Consumable`, `Level`, `Effect`
 
-**Action system**: `actions.py` — abstract `Action.perform()` returns bool (True = repeat, e.g. held movement). Subclasses: `MovementAction`, `MeleeAction`, `RangedAttackAction`, `ItemAction`, `TakeStairsAction`, etc.
+**Action system**: `actions.py` — abstract `Action.perform()` returns bool (True = repeat, e.g. held movement). Subclasses: `MovementAction`, `MeleeAction`, `RangedAttackAction`, `ItemAction`, `TakeStairsAction`, etc. Movement has three repeated-move variants:
+- `MovementRepeatedAction` (Ctrl+dir) — runs until wall/monster, follows corridor L-turns
+- `CarefulMovementAction` (Shift+dir) — corridor-smart running: stops at room boundaries, interesting tiles (stairs), side passages, and visible monsters; follows corridor L-turns
+- `TargetMovementAction` — A* pathfinding to a clicked tile
+
+Both corridor-following actions use `_find_corridor_turn()` which excludes the backward direction and returns the unique continuation if exactly one exists. A "near open area" guard prevents turn-following in room corners: if any walkable cardinal neighbor has >= 3 walkable cardinal neighbors, it's near a room, not a true corridor. The `dest_neighbors >= 3` check on `CarefulMovementAction` already catches all real junctions (T-intersections, room entrances).
 
 **Input/UI**: `input_handlers.py` (~700 lines, largest file) — handler hierarchy forms a state machine. `BaseEventHandler` → `EventHandler` (has engine) → `MainGameEventHandler` for gameplay, `AskUserEventHandler` subclasses for menus (inventory, level-up, character screen, look, targeting). Handlers return the next handler or an action.
 
@@ -49,3 +54,4 @@ There is no test suite, linter configuration, or formal build system. The Makefi
 - **Handler state machine**: Game transitions (gameplay → inventory → targeting → back) are modeled by returning new handler instances from event methods.
 - **FOV/exploration**: `GameMap.visible` (current FOV) and `GameMap.explored` (persistent) are NumPy boolean arrays updated via `tcod.map.compute_fov`.
 - **Pickle-based saves**: Entire `Engine` is serialized. Audio uses global `pygame.mixer`, not stored in Engine.
+- **Corridor detection**: A tile with >= 3 walkable cardinal neighbors is "open area" (room). For corridor turn-following, a stricter two-level check is used: the tile AND all its walkable neighbors must have < 3 walkable cardinal neighbors. This distinguishes narrow corridors from room corners, which locally look identical (both have 2 walkable cardinal neighbors).
