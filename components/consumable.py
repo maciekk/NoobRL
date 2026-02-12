@@ -197,7 +197,7 @@ class ClairvoyanceConsumable(Consumable):
                 elif dx == 1:
                     shifted[:, 0] = False
                 reveal |= shifted
-        game_map.explored |= reveal
+        game_map.revealed |= reveal
         self.engine.message_log.add_message(
             "The dungeon layout is revealed to you!",
             color.status_effect_applied,

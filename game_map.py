@@ -28,6 +28,9 @@ class GameMap:
         self.explored = np.full(
             (width, height), fill_value=False, order="F"
         )  # Tiles the player has seen before
+        self.revealed = np.full(
+            (width, height), fill_value=False, order="F"
+        )  # Tiles revealed by clairvoyance but not yet visited
         self.downstairs_location = (0, 0)
         self.upstairs_location = (0, 0)
 
@@ -88,8 +91,8 @@ class GameMap:
         Otherwise, the default is "SHROUD".
         """
         console.rgb[0 : self.width, 0 : self.height] = np.select(
-            condlist=[self.visible, self.explored],
-            choicelist=[self.tiles["light"], self.tiles["dark"]],
+            condlist=[self.visible, self.explored, self.revealed],
+            choicelist=[self.tiles["light"], self.tiles["dark"], self.tiles["revealed"]],
             default=tile_types.SHROUD,
         )
 
