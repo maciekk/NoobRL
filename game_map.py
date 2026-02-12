@@ -100,11 +100,23 @@ class GameMap:
             self.entities, key=lambda x: x.render_order.value
         )
 
+        # Track tiles with multiple items for pile display
+        item_counts: dict[tuple[int, int], int] = {}
+        for entity in self.entities:
+            if isinstance(entity, Item) and self.visible[entity.x, entity.y]:
+                pos = (entity.x, entity.y)
+                item_counts[pos] = item_counts.get(pos, 0) + 1
+
         for entity in entities_sorted_for_rendering:
             if self.visible[entity.x, entity.y]:
                 console.print(
                     x=entity.x, y=entity.y, string=entity.char, fg=entity.color
                 )
+
+        # Draw pile symbol on top of tiles with 2+ items (but not if an actor is there)
+        for (x, y), count in item_counts.items():
+            if count >= 2 and self.get_actor_at_location(x, y) is None:
+                console.print(x=x, y=y, string="*", fg=(255, 255, 255))
 
 class GameWorld:
     """
