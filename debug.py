@@ -11,7 +11,7 @@ def spawn_entity(name, game_map: GameMap, x: int, y: int):
     if entity is None:
         entity = game_map.engine.monster_manager.clone(name)
     if entity is None:
-        game_map.engine.message_log.add_message(f"Uknonwn object '{name}' requested.")
+        game_map.engine.message_log.add_message(f"Unknown object '{name}' requested.")
         return None
     return entity.spawn(game_map, x, y)
 
@@ -45,18 +45,20 @@ class DebugHandler(AskUserEventHandler):
         console.print(x=x + 1, y=y + 1, string=f"Enter item to spawn: {self.buffer}")
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainGameEventHandler]:
-        match event:
-            case tcod.event.KeyDown(sym=tcod.event.K_RETURN):
-                self.engine.message_log.add_message(f"Spawning {self.buffer}.")
-                spawn_entity(self.buffer, self.engine.game_map, self.engine.player.x, self.engine.player.y + 1)
-                return MainGameEventHandler(self.engine)
-            case tcod.event.KeyDown(sym=tcod.event.K_BACKSPACE):
-                if len(self.buffer):
-                    self.buffer = self.buffer[:-1]
+        key = event.sym
+        if key == tcod.event.KeySym.RETURN:
+            self.engine.message_log.add_message(f"Spawning {self.buffer}.")
+            spawn_entity(self.buffer, self.engine.game_map, self.engine.player.x, self.engine.player.y + 1)
+            return MainGameEventHandler(self.engine)
+        elif key == tcod.event.KeySym.ESCAPE:
+            return MainGameEventHandler(self.engine)
+        elif key == tcod.event.KeySym.BACKSPACE:
+            self.buffer = self.buffer[:-1]
+        else:
+            try:
+                c = chr(key)
+                if c.isalnum() or c == '_':
+                    self.buffer += c
+            except (ValueError, OverflowError):
+                pass
         return None
-
-    def ev_textinput(self, event: tcod.event.TextInput):
-        match event:
-            case tcod.event.TextInput(text=text):
-                self.buffer += text
-

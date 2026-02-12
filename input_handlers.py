@@ -718,17 +718,10 @@ class MainGameEventHandler(EventHandler):
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.w:
             return WalkChoiceHandler(self.engine)
+        elif key == tcod.event.KeySym.q:
+            return DebugHandler(self.engine)
         # No valid key was pressed
         return action
-
-    def ev_textinput(self, event: tcod.event.TextInput):
-        match event:
-            # We cannot trigger the following on ev_keydown as the subsequent TextInput will pollute text field.
-            case tcod.event.TextInput(text=text):
-                if text == "q":
-                    return DebugHandler(self.engine)
-
-        return None
 
 
 class GameOverEventHandler(EventHandler):

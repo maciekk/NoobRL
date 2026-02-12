@@ -18,6 +18,9 @@ This file is for storing ideas that may be added to the project only.
 - [ ] print stats on run finish (death), or using special command (part of 'c'?)
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 - [ ] use different, appropriate sfx for wizard attack
+- [ ] there should be a distinction between a "known about" square vs "already visited"
+  - [ ] claivoyance should only update unknown -> known
+- [ ] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
 
 ### General
 - [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
@@ -52,7 +55,10 @@ This file is for storing ideas that may be added to the project only.
 ### Items (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add scroll: Teleport (user-controlled target, must be in explored space)
-- [ ] add rings!
+- [ ] add rings
+- [ ] add amulets
+- [ ] add more wands
+  - [ ] wands should have charges, be non-stackable
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 - [ ] scrolls & potions should initially have generic descriptions (e.g., red potion),
