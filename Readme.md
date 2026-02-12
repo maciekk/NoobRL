@@ -13,13 +13,8 @@ support.
 This file is for storing ideas that may be added to the project only.
 
 ### FIXES / WIP
-- [ ] what's up with the debug console? does it work?
-- [ ] add counters for how many of each monster you killed on current run
-- [ ] print stats on run finish (death), or using special command (part of 'c'?)
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 - [ ] use different, appropriate sfx for wizard attack
-- [ ] there should be a distinction between a "known about" square vs "already visited"
-  - [ ] claivoyance should only update unknown -> known
 - [ ] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
 
 ### General
@@ -83,6 +78,11 @@ This file is for storing ideas that may be added to the project only.
 - [ ] shop keepers
 
 ### DONE
+- [x] there should be a distinction between a "known about" square vs "already visited"
+  - [x] claivoyance should only update unknown -> known
+- [x] add counters for how many of each monster you killed on current run
+- [x] print stats on run finish (death), or using special command (part of 'c'?)
+- [x] what's up with the debug console? does it work?
 - [x] wand of wishing - primarily for debugging purposes, allows spawning any item in the game
 - [x] clairvoyance reveals only room outlines and corridors, not deep rock
 - [x] add potion: Clairvoyance
