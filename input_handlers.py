@@ -264,6 +264,126 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             for i, line in enumerate(kill_lines):
                 console.print(x + 1, row + 1 + i, line)
 
+class ViewSurroundingsHandler(AskUserEventHandler):
+    TITLE = "View Surroundings"
+
+    @staticmethod
+    def _direction(px: int, py: int, tx: int, ty: int) -> str:
+        """Return relative direction string like '3N 5E' from player to target."""
+        parts = []
+        dy = py - ty  # positive = north (up on screen)
+        dx = tx - px  # positive = east
+        if dy > 0:
+            parts.append(f"{dy}N")
+        elif dy < 0:
+            parts.append(f"{-dy}S")
+        if dx > 0:
+            parts.append(f"{dx}E")
+        elif dx < 0:
+            parts.append(f"{-dx}W")
+        return " ".join(parts) if parts else "here"
+
+    @staticmethod
+    def _dist2(px: int, py: int, tx: int, ty: int) -> int:
+        """Squared Euclidean distance (for sorting, no need for sqrt)."""
+        return (tx - px) ** 2 + (ty - py) ** 2
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        game_map = self.engine.game_map
+        visible = game_map.visible
+        px, py = self.engine.player.x, self.engine.player.y
+        direction = self._direction
+        dist2 = self._dist2
+
+        # Gather visible monsters, sorted by distance.
+        monsters = []
+        for actor in game_map.actors:
+            if actor is self.engine.player:
+                continue
+            if visible[actor.x, actor.y]:
+                monsters.append((dist2(px, py, actor.x, actor.y), actor.name, direction(px, py, actor.x, actor.y)))
+        monsters.sort()
+
+        # Gather visible corpses, sorted by distance.
+        from entity import Actor
+        corpses = []
+        for entity in game_map.entities:
+            if isinstance(entity, Actor) and not entity.is_alive and visible[entity.x, entity.y]:
+                corpses.append((dist2(px, py, entity.x, entity.y), entity.name, direction(px, py, entity.x, entity.y)))
+        corpses.sort()
+
+        # Gather visible items with directions, sorted by distance.
+        items_sorted: list[tuple[int, str, str]] = []
+        for item in game_map.items:
+            if visible[item.x, item.y]:
+                items_sorted.append((dist2(px, py, item.x, item.y), item.name, direction(px, py, item.x, item.y)))
+        items_sorted.sort()
+
+        # Gather visible features (stairs), sorted by distance.
+        features: list[tuple[int, str]] = []
+        sx, sy = game_map.downstairs_location
+        if visible[sx, sy]:
+            features.append((dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}"))
+        ux, uy = game_map.upstairs_location
+        if (ux, uy) != (0, 0) and visible[ux, uy]:
+            features.append((dist2(px, py, ux, uy), f"Stairs up {direction(px, py, ux, uy)}"))
+        features.sort()
+
+        # Build lines for display.
+        lines: list[str] = []
+        if monsters:
+            lines.append("Monsters:")
+            for _, name, d in monsters:
+                lines.append(f"  {name} {d}")
+        if corpses:
+            if lines:
+                lines.append("")
+            lines.append("Corpses:")
+            for _, name, d in corpses:
+                lines.append(f"  {name} {d}")
+        if items_sorted:
+            if lines:
+                lines.append("")
+            lines.append("Items:")
+            for _, name, d in items_sorted:
+                lines.append(f"  {name} {d}")
+        if features:
+            if lines:
+                lines.append("")
+            lines.append("Features:")
+            for _, feat in features:
+                lines.append(f"  {feat}")
+
+        if not lines:
+            lines.append("Nothing of interest.")
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        height = len(lines) + 2
+        max_line_width = max(len(s) for s in lines)
+        width = max(len(self.TITLE) + 4, max_line_width + 2)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        for i, line in enumerate(lines):
+            console.print(x=x + 1, y=y + 1 + i, string=line)
+
+
 class LevelUpEventHandler(AskUserEventHandler):
     TITLE = "Level Up"
 
@@ -728,6 +848,9 @@ class MainGameEventHandler(EventHandler):
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
             return CharacterScreenEventHandler(self.engine)
+        elif key == tcod.event.KeySym.v and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+            return ViewSurroundingsHandler(self.engine)
         elif key == tcod.event.KeySym.v:
             return LookHandler(self.engine)
         elif key == tcod.event.KeySym.w:
@@ -855,6 +978,7 @@ class ViewKeybinds(AskUserEventHandler):
         ">: descend",
         "<: ascend",
         "v: examine dungeon",
+        "V: view surroundings",
         "w: walk",
     ]
     def on_render(self, console: tcod.Console) -> None:

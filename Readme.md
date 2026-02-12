@@ -70,7 +70,6 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Find something useful to do with monster corpses (food? crafting?)
 
 ### UI
-- [ ] command which lists items and monsters that player can see from current location
 - [ ] have function to examine item in inventory; flavour text, stats, etc
 
 ### Miscellaneous
@@ -78,6 +77,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] shop keepers
 
 ### DONE
+- [x] command which lists items, monsters, corpses, and features visible from current location (Shift+V), with relative directions and distance sorting
 - [x] there should be a distinction between a "known about" square vs "already visited"
   - [x] claivoyance should only update unknown -> known
 - [x] add counters for how many of each monster you killed on current run
