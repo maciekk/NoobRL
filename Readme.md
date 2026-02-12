@@ -13,10 +13,11 @@ support.
 This file is for storing ideas that may be added to the project only.
 
 ### FIXES / WIP
-- [ ] use different, appropriate sfx for wizard attack
+- [ ] what's up with the debug console? does it work?
 - [ ] add counters for how many of each monster you killed on current run
 - [ ] print stats on run finish (death), or using special command (part of 'c'?)
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
+- [ ] use different, appropriate sfx for wizard attack
 
 ### General
 - [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
@@ -57,8 +58,7 @@ This file is for storing ideas that may be added to the project only.
       and player has to figure out item type based on effects.]
 - [ ] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
-- [ ] wand of wishing - primarily for debugging purposes, allows spawning any item in the game
-  - [ ] wand of wishing should even spawn monsters
+- [ ] wand of wishing should even spawn monsters
 - [ ] maybe later add max stack size for consumables
 
 ### Enemies
@@ -76,6 +76,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] shop keepers
 
 ### DONE
+- [x] wand of wishing - primarily for debugging purposes, allows spawning any item in the game
 - [x] clairvoyance reveals only room outlines and corridors, not deep rock
 - [x] add potion: Clairvoyance
 - [x] Wizards
