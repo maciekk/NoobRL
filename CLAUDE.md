@@ -41,7 +41,7 @@ Both corridor-following actions use `_find_corridor_turn()` which excludes the b
 
 **Procedural generation**: `procgen.py` — `RectangularRoom` with overlap detection, L-shaped tunnels via Bresenham, floor-based difficulty scaling with weighted entity spawn tables.
 
-**Data files**: `data/monsters.json` (player + 7 enemy types with stats), `data/items.json` (consumables + equipment). Managers in `entity.py` dynamically map JSON fields to component classes via `CONSUMABLE_MAP`/`EQUIPPABLE_MAP` dicts.
+**Data files**: `data/monsters.json` (player + 7 enemy types with stats), `data/items.json` (consumables + equipment). Managers in `entity.py` dynamically map JSON fields to component classes via `CONSUMABLE_MAP`/`EQUIPPABLE_MAP` dicts. Item display symbols follow roguelike conventions: `?` scrolls, `!` potions, `)` weapons, `[` armor, `/` wands.
 
 **Rendering**: `render_functions.py` + `game_map.py`. UI layout: game map fills most of the 80x50 console, stats bar (HP/XP/dungeon level/turn/effects) at bottom-left, message log at bottom-right.
 
@@ -55,3 +55,8 @@ Both corridor-following actions use `_find_corridor_turn()` which excludes the b
 - **FOV/exploration**: `GameMap.visible` (current FOV) and `GameMap.explored` (persistent) are NumPy boolean arrays updated via `tcod.map.compute_fov`.
 - **Pickle-based saves**: Entire `Engine` is serialized. Audio uses global `pygame.mixer`, not stored in Engine.
 - **Corridor detection**: A tile with >= 3 walkable cardinal neighbors is "open area" (room). For corridor turn-following, a stricter two-level check is used: the tile AND all its walkable neighbors must have < 3 walkable cardinal neighbors. This distinguishes narrow corridors from room corners, which locally look identical (both have 2 walkable cardinal neighbors).
+- **Adding items to inventory programmatically**: When cloning items and adding to inventory outside of `PickupAction`, you must set `item.parent = actor.inventory` before use. The `inventory.add()` method does not set the parent. Without this, `BaseComponent.engine` fails because `gamemap` is None.
+- **Shift+key bindings**: Use `ev_keydown` with explicit modifier checks (e.g., `key == tcod.event.KeySym.N1 and modifier & LSHIFT|RSHIFT`), not `ev_textinput`. The `ev_textinput` path is unreliable for shifted keys. Follow the pattern used by `>` (Shift+Period) and `<` (Shift+Comma).
+- **Debug shortcuts**: `q` opens debug console for spawning entities by ID. `!` (Shift+1) grants a Wand of Wishing.
+- **Consumable with custom handler**: To create a consumable that opens a selection menu (like `WishingWandConsumable`), override `get_action()` to return an `AskUserEventHandler` subclass. The handler's `ev_keydown()` returns the final action (e.g., `WishAction`). No `activate()` override needed — the action handles everything directly.
+- **Item stack_count in JSON**: Set `stack_count` in `data/items.json` to control initial charges for consumables (e.g., Wand of Wishing has 3). Defaults to 1 if omitted.
