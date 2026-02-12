@@ -62,6 +62,8 @@ class Fighter(BaseComponent):
         else:
             death_message = f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
             death_message_color = color.enemy_die
+            kills = self.engine.kill_counts
+            kills[self.parent.name] = kills.get(self.parent.name, 0) + 1
 
         self.parent.char = "%"
         self.parent.color = (191, 0, 0)

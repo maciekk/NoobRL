@@ -30,6 +30,7 @@ class Engine:
         self.monster_manager = MonsterManager("data/monsters.json", self.item_manager)
         self.player = self.monster_manager.clone('player')
         self.turn = 1
+        self.kill_counts: dict[str, int] = {}
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:

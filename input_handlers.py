@@ -218,37 +218,51 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
         y = 0
 
-        width = len(self.TITLE) + 4
+        kills = self.engine.kill_counts
+        sorted_kills = sorted(kills.items(), key=lambda kv: kv[1], reverse=True)
+        kill_lines = [f"  {name}: {count}" for name, count in sorted_kills]
+        total_kills = sum(kills.values())
+
+        stats_height = 7
+        kills_height = len(kill_lines) + 2 if kill_lines else 0
+        height = stats_height + kills_height
+
+        kill_strings = [f"Kills: {total_kills}"] + kill_lines if kill_lines else []
+        all_strings = [
+            f"Level: {self.engine.player.level.current_level}",
+            f"XP: {self.engine.player.level.current_xp}",
+            f"XP for next Level: {self.engine.player.level.experience_to_next_level}",
+            f"Attack: {self.engine.player.fighter.power}",
+            f"Defense: {self.engine.player.fighter.defense}",
+        ] + kill_strings
+        max_str_width = max((len(s) for s in all_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_str_width + 2)
 
         console.draw_frame(
             x=x,
             y=y,
             width=width,
-            height=7,
+            height=height,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
 
+        console.print(x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}")
+        console.print(x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}")
         console.print(
-            x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}"
-        )
-        console.print(
-            x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}"
-        )
-        console.print(
-            x=x + 1,
-            y=y + 3,
+            x=x + 1, y=y + 3,
             string=f"XP for next Level: {self.engine.player.level.experience_to_next_level}",
         )
+        console.print(x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}")
+        console.print(x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}")
 
-        console.print(
-            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
-        )
-        console.print(
-            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
-        )
+        if kill_lines:
+            row = y + stats_height
+            console.print(x=x + 1, y=row, string=f"Kills: {total_kills}")
+            for i, line in enumerate(kill_lines):
+                console.print(x + 1, row + 1 + i, line)
 
 class LevelUpEventHandler(AskUserEventHandler):
     TITLE = "Level Up"
@@ -730,6 +744,36 @@ class GameOverEventHandler(EventHandler):
         if os.path.exists("savegame.sav"):
             os.remove("savegame.sav")  # Deletes the active save file.
         raise exceptions.QuitWithoutSaving()  # Avoid saving a finished game.
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        kills = self.engine.kill_counts
+        if not kills:
+            return
+
+        sorted_kills = sorted(kills.items(), key=lambda kv: kv[1], reverse=True)
+        total_kills = sum(kills.values())
+
+        lines = [f"Total kills: {total_kills}"]
+        for name, count in sorted_kills:
+            lines.append(f"  {name}: {count}")
+
+        width = max(len(s) for s in lines) + 4
+        height = len(lines) + 2
+        title = "Kill Stats"
+        width = max(width, len(title) + 4)
+
+        x = (console.width - width) // 2
+        y = (console.height - height) // 2
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=title, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+        for i, line in enumerate(lines):
+            console.print(x + 1, y + 1 + i, line)
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         self.on_quit()
