@@ -52,6 +52,7 @@ This file is for storing ideas that may be added to the project only.
 ### Items (Potions, Scrolls, Powers, etc)
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add scroll: Teleport (user-controlled target, must be in explored space)
+- [ ] add rings!
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 - [ ] scrolls & potions should initially have generic descriptions (e.g., red potion),

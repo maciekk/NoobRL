@@ -2,7 +2,7 @@
   {
     "id": "s_confusion",
     "name": "scroll of Confusion",
-    "char": "~",
+    "char": "?",
     "color": [207, 63, 255],
     "consumable": {
       "name": "ConfusionConsumable",
@@ -12,7 +12,7 @@
   {
     "id": "s_fireball",
     "name": "scroll of Fireball",
-    "char": "~",
+    "char": "?",
     "color": [255, 0, 0],
     "consumable": {
       "name": "FireballDamageConsumable",
@@ -23,7 +23,7 @@
   {
     "id": "s_blink",
     "name": "scroll of Blink",
-    "char": "~",
+    "char": "?",
     "color": [128, 0, 255],
     "consumable": {
       "name": "BlinkConsumable"
@@ -32,7 +32,7 @@
   {
     "id": "s_lightning",
     "name": "scroll of Lightning",
-    "char": "~",
+    "char": "?",
     "color": [32, 64, 255],
     "consumable": {
       "name": "LightningDamageConsumable",
@@ -72,7 +72,7 @@
   {
     "id": "dagger",
     "name": "Dagger",
-    "char": "/",
+    "char": ")",
     "color": [0, 191, 255],
     "equippable": {
       "name": "Dagger"
@@ -81,7 +81,7 @@
   {
     "id": "sword",
     "name": "Sword",
-    "char": "/",
+    "char": ")",
     "color": [0, 191, 255],
     "equippable": {
       "name": "Sword"
@@ -90,7 +90,7 @@
   {
     "id": "long_sword",
     "name": "Long Sword",
-    "char": "/",
+    "char": ")",
     "color": [0, 191, 255],
     "equippable": {
       "name": "LongSword"
@@ -99,7 +99,7 @@
   {
     "id": "odachi",
     "name": "Odachi",
-    "char": "/",
+    "char": ")",
     "color": [0, 191, 255],
     "equippable": {
       "name": "Odachi"
@@ -135,7 +135,7 @@
   {
     "id": "wand_wishing",
     "name": "Wand of Wishing",
-    "char": "-",
+    "char": "/",
     "color": [255, 215, 0],
     "stack_count": 3,
     "consumable": {
