@@ -14,6 +14,7 @@ from input_handlers import (
     ActionOrHandler,
     AreaRangedAttackHandler,
     SingleRangedAttackHandler,
+    WishItemHandler,
 )
 
 if TYPE_CHECKING:
@@ -41,6 +42,14 @@ class Consumable(BaseComponent):
             entity.stack_count -= 1
             if entity.stack_count <= 0:
                 inventory.items.remove(entity)
+
+
+class WishingWandConsumable(Consumable):
+    def get_action(self, consumer: Actor) -> WishItemHandler:
+        self.engine.message_log.add_message(
+            "What do you wish for?", color.needs_target
+        )
+        return WishItemHandler(self.engine, self.parent)
 
 
 class ConfusionConsumable(Consumable):

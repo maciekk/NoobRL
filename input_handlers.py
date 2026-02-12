@@ -484,6 +484,67 @@ class DropQuantityHandler(AskUserEventHandler):
         return None
 
 
+class WishItemHandler(AskUserEventHandler):
+    """Lets the player choose any game item to wish for."""
+
+    TITLE = "Wish for an item"
+
+    def __init__(self, engine: Engine, wand_item: Item):
+        super().__init__(engine)
+        self.wand_item = wand_item
+        self.item_list = sorted(
+            [(id, item.name) for id, item in engine.item_manager.items.items()
+             if id != "wand_wishing"],
+            key=lambda x: x[1],
+        )
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        number_of_items = len(self.item_list)
+        height = number_of_items + 2
+        if height <= 3:
+            height = 3
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        item_strings = []
+        for i, (item_id, item_name) in enumerate(self.item_list):
+            item_key = chr(ord("a") + i)
+            item_strings.append(f"({item_key}) {item_name}")
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        for i, item_string in enumerate(item_strings):
+            console.print(x + 1, y + i + 1, item_string)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        index = key - tcod.event.KeySym.a
+
+        if 0 <= index < len(self.item_list):
+            item_id, item_name = self.item_list[index]
+            return actions.WishAction(self.engine.player, self.wand_item, item_id)
+        return super().ev_keydown(event)
+
+
 class SelectIndexHandler(AskUserEventHandler):
     """Handles asking the user for an index on the map."""
 
@@ -614,6 +675,15 @@ class MainGameEventHandler(EventHandler):
         if key == tcod.event.KeySym.PERIOD and modifier & (
             tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
             return actions.TakeStairsAction(player)
+
+        if key == tcod.event.KeySym.N1 and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+            wand = self.engine.item_manager.clone("wand_wishing")
+            if wand:
+                wand.parent = self.engine.player.inventory
+                self.engine.player.inventory.add(wand)
+                self.engine.message_log.add_message("A Wand of Wishing appears in your pack!")
+            return None
 
         if key == tcod.event.KeySym.COMMA and modifier & (
             tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):

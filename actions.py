@@ -40,6 +40,23 @@ class Action:
         raise NotImplementedError()
 
 
+class WishAction(Action):
+    def __init__(self, entity: Actor, wand_item: Item, wish_item_id: str):
+        super().__init__(entity)
+        self.wand_item = wand_item
+        self.wish_item_id = wish_item_id
+
+    def perform(self) -> None:
+        item = self.engine.item_manager.clone(self.wish_item_id)
+        if item is None:
+            raise exceptions.Impossible("Nothing happens.")
+        item.place(self.entity.x, self.entity.y, self.engine.game_map)
+        self.engine.message_log.add_message(
+            f"You wished for a {item.name}!", color.status_effect_applied
+        )
+        self.wand_item.consumable.consume()
+
+
 class PickupAction(Action):
     """Pickup an item and add it to the inventory, if there is room for it."""
 

@@ -131,5 +131,15 @@
     "equippable": {
       "name": "SteelArmor"
     }
+  },
+  {
+    "id": "wand_wishing",
+    "name": "Wand of Wishing",
+    "char": "-",
+    "color": [255, 215, 0],
+    "stack_count": 3,
+    "consumable": {
+      "name": "WishingWandConsumable"
+    }
   }
 ]

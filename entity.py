@@ -38,6 +38,7 @@ CONSUMABLE_MAP = {
     "LightningDamageConsumable": consumable.LightningDamageConsumable,
     "RageConsumable": consumable.RageConsumable,
     "ClairvoyanceConsumable": consumable.ClairvoyanceConsumable,
+    "WishingWandConsumable": consumable.WishingWandConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,
