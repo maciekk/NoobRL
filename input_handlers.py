@@ -412,23 +412,23 @@ class LevelUpEventHandler(AskUserEventHandler):
         console.print(
             x=x + 1,
             y=4,
-            string=f"a) CON: +5-10 HP (@{self.engine.player.fighter.max_hp})",
+            string=f"1) CON: +5-10 HP (@{self.engine.player.fighter.max_hp})",
         )
         console.print(
             x=x + 1,
             y=5,
-            string=f"b) STR: +1 attack (@{self.engine.player.fighter.power})",
+            string=f"2) STR: +1 attack (@{self.engine.player.fighter.power})",
         )
         console.print(
             x=x + 1,
             y=6,
-            string=f"c) AGI: +1 defense (@{self.engine.player.fighter.defense})",
+            string=f"3) AGI: +1 defense (@{self.engine.player.fighter.defense})",
         )
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        index = key - tcod.event.KeySym.N1
 
         if 0 <= index <= 2:
             if index == 0:
