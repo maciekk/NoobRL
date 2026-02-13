@@ -34,6 +34,10 @@ class Consumable(BaseComponent):
         """
         raise NotImplementedError()
 
+    def get_description(self) -> list[str]:
+        """Return description lines for the item detail screen."""
+        return []
+
     def consume(self) -> None:
         """Decrement stack count; remove when it reaches 0."""
         entity = self.parent
@@ -45,6 +49,9 @@ class Consumable(BaseComponent):
 
 
 class WishingWandConsumable(Consumable):
+    def get_description(self) -> list[str]:
+        return ["Grants a wish for any item"]
+
     def get_action(self, consumer: Actor) -> WishItemHandler:
         self.engine.message_log.add_message(
             "What do you wish for?", color.needs_target
@@ -55,6 +62,9 @@ class WishingWandConsumable(Consumable):
 class ConfusionConsumable(Consumable):
     def __init__(self, number_of_turns: int):
         self.number_of_turns = number_of_turns
+
+    def get_description(self) -> list[str]:
+        return [f"Confuses target for {self.number_of_turns} turns"]
 
     def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
         self.engine.message_log.add_message(
@@ -90,6 +100,9 @@ class HealingConsumable(Consumable):
     def __init__(self, amount: int):
         self.amount = amount
 
+    def get_description(self) -> list[str]:
+        return [f"Restores up to {self.amount} HP"]
+
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         amount_recovered = consumer.fighter.heal(self.amount)
@@ -108,6 +121,9 @@ class RageConsumable(Consumable):
     def __init__(self, amount: int):
         self.amount = amount
 
+    def get_description(self) -> list[str]:
+        return [f"Increases damage by +1 for 10 turns"]
+
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = RageEffect(engine= self.engine, dmg_mult=self.amount, duration=10)
@@ -122,6 +138,9 @@ class RageConsumable(Consumable):
 
 
 class BlinkConsumable(Consumable):
+    def get_description(self) -> list[str]:
+        return ["Teleports randomly up to 5 tiles"]
+
     def activate(self, action: actions.ItemAction) -> None:
         max_range = 5  # TODO: parametrize this (JSON, etc)
 
@@ -145,6 +164,9 @@ class FireballDamageConsumable(Consumable):
     def __init__(self, damage: int, radius: int):
         self.damage = damage
         self.radius = radius
+
+    def get_description(self) -> list[str]:
+        return [f"Deals {self.damage} damage in radius {self.radius}"]
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
         self.engine.message_log.add_message(
@@ -177,6 +199,9 @@ class FireballDamageConsumable(Consumable):
 
 
 class ClairvoyanceConsumable(Consumable):
+    def get_description(self) -> list[str]:
+        return ["Reveals the dungeon layout"]
+
     def activate(self, action: actions.ItemAction) -> None:
         game_map = self.engine.game_map
         walkable = game_map.tiles["walkable"]
@@ -209,6 +234,10 @@ class LightningDamageConsumable(Consumable):
     def __init__(self, damage: int, maximum_range: int):
         self.damage = damage
         self.maximum_range = maximum_range
+
+    def get_description(self) -> list[str]:
+        return [f"Deals {self.damage} damage to nearest enemy",
+                f"Range: {self.maximum_range}"]
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity

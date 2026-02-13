@@ -452,12 +452,29 @@ class LevelUpEventHandler(AskUserEventHandler):
         """
         return None
 
+INVENTORY_CURSOR_UP_KEYS = {
+    tcod.event.KeySym.UP,
+    tcod.event.KeySym.k,
+    tcod.event.KeySym.KP_8,
+}
+
+INVENTORY_CURSOR_DOWN_KEYS = {
+    tcod.event.KeySym.DOWN,
+    tcod.event.KeySym.j,
+    tcod.event.KeySym.KP_2,
+}
+
+
 class InventoryEventHandler(AskUserEventHandler):
     """This handler lets the user select an item.
     What happens then depends on the subclass.
     """
 
     TITLE = "<missing title>"
+
+    def __init__(self, engine: Engine, cursor: int = 0):
+        super().__init__(engine)
+        self.cursor = cursor
 
     def on_render(self, console: tcod.Console) -> None:
         """Render an inventory menu, which displays the items in the inventory, and the letter to select them.
@@ -510,22 +527,44 @@ class InventoryEventHandler(AskUserEventHandler):
         )
 
         if item_strings:
+            # Clamp cursor to valid range.
+            num_items = len(item_strings)
+            if num_items > 0:
+                self.cursor = max(0, min(self.cursor, num_items - 1))
+
             for i, item_string in enumerate(item_strings):
-                console.print(x + 1, y + i + 1, item_string)
+                if i == self.cursor:
+                    # Highlight cursor row with inverted colors.
+                    console.print(x + 1, y + i + 1, item_string, fg=color.black, bg=color.white)
+                else:
+                    console.print(x + 1, y + i + 1, item_string)
         else:
             console.print(x + 1, y + 1, "(Empty)")
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         player = self.engine.player
         key = event.sym
-        index = key - tcod.event.KeySym.a
+        items = player.inventory.items
+        num_items = len(items)
 
+        if key in INVENTORY_CURSOR_UP_KEYS and num_items > 0:
+            self.cursor = (self.cursor - 1) % num_items
+            return None
+        elif key in INVENTORY_CURSOR_DOWN_KEYS and num_items > 0:
+            self.cursor = (self.cursor + 1) % num_items
+            return None
+        elif key in CONFIRM_KEYS and num_items > 0:
+            self.cursor = max(0, min(self.cursor, num_items - 1))
+            return self.on_item_selected(items[self.cursor])
+
+        index = key - tcod.event.KeySym.a
         if 0 <= index <= 26:
             try:
-                selected_item = player.inventory.items[index]
+                selected_item = items[index]
             except IndexError:
                 self.engine.message_log.add_message("Invalid entry.", color.invalid)
                 return None
+            self.cursor = index
             return self.on_item_selected(selected_item)
         return super().ev_keydown(event)
 
@@ -540,13 +579,7 @@ class InventoryActivateHandler(InventoryEventHandler):
     TITLE = "Select an item to use"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        if item.consumable:
-            # Return the action for the selected item.
-            return item.consumable.get_action(self.engine.player)
-        elif item.equippable:
-            return actions.EquipAction(self.engine.player, item)
-        else:
-            return None
+        return ItemDetailHandler(self.engine, item, self.cursor)
 
 class InventoryDropHandler(InventoryEventHandler):
     """Handle dropping an inventory item."""
@@ -558,6 +591,120 @@ class InventoryDropHandler(InventoryEventHandler):
         if item.stackable and item.stack_count > 1:
             return DropQuantityHandler(self.engine, item)
         return actions.DropItem(self.engine.player, item)
+
+
+class ItemDetailHandler(AskUserEventHandler):
+    """Shows item details and offers contextual actions."""
+
+    def __init__(self, engine: Engine, item: Item, inventory_cursor: int = 0):
+        super().__init__(engine)
+        self.item = item
+        self.inventory_cursor = inventory_cursor
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        item = self.item
+        player = self.engine.player
+
+        lines: list[tuple[str, tuple[int, int, int]]] = []
+
+        # Item name with symbol.
+        lines.append((f"{item.char} {item.name}", item.color))
+
+        # Type line.
+        if item.equippable:
+            from equipment_types import EquipmentType
+            if item.equippable.equipment_type == EquipmentType.WEAPON:
+                lines.append(("Weapon", color.white))
+            else:
+                lines.append(("Armor", color.white))
+        elif item.consumable:
+            if item.stackable and item.stack_count > 1:
+                lines.append((f"Consumable (x{item.stack_count})", color.white))
+            else:
+                lines.append(("Consumable", color.white))
+        else:
+            lines.append(("Item", color.white))
+
+        # Description for consumable items.
+        if item.consumable:
+            for desc_line in item.consumable.get_description():
+                lines.append((desc_line, color.white))
+
+        # Stats for equippable items.
+        if item.equippable:
+            if item.equippable.power_bonus:
+                lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
+            if item.equippable.defense_bonus:
+                lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+            if player.equipment.item_is_equipped(item):
+                lines.append(("Currently equipped", color.health_recovered))
+            else:
+                lines.append(("Not equipped", color.white))
+
+        # Separator.
+        lines.append(("", color.white))
+
+        # Actions.
+        if item.equippable:
+            if player.equipment.item_is_equipped(item):
+                lines.append(("(e) Unequip", color.white))
+            else:
+                lines.append(("(e) Equip", color.white))
+        if item.consumable:
+            lines.append(("(a) Apply", color.white))
+        lines.append(("(d) Drop", color.white))
+        lines.append(("(Esc) Back", color.white))
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        max_line_width = max(len(text) for text, _ in lines)
+        width = max(len(item.name) + 6, max_line_width + 2)
+        height = len(lines) + 2
+
+        console.draw_frame(
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=item.name,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
+        )
+
+        for i, (text, fg) in enumerate(lines):
+            console.print(x + 1, y + 1 + i, text, fg=fg)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        item = self.item
+        player = self.engine.player
+
+        if key == tcod.event.KeySym.e and item.equippable:
+            return actions.EquipAction(player, item)
+        elif key == tcod.event.KeySym.a and item.consumable:
+            return item.consumable.get_action(player)
+        elif key == tcod.event.KeySym.d:
+            if item.stackable and item.stack_count > 1:
+                return DropQuantityHandler(self.engine, item)
+            return actions.DropItem(player, item)
+        elif key == tcod.event.KeySym.ESCAPE:
+            return InventoryActivateHandler(self.engine, cursor=self.inventory_cursor)
+
+        # Ignore other keys — don't exit on random keypresses.
+        if key in {
+            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+        }:
+            return None
+        return None
 
 
 class DropQuantityHandler(AskUserEventHandler):
