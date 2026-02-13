@@ -167,8 +167,12 @@ def tunnel_between(
         yield x, y
 
 
-def _would_create_wide_corridor(tiles, x, y):
-    """Check if setting (x, y) to floor would complete any 2x2 block of walkable tiles."""
+def _would_create_wide_corridor(tiles, x, y, planned_floor=None):
+    """Check if setting (x, y) to floor would complete any 2x2 block of walkable tiles.
+
+    planned_floor: optional set of (x, y) coords to treat as walkable even if
+    they aren't yet (i.e. other tiles in the same tunnel being carved).
+    """
     w, h = tiles.shape
     for dx, dy in [(0, 0), (-1, 0), (0, -1), (-1, -1)]:
         bx, by = x + dx, y + dy
@@ -180,8 +184,9 @@ def _would_create_wide_corridor(tiles, x, y):
                 if cx == x and cy == y:
                     continue
                 if not tiles["walkable"][cx, cy]:
-                    all_floor = False
-                    break
+                    if planned_floor is None or (cx, cy) not in planned_floor:
+                        all_floor = False
+                        break
             if not all_floor:
                 break
         if all_floor:
@@ -231,11 +236,16 @@ def generate_dungeon(
             center_of_first_room = new_room.center
         else:  # All rooms after the first.
             # Dig out a tunnel between this room and the previous one.
+            # Collect new tunnel tiles, then check for 2-wide corridors
+            # considering the full planned tunnel (prevents comb artifacts).
+            tunnel_tiles = []
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
-                if dungeon.tiles["walkable"][x, y]:
-                    continue  # Already floor (e.g. room interior)
-                if _would_create_wide_corridor(dungeon.tiles, x, y):
-                    continue  # Would create a 2-wide corridor
+                if not dungeon.tiles["walkable"][x, y]:
+                    tunnel_tiles.append((x, y))
+            tunnel_set = set(tunnel_tiles)
+            for x, y in tunnel_tiles:
+                if _would_create_wide_corridor(dungeon.tiles, x, y, tunnel_set):
+                    continue
                 dungeon.tiles[x, y] = tile_types.floor
             center_of_last_room = new_room.center
 
