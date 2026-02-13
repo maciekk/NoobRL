@@ -1019,38 +1019,54 @@ class GameOverEventHandler(EventHandler):
         super().on_render(console)
 
         kills = self.engine.kill_counts
-        if not kills:
-            return
+        prompt_y = console.height // 2 + 1
 
-        sorted_kills = sorted(kills.items(), key=lambda kv: kv[1], reverse=True)
-        total_kills = sum(kills.values())
+        if kills:
+            sorted_kills = sorted(kills.items(), key=lambda kv: kv[1], reverse=True)
+            total_kills = sum(kills.values())
 
-        lines = [f"Total kills: {total_kills}"]
-        for name, count in sorted_kills:
-            lines.append(f"  {name}: {count}")
+            lines = [f"Total kills: {total_kills}"]
+            for name, count in sorted_kills:
+                lines.append(f"  {name}: {count}")
 
-        width = max(len(s) for s in lines) + 4
-        height = len(lines) + 2
-        title = "Kill Stats"
-        width = max(width, len(title) + 4)
+            width = max(len(s) for s in lines) + 4
+            height = len(lines) + 2
+            title = "Kill Stats"
+            width = max(width, len(title) + 4)
 
-        x = (console.width - width) // 2
-        y = (console.height - height) // 2
+            x = (console.width - width) // 2
+            y = (console.height - height) // 2
 
-        console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=title, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            console.draw_frame(
+                x=x, y=y, width=width, height=height,
+                title=title, clear=True,
+                fg=(255, 255, 255), bg=(0, 0, 0),
+            )
+            for i, line in enumerate(lines):
+                console.print(x + 1, y + 1 + i, line)
+
+            prompt_y = y + height + 1
+
+        console.print(
+            console.width // 2,
+            prompt_y,
+            "Press Enter for Main Menu, Esc to quit",
+            fg=color.white,
+            alignment=tcod.constants.CENTER,
         )
-        for i, line in enumerate(lines):
-            console.print(x + 1, y + 1 + i, line)
 
     def ev_quit(self, event: tcod.event.Quit) -> None:
         self.on_quit()
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> None:
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+        if event.sym in CONFIRM_KEYS:
+            if os.path.exists("savegame.sav"):
+                os.remove("savegame.sav")
+            import setup_game
+            return setup_game.MainMenu()
         if event.sym == tcod.event.KeySym.ESCAPE:
             self.on_quit()
+        return None
 
 
 CURSOR_Y_KEYS = {
