@@ -13,11 +13,15 @@ support.
 This file is for storing ideas that may be added to the project only.
 
 ### FIXES / WIP
+- [ ] finish fixing the comb-like corridors; perhaps diff algo altogether?
+- [ ] v command should show more info about the monsters, just like the details screen in inventory
+- [ ] add amulets
+- [ ] have an amulet of clairvoyance, which triggers effect on each level (not naturally spawnable; for debugging)
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 - [ ] use different, appropriate sfx for wizard attack
-- [ ] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
 
 ### General
+- [ ] ability to "go to" dungeon feature (e.g., '>')
 - [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
 - [ ] for variety, each text trigger maps to a SET of sfx, not just one
 
@@ -35,6 +39,7 @@ This file is for storing ideas that may be added to the project only.
 - [ ] avoid corridors two squares wide
 - [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] procgen chests with loot
+- [ ] rooms should have doors (but not always); also, sometimes they would be locked
 
 ### Weapons & Armour
 - [ ] variable damage on weapons (e.g., 1d10)
@@ -51,7 +56,6 @@ This file is for storing ideas that may be added to the project only.
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add scroll: Teleport (user-controlled target, must be in explored space)
 - [ ] add rings
-- [ ] add amulets
 - [ ] add more wands
   - [ ] wands should have charges, be non-stackable
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
@@ -70,13 +74,13 @@ This file is for storing ideas that may be added to the project only.
 - [ ] Find something useful to do with monster corpses (food? crafting?)
 
 ### UI
-- [ ] have function to examine item in inventory; flavour text, stats, etc
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 
 ### DONE
+- [x] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
 - [x] command which lists items, monsters, corpses, and features visible from current location (Shift+V), with relative directions and distance sorting
 - [x] there should be a distinction between a "known about" square vs "already visited"
   - [x] claivoyance should only update unknown -> known
@@ -97,6 +101,7 @@ This file is for storing ideas that may be added to the project only.
 - [x] stack items (e.g., all potions of healing should take one inventory slot)
 - [x] fix Shift-motion, such that player DOES enter open room
 - [x] have upwards stairwells, but then regen levels (like in Angband)
+- [x] have function to examine item in inventory; flavour text, stats, etc
 
 ## Design Choices
 
