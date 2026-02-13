@@ -12,9 +12,10 @@ if TYPE_CHECKING:
 class Equipment(BaseComponent):
     parent: Actor
 
-    def __init__(self, weapon: Optional[Item] = None, armor: Optional[Item] = None):
+    def __init__(self, weapon: Optional[Item] = None, armor: Optional[Item] = None, amulet: Optional[Item] = None):
         self.weapon = weapon
         self.armor = armor
+        self.amulet = amulet
 
     @property
     def defense_bonus(self) -> int:
@@ -25,6 +26,9 @@ class Equipment(BaseComponent):
 
         if self.armor is not None and self.armor.equippable is not None:
             bonus += self.armor.equippable.defense_bonus
+
+        if self.amulet is not None and self.amulet.equippable is not None:
+            bonus += self.amulet.equippable.defense_bonus
 
         return bonus
 
@@ -38,10 +42,13 @@ class Equipment(BaseComponent):
         if self.armor is not None and self.armor.equippable is not None:
             bonus += self.armor.equippable.power_bonus
 
+        if self.amulet is not None and self.amulet.equippable is not None:
+            bonus += self.amulet.equippable.power_bonus
+
         return bonus
 
     def item_is_equipped(self, item: Item) -> bool:
-        return self.weapon == item or self.armor == item
+        return self.weapon == item or self.armor == item or self.amulet == item
 
     def unequip_message(self, item_name: str) -> None:
         if self.parent is None:
@@ -72,6 +79,9 @@ class Equipment(BaseComponent):
         if add_message:
             self.equip_message(item.name)
 
+        if item.equippable:
+            item.equippable.on_equip()
+
     def unequip_from_slot(self, slot: str, add_message: bool) -> None:
         current_item = getattr(self, slot)
 
@@ -86,6 +96,11 @@ class Equipment(BaseComponent):
             and equippable_item.equippable.equipment_type == EquipmentType.WEAPON
         ):
             slot = "weapon"
+        elif (
+            equippable_item.equippable
+            and equippable_item.equippable.equipment_type == EquipmentType.AMULET
+        ):
+            slot = "amulet"
         else:
             slot = "armor"
 

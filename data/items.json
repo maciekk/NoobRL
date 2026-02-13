@@ -141,5 +141,14 @@
     "consumable": {
       "name": "WishingWandConsumable"
     }
+  },
+  {
+    "id": "amulet_clairvoyance",
+    "name": "Amulet of Clairvoyance",
+    "char": "\"",
+    "color": [127, 255, 255],
+    "equippable": {
+      "name": "AmuletOfClairvoyance"
+    }
   }
 ]

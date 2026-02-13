@@ -23,6 +23,9 @@ class Equippable(BaseComponent):
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
 
+    def on_equip(self) -> None:
+        pass
+
 
 class Dagger(Equippable):
     def __init__(self) -> None:
@@ -54,3 +57,12 @@ class ChainMail(Equippable):
 class SteelArmor(Equippable):
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=5)
+
+
+class AmuletOfClairvoyance(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.AMULET)
+
+    def on_equip(self) -> None:
+        from components.consumable import apply_clairvoyance
+        apply_clairvoyance(self.engine)

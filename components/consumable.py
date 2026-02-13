@@ -198,35 +198,40 @@ class FireballDamageConsumable(Consumable):
         self.consume()
 
 
+def apply_clairvoyance(engine) -> None:
+    """Reveal the dungeon layout (walls adjacent to walkable tiles)."""
+    game_map = engine.game_map
+    walkable = game_map.tiles["walkable"]
+    reveal = walkable.copy()
+    h, w = walkable.shape
+    for dy in range(-1, 2):
+        for dx in range(-1, 2):
+            if dx == 0 and dy == 0:
+                continue
+            shifted = np.roll(np.roll(walkable, dy, axis=0), dx, axis=1)
+            # Zero out wrapped edges
+            if dy == -1:
+                shifted[-1, :] = False
+            elif dy == 1:
+                shifted[0, :] = False
+            if dx == -1:
+                shifted[:, -1] = False
+            elif dx == 1:
+                shifted[:, 0] = False
+            reveal |= shifted
+    game_map.revealed |= reveal
+    engine.message_log.add_message(
+        "The dungeon layout is revealed to you!",
+        color.status_effect_applied,
+    )
+
+
 class ClairvoyanceConsumable(Consumable):
     def get_description(self) -> list[str]:
         return ["Reveals the dungeon layout"]
 
     def activate(self, action: actions.ItemAction) -> None:
-        game_map = self.engine.game_map
-        walkable = game_map.tiles["walkable"]
-        reveal = walkable.copy()
-        h, w = walkable.shape
-        for dy in range(-1, 2):
-            for dx in range(-1, 2):
-                if dx == 0 and dy == 0:
-                    continue
-                shifted = np.roll(np.roll(walkable, dy, axis=0), dx, axis=1)
-                # Zero out wrapped edges
-                if dy == -1:
-                    shifted[-1, :] = False
-                elif dy == 1:
-                    shifted[0, :] = False
-                if dx == -1:
-                    shifted[:, -1] = False
-                elif dx == 1:
-                    shifted[:, 0] = False
-                reveal |= shifted
-        game_map.revealed |= reveal
-        self.engine.message_log.add_message(
-            "The dungeon layout is revealed to you!",
-            color.status_effect_applied,
-        )
+        apply_clairvoyance(self.engine)
         self.consume()
 
 

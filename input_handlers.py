@@ -617,6 +617,8 @@ class ItemDetailHandler(AskUserEventHandler):
             from equipment_types import EquipmentType
             if item.equippable.equipment_type == EquipmentType.WEAPON:
                 lines.append(("Weapon", color.white))
+            elif item.equippable.equipment_type == EquipmentType.AMULET:
+                lines.append(("Amulet", color.white))
             else:
                 lines.append(("Armor", color.white))
         elif item.consumable:

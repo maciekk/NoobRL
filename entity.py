@@ -48,6 +48,7 @@ EQUIPPABLE_MAP = {
     "LeatherArmor": equippable.LeatherArmor,
     "ChainMail": equippable.ChainMail,
     "SteelArmor": equippable.SteelArmor,
+    "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,

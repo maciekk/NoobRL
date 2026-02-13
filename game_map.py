@@ -160,3 +160,9 @@ class GameWorld:
             engine=self.engine,
             ascending=direction < 0,
         )
+
+        from components.equippable import AmuletOfClairvoyance
+        amulet = self.engine.player.equipment.amulet
+        if amulet and isinstance(amulet.equippable, AmuletOfClairvoyance):
+            from components.consumable import apply_clairvoyance
+            apply_clairvoyance(self.engine)
