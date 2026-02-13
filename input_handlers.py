@@ -1361,7 +1361,7 @@ class ViewKeybinds(AskUserEventHandler):
         "c: character stats",
         ">: descend",
         "<: ascend",
-        "v: examine dungeon",
+        "v: examine dungeon (Enter: inspect)",
         "V: view surroundings",
         "w: walk",
     ]
