@@ -167,6 +167,28 @@ def tunnel_between(
         yield x, y
 
 
+def _would_create_wide_corridor(tiles, x, y):
+    """Check if setting (x, y) to floor would complete any 2x2 block of walkable tiles."""
+    w, h = tiles.shape
+    for dx, dy in [(0, 0), (-1, 0), (0, -1), (-1, -1)]:
+        bx, by = x + dx, y + dy
+        if bx < 0 or by < 0 or bx + 2 > w or by + 2 > h:
+            continue
+        all_floor = True
+        for cx in range(bx, bx + 2):
+            for cy in range(by, by + 2):
+                if cx == x and cy == y:
+                    continue
+                if not tiles["walkable"][cx, cy]:
+                    all_floor = False
+                    break
+            if not all_floor:
+                break
+        if all_floor:
+            return True
+    return False
+
+
 def generate_dungeon(
     max_rooms: int,
     room_min_size: int,
@@ -210,6 +232,10 @@ def generate_dungeon(
         else:  # All rooms after the first.
             # Dig out a tunnel between this room and the previous one.
             for x, y in tunnel_between(rooms[-1].center, new_room.center):
+                if dungeon.tiles["walkable"][x, y]:
+                    continue  # Already floor (e.g. room interior)
+                if _would_create_wide_corridor(dungeon.tiles, x, y):
+                    continue  # Would create a 2-wide corridor
                 dungeon.tiles[x, y] = tile_types.floor
             center_of_last_room = new_room.center
 
