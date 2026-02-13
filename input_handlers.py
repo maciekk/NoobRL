@@ -23,7 +23,7 @@ import exceptions
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Item
+    from entity import Actor, Item
 
 
 MOVE_KEYS = {
@@ -886,9 +886,228 @@ class SelectIndexHandler(AskUserEventHandler):
 class LookHandler(SelectIndexHandler):
     """Lets the player look around using the keyboard."""
 
-    def on_index_selected(self, x: int, y: int) -> MainGameEventHandler:
-        """Return to main handler."""
+    def __init__(self, engine: Engine, look_x: Optional[int] = None, look_y: Optional[int] = None):
+        super().__init__(engine)
+        if look_x is not None and look_y is not None:
+            engine.mouse_location = look_x, look_y
+
+    def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
+        """Inspect what's under the cursor, or return to main handler."""
+        game_map = self.engine.game_map
+
+        # Check for a visible monster (not the player).
+        if game_map.visible[x, y]:
+            actor = game_map.get_actor_at_location(x, y)
+            if actor and actor is not self.engine.player and actor.is_alive:
+                return MonsterDetailHandler(self.engine, actor, x, y)
+
+            # Check for visible items on this tile.
+            items_here = [item for item in game_map.items if item.x == x and item.y == y]
+            if items_here:
+                if len(items_here) == 1:
+                    return FloorItemDetailHandler(self.engine, items_here[0], x, y)
+                else:
+                    return FloorItemListHandler(self.engine, items_here, x, y)
+
         return MainGameEventHandler(self.engine)
+
+class MonsterDetailHandler(AskUserEventHandler):
+    """Shows detailed stats for a monster under the look cursor."""
+
+    def __init__(self, engine: Engine, actor: "Actor", look_x: int, look_y: int):
+        super().__init__(engine)
+        self.actor = actor
+        self.look_x = look_x
+        self.look_y = look_y
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        actor = self.actor
+        lines: list[tuple[str, tuple[int, int, int]]] = []
+
+        lines.append((f"{actor.char} {actor.name}", actor.color))
+        lines.append((f"HP: {actor.fighter.hp}/{actor.fighter.max_hp}", color.white))
+        lines.append((f"Attack: {actor.fighter.power}", color.white))
+        lines.append((f"Defense: {actor.fighter.defense}", color.white))
+        lines.append((f"XP: {actor.level.xp_given}", color.white))
+        lines.append(("", color.white))
+        lines.append(("(Esc) Back", color.white))
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        max_line_width = max(len(text) for text, _ in lines)
+        width = max(len(actor.name) + 6, max_line_width + 2)
+        height = len(lines) + 2
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=actor.name, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        for i, (text, fg) in enumerate(lines):
+            console.print(x + 1, y + 1 + i, text, fg=fg)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return LookHandler(self.engine, self.look_x, self.look_y)
+        if key in {
+            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+        }:
+            return None
+        return None
+
+
+class FloorItemListHandler(AskUserEventHandler):
+    """Lets the player select from multiple items on a floor tile."""
+
+    TITLE = "Items on floor"
+
+    def __init__(self, engine: Engine, items: list, look_x: int, look_y: int):
+        super().__init__(engine)
+        self.items_list = items
+        self.look_x = look_x
+        self.look_y = look_y
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        number_of_items = len(self.items_list)
+        height = number_of_items + 2
+        if height <= 3:
+            height = 3
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        item_strings = []
+        for i, item in enumerate(self.items_list):
+            item_key = chr(ord("a") + i)
+            item_strings.append(f"({item_key}) {item.name}")
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=self.TITLE, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        for i, item_string in enumerate(item_strings):
+            console.print(x + 1, y + i + 1, item_string)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return LookHandler(self.engine, self.look_x, self.look_y)
+
+        index = key - tcod.event.KeySym.a
+        if 0 <= index < len(self.items_list):
+            return FloorItemDetailHandler(self.engine, self.items_list[index], self.look_x, self.look_y)
+
+        if key in {
+            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+        }:
+            return None
+        return None
+
+
+class FloorItemDetailHandler(AskUserEventHandler):
+    """Shows read-only item details for an item on the floor."""
+
+    def __init__(self, engine: Engine, item: Item, look_x: int, look_y: int):
+        super().__init__(engine)
+        self.item = item
+        self.look_x = look_x
+        self.look_y = look_y
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        item = self.item
+        lines: list[tuple[str, tuple[int, int, int]]] = []
+
+        # Item name with symbol.
+        lines.append((f"{item.char} {item.name}", item.color))
+
+        # Type line.
+        if item.equippable:
+            from equipment_types import EquipmentType
+            if item.equippable.equipment_type == EquipmentType.WEAPON:
+                lines.append(("Weapon", color.white))
+            elif item.equippable.equipment_type == EquipmentType.AMULET:
+                lines.append(("Amulet", color.white))
+            else:
+                lines.append(("Armor", color.white))
+        elif item.consumable:
+            if item.stackable and item.stack_count > 1:
+                lines.append((f"Consumable (x{item.stack_count})", color.white))
+            else:
+                lines.append(("Consumable", color.white))
+        else:
+            lines.append(("Item", color.white))
+
+        # Description for consumable items.
+        if item.consumable:
+            for desc_line in item.consumable.get_description():
+                lines.append((desc_line, color.white))
+
+        # Stats for equippable items.
+        if item.equippable:
+            if item.equippable.power_bonus:
+                lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
+            if item.equippable.defense_bonus:
+                lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+
+        lines.append(("", color.white))
+        lines.append(("(Esc) Back", color.white))
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        max_line_width = max(len(text) for text, _ in lines)
+        width = max(len(item.name) + 6, max_line_width + 2)
+        height = len(lines) + 2
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=item.name, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        for i, (text, fg) in enumerate(lines):
+            console.print(x + 1, y + 1 + i, text, fg=fg)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        if key == tcod.event.KeySym.ESCAPE:
+            return LookHandler(self.engine, self.look_x, self.look_y)
+        if key in {
+            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+        }:
+            return None
+        return None
+
 
 class WalkChoiceHandler(SelectIndexHandler):
     def on_index_selected(self, x: int, y: int):
