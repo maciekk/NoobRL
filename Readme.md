@@ -26,7 +26,7 @@ Ideas & efforts under way.
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 ### Interesting Mechanics
-- [ ] some monsters should patrol roorms, even before spotting you
+- [ ] some monsters should patrol rooms, even before spotting you
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] Item weights and maximum carry weight
@@ -49,7 +49,7 @@ Ideas & efforts under way.
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
-- [ ] armour and weapon propreties that affect crit_chance and crit_mult
+- [ ] armour and weapon properties that affect crit_chance and crit_mult
 - [ ] more types of weapons
 - [ ] more types of armour (maybe separate: chest, helmet, gloves, etc)
 - [ ] weapon and armor enchantments
@@ -64,8 +64,6 @@ Ideas & efforts under way.
   - [ ] wands should have charges, be non-stackable
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
-- [ ] scrolls & potions should initially have generic descriptions (e.g., red potion),
-      and player has to figure out item type based on effects.]
 - [ ] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
 - [ ] wand of wishing should even spawn monsters
