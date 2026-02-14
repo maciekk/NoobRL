@@ -931,6 +931,14 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append((f"Attack: {actor.fighter.power}", color.white))
         lines.append((f"Defense: {actor.fighter.defense}", color.white))
         lines.append((f"XP: {actor.level.xp_given}", color.white))
+        if actor.noticed_player:
+            ai = actor.ai
+            if hasattr(ai, "last_known_target") and ai.last_known_target:
+                lines.append(("Hunting", color.dangerous))
+            else:
+                lines.append(("Aware of you", color.risky))
+        else:
+            lines.append(("Unaware", color.safe))
         lines.append(("", color.white))
         lines.append(("(Esc) Back", color.white))
 

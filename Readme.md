@@ -8,38 +8,42 @@ support.
 
 ![Screenshot](screenshot.png)
 
-## Ideas
+## Work Items
 
-This file is for storing ideas that may be added to the project only.
+Ideas & efforts under way.
 
 ### FIXES / WIP
-- [ ] finish fixing the comb-like corridors; perhaps diff algo altogether?
-- [ ] v command should show more info about the monsters, just like the details screen in inventory
-- [ ] add amulets
-- [ ] have an amulet of clairvoyance, which triggers effect on each level (not naturally spawnable; for debugging)
-- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
-- [ ] use different, appropriate sfx for wizard attack
+- [ ] why are orcs unable to damage you from the start? armor too strong?
+- [ ] don't use color.health_recovered, unless specifically describing health
+- [ ] monsters should have memory of where they last saw you, and proceed there even if you disappeared
+- [ ] potion of invisibility (useful for debugging monster memory)
 
 ### General
 - [ ] ability to "go to" dungeon feature (e.g., '>')
 - [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
+- [ ] use different, appropriate sfx for wizard attack
 - [ ] for variety, each text trigger maps to a SET of sfx, not just one
+- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 ### Interesting Mechanics
+- [ ] some monsters should patrol roorms, even before spotting you
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] Item weights and maximum carry weight
-- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] incremental knowledge: ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
 - [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
   - [ ] offer Scrolls of Identify to be found/bought, "identifying services"
+- [ ] allow monsters to be asleep, fall asleep
+  - [ ] have Potion of sleep
+  - [ ] allow potions to be thrown (at monsters), and convey their powers when they break
 
 ### Map Generation
 - [ ] improved map generation
-- [ ] avoid corridors two squares wide
 - [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] procgen chests with loot
 - [ ] rooms should have doors (but not always); also, sometimes they would be locked
+- [ ] secret doors!
+- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 
 ### Weapons & Armour
 - [ ] variable damage on weapons (e.g., 1d10)
@@ -80,6 +84,11 @@ This file is for storing ideas that may be added to the project only.
 - [ ] shop keepers
 
 ### DONE
+- [x] v command should show more info about the monsters, just like the details screen in inventory
+- [x] finish fixing the comb-like corridors; perhaps diff algo altogether?
+- [x] add amulets
+- [x] have an amulet of clairvoyance, which triggers effect on each level (not naturally spawnable; for debugging)
+- [x] avoid corridors two squares wide
 - [x] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
 - [x] command which lists items, monsters, corpses, and features visible from current location (Shift+V), with relative directions and distance sorting
 - [x] there should be a distinction between a "known about" square vs "already visited"

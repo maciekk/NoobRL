@@ -63,6 +63,7 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
+        self.last_known_target: Optional[Tuple[int, int]] = None
 
     def perform(self) -> None:
         target = self.engine.player
@@ -86,6 +87,9 @@ class HostileEnemy(BaseAI):
                     Dragon_message = "You have been spotted by a hydra!"
                     Dragon_message_color = color.hydra_roar
                     self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+
+            self.last_known_target = (target.x, target.y)
+
             if self.entity.name == "Wizard":
                 if distance <= 3:
                     return RangedAttackAction(self.entity, dx, dy).perform()
@@ -97,6 +101,13 @@ class HostileEnemy(BaseAI):
                 return MeleeAction(self.entity, dx, dy).perform()
 
             self.path = self.entity.get_path_to(target.x, target.y)
+
+        elif self.last_known_target:
+            if (self.entity.x, self.entity.y) == self.last_known_target:
+                self.last_known_target = None
+                self.path = []
+            else:
+                self.path = self.entity.get_path_to(*self.last_known_target)
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)
