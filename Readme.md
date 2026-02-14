@@ -34,7 +34,8 @@ Ideas & efforts under way.
   - [ ] allow potions to be thrown (at monsters), and convey their powers when they break
 
 ### Map Generation
-- [ ] improved map generation
+- [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
+- [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 - [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] procgen chests with loot
 - [ ] rooms should have doors (but not always); also, sometimes they would be locked
@@ -73,13 +74,13 @@ Ideas & efforts under way.
 - [ ] Find something useful to do with monster corpses (food? crafting?)
 
 ### UI
-- [ ] want wider text on the bottom
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 
 ### DONE
+- [x] want wider text on the bottom
 - [x] monsters should have memory of where they last saw you, and proceed there even if you disappeared
 - [x] potion of invisibility (useful for debugging monster memory)
 - [x] don't use color.health_recovered, unless specifically describing health

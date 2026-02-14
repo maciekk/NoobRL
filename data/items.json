@@ -80,6 +80,16 @@
     }
   },
   {
+    "id": "p_speed",
+    "name": "Potion of Speed",
+    "char": "!",
+    "color": [255, 165, 0],
+    "consumable": {
+      "name": "SpeedConsumable",
+      "duration": 10
+    }
+  },
+  {
     "id": "dagger",
     "name": "Dagger",
     "char": ")",

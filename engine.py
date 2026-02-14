@@ -31,14 +31,18 @@ class Engine:
         self.player = self.monster_manager.clone('player')
         self.turn = 1
         self.kill_counts: dict[str, int] = {}
+        self._bonus_actions = 0
 
     def handle_enemy_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
-                try:
-                    entity.ai.perform()
-                except exceptions.Impossible:
-                    pass  # Ignore impossible action exceptions from AI.
+                entity.energy += entity.speed
+                while entity.energy >= 100 and entity.ai:
+                    entity.energy -= 100
+                    try:
+                        entity.ai.perform()
+                    except exceptions.Impossible:
+                        pass  # Ignore impossible action exceptions from AI.
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the players point of view."""
@@ -101,7 +105,12 @@ class Engine:
                 eff.apply_turn()
 
     def end_turn(self):
+        if self._bonus_actions > 0:
+            self._bonus_actions -= 1
+            self.update_fov()
+            return
         self.apply_timed_effects()
         self.handle_enemy_turns()
         self.update_fov()
         self.turn += 1
+        self._bonus_actions = (self.player.speed // 100) - 1

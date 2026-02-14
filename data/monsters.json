@@ -46,6 +46,7 @@
     "char": "T",
     "color": [0, 127, 0],
     "ai_cls": "HostileEnemy",
+    "base_speed": 50,
     "equipment": {
     },
     "fighter": {
@@ -66,6 +67,7 @@
     "char": "D",
     "color": [255, 0, 0],
     "ai_cls": "HostileEnemy",
+    "base_speed": 50,
     "equipment": {
     },
     "fighter": {
@@ -86,6 +88,7 @@
     "char": "D",
     "color": [210, 87, 255],
     "ai_cls": "HostileEnemy",
+    "base_speed": 50,
     "equipment": {
     },
     "fighter": {
@@ -146,6 +149,7 @@
     "char": "c",
     "color": [110, 202, 255],
     "ai_cls": "HostileEnemy",
+    "base_speed": 200,
     "equipment": {
     },
     "fighter": {

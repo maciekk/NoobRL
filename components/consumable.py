@@ -6,7 +6,7 @@ import numpy as np
 import actions
 import color
 import components.ai
-from components.effect import InvisibilityEffect, RageEffect
+from components.effect import InvisibilityEffect, RageEffect, SpeedEffect
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
@@ -151,6 +151,26 @@ class InvisibilityConsumable(Consumable):
         eff.parent = consumer
         self.engine.message_log.add_message(
             "You fade from sight!",
+            color.status_effect_applied,
+        )
+        eff.activate()
+        self.consume()
+
+
+class SpeedConsumable(Consumable):
+    def __init__(self, duration: int):
+        self.duration = duration
+
+    def get_description(self) -> list[str]:
+        return [f"Grants double speed for {self.duration} turns"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        eff = SpeedEffect(engine=self.engine, duration=self.duration)
+        consumer.effects.append(eff)
+        eff.parent = consumer
+        self.engine.message_log.add_message(
+            "You feel yourself moving faster!",
             color.status_effect_applied,
         )
         eff.activate()

@@ -40,6 +40,7 @@ CONSUMABLE_MAP = {
     "ClairvoyanceConsumable": consumable.ClairvoyanceConsumable,
     "WishingWandConsumable": consumable.WishingWandConsumable,
     "InvisibilityConsumable": consumable.InvisibilityConsumable,
+    "SpeedConsumable": consumable.SpeedConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,
@@ -147,10 +148,7 @@ class Entity:
         pathfinder.add_root((self.x, self.y))  # Start position.
 
         # Compute the path to the destination and remove the starting point.
-        if self.name == "Crawler":
-            path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[2:].tolist()
-        else:
-            path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+        path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
 
         # Convert from List[List[int]] to List[Tuple[int, int]].
         return [(index[0], index[1]) for index in path]
@@ -169,6 +167,7 @@ class Actor(Entity):
         fighter: Fighter,
         inventory: Inventory,
         level: Level,
+        base_speed: int = 100,
 
     ):
         super().__init__(
@@ -204,6 +203,13 @@ class Actor(Entity):
 
         self.noticed_player = False
         self.is_invisible = False
+        self.base_speed = base_speed
+        self.energy = 0
+        self.is_hasted = False
+
+    @property
+    def speed(self) -> int:
+        return self.base_speed * (2 if self.is_hasted else 1)
 
     @property
     def is_alive(self) -> bool:
