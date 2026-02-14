@@ -33,7 +33,7 @@ def _init_audio():
 
 def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
-    map_width = 80
+    map_width = 120
     map_height = 43
 
     room_max_size = 10

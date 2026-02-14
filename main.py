@@ -16,7 +16,7 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
         print("Game saved.")
 
 def main() -> None:
-    n_cols = 80
+    n_cols = 120
     n_rows = 50
 
     # Set to '2' (for small tileset on high-res monitors).
