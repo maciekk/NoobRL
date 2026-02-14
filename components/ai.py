@@ -71,7 +71,7 @@ class HostileEnemy(BaseAI):
         dy = target.y - self.entity.y
         distance = max(abs(dx), abs(dy))  # Chebyshev distance.
 
-        if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+        if self.engine.game_map.visible[self.entity.x, self.entity.y] and not self.engine.player.is_invisible:
             # Give actor chance to notice player, if that has not happened yet.
             if not self.entity.noticed_player:
                 self.entity.noticed_player = True

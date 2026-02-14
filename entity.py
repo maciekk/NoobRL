@@ -39,6 +39,7 @@ CONSUMABLE_MAP = {
     "RageConsumable": consumable.RageConsumable,
     "ClairvoyanceConsumable": consumable.ClairvoyanceConsumable,
     "WishingWandConsumable": consumable.WishingWandConsumable,
+    "InvisibilityConsumable": consumable.InvisibilityConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,
@@ -202,6 +203,7 @@ class Actor(Entity):
         self.effects = []
 
         self.noticed_player = False
+        self.is_invisible = False
 
     @property
     def is_alive(self) -> bool:

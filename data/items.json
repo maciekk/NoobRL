@@ -70,6 +70,16 @@
     }
   },
   {
+    "id": "p_invisibility",
+    "name": "Potion of Invisibility",
+    "char": "!",
+    "color": [128, 128, 192],
+    "consumable": {
+      "name": "InvisibilityConsumable",
+      "duration": 10
+    }
+  },
+  {
     "id": "dagger",
     "name": "Dagger",
     "char": ")",

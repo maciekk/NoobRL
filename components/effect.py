@@ -45,3 +45,19 @@ class RageEffect(TimedEffect):
         super().expire()
         self.parent.fighter.base_power = round(self.parent.fighter.base_power / self.dmg_mult)
         self.parent.effects.remove(self)
+
+
+class InvisibilityEffect(TimedEffect):
+    def __init__(self, engine: Engine, duration: int):
+        super().__init__(engine)
+        self.max_turns = duration
+        self.name = "Invisible"
+
+    def activate(self):
+        super().activate()
+        self.parent.is_invisible = True
+
+    def expire(self):
+        super().expire()
+        self.parent.is_invisible = False
+        self.parent.effects.remove(self)

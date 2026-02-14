@@ -109,8 +109,11 @@ class GameMap:
 
         for entity in entities_sorted_for_rendering:
             if self.visible[entity.x, entity.y]:
+                fg = entity.color
+                if entity is self.engine.player and entity.is_invisible:
+                    fg = (100, 100, 100)
                 console.print(
-                    x=entity.x, y=entity.y, string=entity.char, fg=entity.color
+                    x=entity.x, y=entity.y, string=entity.char, fg=fg
                 )
 
         # Draw pile symbol on top of tiles with 2+ items (but not if an actor is there)

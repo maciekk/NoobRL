@@ -13,10 +13,6 @@ support.
 Ideas & efforts under way.
 
 ### FIXES / WIP
-- [ ] why are orcs unable to damage you from the start? armor too strong?
-- [ ] don't use color.health_recovered, unless specifically describing health
-- [ ] monsters should have memory of where they last saw you, and proceed there even if you disappeared
-- [ ] potion of invisibility (useful for debugging monster memory)
 
 ### General
 - [ ] ability to "go to" dungeon feature (e.g., '>')
@@ -57,6 +53,7 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
+- [ ] potion of speed - double move speed for N turns
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add scroll: Teleport (user-controlled target, must be in explored space)
 - [ ] add rings
@@ -66,7 +63,7 @@ Ideas & efforts under way.
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 - [ ] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
-- [ ] wand of wishing should even spawn monsters
+- [ ] wand of wishing should even be able to spawn monsters
 - [ ] maybe later add max stack size for consumables
 
 ### Enemies
@@ -76,12 +73,17 @@ Ideas & efforts under way.
 - [ ] Find something useful to do with monster corpses (food? crafting?)
 
 ### UI
+- [ ] want wider text on the bottom
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 
 ### DONE
+- [x] monsters should have memory of where they last saw you, and proceed there even if you disappeared
+- [x] potion of invisibility (useful for debugging monster memory)
+- [x] don't use color.health_recovered, unless specifically describing health
+- [x] why are orcs unable to damage you from the start? armor too strong?
 - [x] v command should show more info about the monsters, just like the details screen in inventory
 - [x] finish fixing the comb-like corridors; perhaps diff algo altogether?
 - [x] add amulets
