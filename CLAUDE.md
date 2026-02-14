@@ -20,7 +20,7 @@ There is no test suite, linter configuration, or formal build system. The Makefi
 
 **Entry point**: `main.py` — initializes tcod context (80x50 terminal), runs the main loop dispatching events to the current handler.
 
-**Core state**: `engine.py` — `Engine` holds the game map, player, managers, message log, and turn counter. Manages turn processing: timed effects → enemy turns → FOV update. Save/load uses pickle + lzma.
+**Core state**: `engine.py` — `Engine` holds the game map, player, managers, message log, and turn counter. Manages turn processing: on a normal turn, timed effects tick → enemies act (energy-based) → FOV updates → turn increments. If the player has bonus actions (from haste), only FOV updates — no enemy turns, no effect ticks, no turn increment. Save/load uses pickle + lzma.
 
 **Entity system**: `entity.py` — `Entity` base class with `Actor` and `Item` subclasses. Uses composition via components. `ItemManager` and `MonsterManager` load templates from JSON files in `data/` and clone them via deep copy.
 
@@ -41,7 +41,7 @@ Both corridor-following actions use `_find_corridor_turn()` which excludes the b
 
 **Procedural generation**: `procgen.py` — `RectangularRoom` with overlap detection, L-shaped tunnels via Bresenham, floor-based difficulty scaling with weighted entity spawn tables.
 
-**Data files**: `data/monsters.json` (player + 7 enemy types with stats), `data/items.json` (consumables + equipment). Managers in `entity.py` dynamically map JSON fields to component classes via `CONSUMABLE_MAP`/`EQUIPPABLE_MAP` dicts. Item display symbols follow roguelike conventions: `?` scrolls, `!` potions, `)` weapons, `[` armor, `/` wands.
+**Data files**: `data/monsters.json` (player + 7 enemy types with stats, optional `base_speed`), `data/items.json` (consumables + equipment). Managers in `entity.py` dynamically map JSON fields to component classes via `CONSUMABLE_MAP`/`EQUIPPABLE_MAP` dicts. Item display symbols follow roguelike conventions: `?` scrolls, `!` potions, `)` weapons, `[` armor, `/` wands.
 
 **Rendering**: `render_functions.py` + `game_map.py`. UI layout: game map fills most of the 80x50 console, stats bar (HP/XP/dungeon level/turn/effects) at bottom-left, message log at bottom-right.
 
@@ -60,3 +60,5 @@ Both corridor-following actions use `_find_corridor_turn()` which excludes the b
 - **Debug shortcuts**: `q` opens debug console for spawning entities by ID. `!` (Shift+1) grants a Wand of Wishing.
 - **Consumable with custom handler**: To create a consumable that opens a selection menu (like `WishingWandConsumable`), override `get_action()` to return an `AskUserEventHandler` subclass. The handler's `ev_keydown()` returns the final action (e.g., `WishAction`). No `activate()` override needed — the action handles everything directly.
 - **Item stack_count in JSON**: Set `stack_count` in `data/items.json` to control initial charges for consumables (e.g., Wand of Wishing has 3). Defaults to 1 if omitted.
+- **Energy-based speed system**: Each `Actor` has `base_speed` (default 100), `energy` accumulator, and `speed` property. Each turn, monsters gain `speed` energy; they act once per 100 energy spent. Crawler has speed 200 (2 actions/turn), troll/dragon/ender_dragon have speed 50 (1 action every 2 turns). Player bonus actions are computed as `(speed // 100) - 1` after each full turn.
+- **Actor boolean flags**: `is_invisible` and `is_hasted` are simple bools on `Actor`, toggled by their respective `TimedEffect` subclasses (`InvisibilityEffect`, `SpeedEffect`). The `speed` property uses `is_hasted` to double `base_speed`. To add a new flag-based buff: add the bool to `Actor.__init__`, create a `TimedEffect` subclass that sets/clears it, and a `Consumable` subclass that creates and activates the effect.

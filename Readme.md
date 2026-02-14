@@ -13,6 +13,10 @@ support.
 Ideas & efforts under way.
 
 ### FIXES / WIP
+- [ ] some monsters should patrol rooms, even before spotting you
+- [ ] allow monsters to be asleep, fall asleep
+  - [ ] have Potion of sleep
+  - [ ] allow potions to be thrown (at monsters), and convey their powers when they break
 
 ### General
 - [ ] ability to "go to" dungeon feature (e.g., '>')
@@ -22,21 +26,17 @@ Ideas & efforts under way.
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 ### Interesting Mechanics
-- [ ] some monsters should patrol rooms, even before spotting you
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
-- [ ] Item weights and maximum carry weight
+- [ ] item weights and maximum carry weight
 - [ ] incremental knowledge: ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
 - [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
   - [ ] offer Scrolls of Identify to be found/bought, "identifying services"
-- [ ] allow monsters to be asleep, fall asleep
-  - [ ] have Potion of sleep
-  - [ ] allow potions to be thrown (at monsters), and convey their powers when they break
 
 ### Map Generation
+- [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
-- [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] procgen chests with loot
 - [ ] rooms should have doors (but not always); also, sometimes they would be locked
 - [ ] secret doors!
@@ -54,7 +54,6 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
-- [ ] potion of speed - double move speed for N turns
 - [ ] add potion: Berserk - 50% more damage for 10 turns
 - [ ] add scroll: Teleport (user-controlled target, must be in explored space)
 - [ ] add rings
@@ -80,6 +79,7 @@ Ideas & efforts under way.
 - [ ] shop keepers
 
 ### DONE
+- [x] potion of speed - double move speed for N turns
 - [x] want wider text on the bottom
 - [x] monsters should have memory of where they last saw you, and proceed there even if you disappeared
 - [x] potion of invisibility (useful for debugging monster memory)
