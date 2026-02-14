@@ -641,7 +641,7 @@ class ItemDetailHandler(AskUserEventHandler):
             if item.equippable.defense_bonus:
                 lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
             if player.equipment.item_is_equipped(item):
-                lines.append(("Currently equipped", color.health_recovered))
+                lines.append(("Currently equipped", color.safe))
             else:
                 lines.append(("Not equipped", color.white))
 
