@@ -48,6 +48,7 @@ The UI is modeled as a **handler state machine**. Each screen is a handler class
 
 - **`MainGameEventHandler`** — normal gameplay. Maps keypresses to Actions (movement, bump, pickup, stairs, wait). Opens menu handlers for inventory, character screen, etc.
 - **`AskUserEventHandler`** subclasses — modal menus (inventory, level-up, targeting, look mode, item detail, drop quantity). They render an overlay and return an Action or another Handler when the player makes a choice.
+- **`ListSelectionHandler(AskUserEventHandler)`** — base class for `(a) Label` style selection menus. Subclass and override `get_items()`, `get_display_string(i, item)`, `on_selection(i, item)`. Set `TITLE`, `EMPTY_TEXT`, `use_cursor`. Used by: `InventoryEventHandler`, `QuaffHandler`, `WishItemHandler`, `FloorItemListHandler`, `DebugSelectHandler`.
 - **`GameOverEventHandler`** — death screen.
 - **`MainMenu`** (in `setup_game.py`) — title screen, new game / load game.
 
@@ -140,6 +141,7 @@ Rendering flows: `Engine.render()` → `GameMap.render()` (tiles via `np.select`
 - **Adding items to inventory programmatically**: When cloning items and adding to inventory outside of `PickupAction`, you must set `item.parent = actor.inventory` before use. The `inventory.add()` method does not set the parent. Without this, `BaseComponent.engine` fails because `gamemap` is None.
 - **Never use `ev_textinput`**: SDL3 does not generate TextInput events in this setup. All key handling must go through `ev_keydown`. For shifted keys, check modifiers explicitly (e.g., `key == tcod.event.KeySym.N1 and modifier & LSHIFT|RSHIFT`). For text input (like the debug console), convert keysyms to characters via `chr(key)` in `ev_keydown`.
 - **Debug shortcuts**: `@` (Shift+2) opens debug console for spawning entities by ID. `!` (Shift+1) grants a Wand of Wishing.
+- **Adding a new selection menu**: Subclass `ListSelectionHandler`. Override `get_items()` (return list), `get_display_string(i, item)` (label text), `on_selection(i, item)` (return Action/Handler). Set `TITLE`. Optionally set `use_cursor = True` for arrow/j/k navigation, `EMPTY_TEXT` for empty state, `on_exit()` for custom escape behavior.
 - **Consumable with custom handler**: To create a consumable that opens a selection menu (like `WishingWandConsumable`), override `get_action()` to return an `AskUserEventHandler` subclass. The handler's `ev_keydown()` returns the final action (e.g., `WishAction`). No `activate()` override needed — the action handles everything directly.
 - **Item stack_count in JSON**: Set `stack_count` in `data/items.json` to control initial charges for consumables (e.g., Wand of Wishing has 3). Defaults to 1 if omitted.
 - **Energy-based speed system**: Each `Actor` has `base_speed` (default 100), `energy` accumulator, and `speed` property. Each turn, monsters gain `speed` energy; they act once per 100 energy spent. Crawler has speed 200 (2 actions/turn), troll/dragon/ender_dragon have speed 50 (1 action every 2 turns). Player bonus actions are computed as `(speed // 100) - 1` after each full turn.
