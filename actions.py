@@ -68,23 +68,27 @@ class PickupAction(Action):
         actor_location_y = self.entity.y
         inventory = self.entity.inventory
 
-        for item in self.engine.game_map.items:
-            if actor_location_x == item.x and actor_location_y == item.y:
-                # Stackable items can merge into an existing stack even when full.
-                can_stack = item.stackable and inventory.find_stack(item.name) is not None
-                if not can_stack and len(inventory.items) >= inventory.capacity:
-                    raise exceptions.Impossible("Your inventory is full.")
+        items_here = [
+            item for item in self.engine.game_map.items
+            if item.x == actor_location_x and item.y == actor_location_y
+        ]
 
-                pickup_count = item.stack_count
-                self.engine.game_map.entities.remove(item)
-                item.parent = self.entity.inventory
-                inventory.add(item)
+        if not items_here:
+            raise exceptions.Impossible("There is nothing here to pick up.")
 
-                count_text = f" (x{pickup_count})" if item.stackable and pickup_count > 1 else ""
-                self.engine.message_log.add_message(f"You picked up the {item.name}{count_text}!")
-                return
+        for item in items_here:
+            can_stack = item.stackable and inventory.find_stack(item.name) is not None
+            if not can_stack and len(inventory.items) >= inventory.capacity:
+                self.engine.message_log.add_message("Your inventory is full.", color.impossible)
+                break
 
-        raise exceptions.Impossible("There is nothing here to pick up.")
+            pickup_count = item.stack_count
+            self.engine.game_map.entities.remove(item)
+            item.parent = self.entity.inventory
+            inventory.add(item)
+
+            count_text = f" (x{pickup_count})" if item.stackable and pickup_count > 1 else ""
+            self.engine.message_log.add_message(f"You picked up the {item.name}{count_text}!")
 
 
 class ItemAction(Action):
