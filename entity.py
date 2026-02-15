@@ -226,6 +226,48 @@ class Actor(Entity):
             self.equipment.toggle_equip(item)
 
 
+class Chest(Entity):
+    def __init__(self, *, x: int = 0, y: int = 0, color: Tuple[int, int, int] = (191, 128, 32), name: str = "chest"):
+        super().__init__(
+            x=x, y=y, char="~", color=color, name=name,
+            blocks_movement=False, render_order=RenderOrder.ITEM,
+        )
+        self.opened = False
+
+    def open(self, opener: Actor) -> None:
+        import exceptions
+        if self.opened:
+            raise exceptions.Impossible("This chest is already open.")
+
+        from dice import roll
+        from procgen import get_entities_at_random, item_chances
+        num_items = roll("1d3") + 1
+        floor = self.gamemap.engine.game_world.current_floor
+        chosen = get_entities_at_random(
+            self.gamemap.engine, item_chances, num_items, floor
+        )
+
+        names = []
+        for template in chosen:
+            if template is None:
+                continue
+            item = template.spawn(self.gamemap, self.x, self.y)
+            names.append(item.name)
+
+        self.char = "_"
+        self.opened = True
+
+        if names:
+            listing = ", ".join(names)
+            self.gamemap.engine.message_log.add_message(
+                f"You open the chest and find: {listing}!"
+            )
+        else:
+            self.gamemap.engine.message_log.add_message(
+                "You open the chest, but it's empty."
+            )
+
+
 class Item(Entity):
     def __init__(
         self,

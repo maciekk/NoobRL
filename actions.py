@@ -130,6 +130,16 @@ class EquipAction(Action):
         self.entity.equipment.toggle_equip(self.item)
 
 
+class OpenAction(Action):
+    def perform(self) -> None:
+        x, y = self.entity.x, self.entity.y
+        for entity in self.engine.game_map.entities:
+            if entity.x == x and entity.y == y and hasattr(entity, 'open'):
+                entity.open(self.entity)
+                return
+        raise exceptions.Impossible("There is nothing here to open.")
+
+
 class WaitAction(Action):
     def perform(self) -> None:
         pass

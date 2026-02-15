@@ -13,6 +13,7 @@ support.
 Ideas & efforts under way.
 
 ### FIXES / WIP
+- [ ] monsters should have different visibility ranges, some shorter than player's
 - [ ] some monsters should patrol rooms, even before spotting you
 - [ ] allow monsters to be asleep, fall asleep
   - [ ] have Potion of sleep
@@ -65,6 +66,7 @@ Ideas & efforts under way.
 - [ ] digging tools, wands - modify the dungeon walls, but slow
 - [ ] wand of wishing should even be able to spawn monsters
 - [ ] maybe later add max stack size for consumables
+- [ ] have various light sources, with various light radii
 
 ### Enemies
 - [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)

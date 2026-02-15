@@ -146,6 +146,14 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
                 continue
             entity.spawn(dungeon, x, y)
 
+    # 10% chance to place a chest in the room.
+    if random.random() < 0.10:
+        from entity import Chest
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        if not any(e.x == x and e.y == y for e in dungeon.entities):
+            Chest().spawn(dungeon, x, y)
+
 
 def tunnel_between(
     start: Tuple[int, int], end: Tuple[int, int]

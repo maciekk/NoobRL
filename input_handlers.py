@@ -14,6 +14,7 @@ from actions import (
     BumpAction,
     CarefulMovementAction,
     MovementRepeatedAction,
+    OpenAction,
     PickupAction,
     TargetMovementAction,
     WaitAction,
@@ -1220,6 +1221,8 @@ class MainGameEventHandler(EventHandler):
             action = PickupAction(player)
         elif key == tcod.event.KeySym.i:
             return InventoryActivateHandler(self.engine)
+        elif key == tcod.event.KeySym.o:
+            action = actions.OpenAction(player)
         elif key == tcod.event.KeySym.d:
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
@@ -1364,6 +1367,7 @@ class ViewKeybinds(AskUserEventHandler):
         ";: log",
         "?: keybinds",
         "g: get item",
+        "o: open (chest)",
         "i: inventory",
         "d: drop",
         "c: character stats",
