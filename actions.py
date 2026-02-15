@@ -455,11 +455,11 @@ class TargetMovementAction(Action):
 
     def perform(self):
         if not self.path:
-            # Nothing to do.
+            return False
+        if self.engine.game_map.any_monsters_visible():
             return False
         x, y = self.path.pop(0)
         if self.engine.game_map.get_blocking_entity_at_location(x, y):
-            # If path becomes blocked, abort further motion.
             return False
         self.entity.move(x - self.entity.x, y - self.entity.y)
         return True  # keep going
