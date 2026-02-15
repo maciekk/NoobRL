@@ -594,6 +594,80 @@ class InventoryDropHandler(InventoryEventHandler):
         return actions.DropItem(self.engine.player, item)
 
 
+class QuaffHandler(AskUserEventHandler):
+    """Lets the player select a potion to quaff."""
+
+    TITLE = "Quaff which potion?"
+
+    def __init__(self, engine: Engine, cursor: int = 0):
+        super().__init__(engine)
+        self.cursor = cursor
+        self.potions = [
+            item for item in engine.player.inventory.items
+            if item.char == "!"
+        ]
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+        height = max(len(self.potions) + 2, 3)
+
+        item_strings = []
+        for i, item in enumerate(self.potions):
+            item_key = chr(ord("a") + i)
+            s = f"({item_key}) {item.name}"
+            if item.stackable and item.stack_count > 1:
+                s += f" (x{item.stack_count})"
+            item_strings.append(s)
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=self.TITLE, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        if item_strings:
+            num = len(item_strings)
+            self.cursor = max(0, min(self.cursor, num - 1))
+            for i, s in enumerate(item_strings):
+                if i == self.cursor:
+                    console.print(x + 1, y + i + 1, s, fg=color.black, bg=color.white)
+                else:
+                    console.print(x + 1, y + i + 1, s)
+        else:
+            console.print(x + 1, y + 1, "(No potions)")
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        num = len(self.potions)
+
+        if key in INVENTORY_CURSOR_UP_KEYS and num > 0:
+            self.cursor = (self.cursor - 1) % num
+            return None
+        elif key in INVENTORY_CURSOR_DOWN_KEYS and num > 0:
+            self.cursor = (self.cursor + 1) % num
+            return None
+        elif key in CONFIRM_KEYS and num > 0:
+            self.cursor = max(0, min(self.cursor, num - 1))
+            return self.potions[self.cursor].consumable.get_action(self.engine.player)
+
+        index = key - tcod.event.KeySym.a
+        if 0 <= index < num:
+            self.cursor = index
+            return self.potions[index].consumable.get_action(self.engine.player)
+
+        return super().ev_keydown(event)
+
+
 class ItemDetailHandler(AskUserEventHandler):
     """Shows item details and offers contextual actions."""
 
@@ -1235,6 +1309,9 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.w:
             return WalkChoiceHandler(self.engine)
         elif key == tcod.event.KeySym.q:
+            return QuaffHandler(self.engine)
+        elif key == tcod.event.KeySym.N2 and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
             return DebugHandler(self.engine)
         # No valid key was pressed
         return action
@@ -1368,6 +1445,7 @@ class ViewKeybinds(AskUserEventHandler):
         "?: keybinds",
         "g: get item",
         "o: open (chest)",
+        "q: quaff potion",
         "i: inventory",
         "d: drop",
         "c: character stats",
