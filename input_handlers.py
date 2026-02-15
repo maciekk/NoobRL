@@ -206,6 +206,104 @@ class AskUserEventHandler(EventHandler):
         """
         return MainGameEventHandler(self.engine)
 
+class ListSelectionHandler(AskUserEventHandler):
+    """Base class for selection menus with (a) Label style choices.
+
+    Subclasses override:
+        get_items()              -> list of selectable objects
+        get_display_string(i, item) -> label text (letter prefix added automatically)
+        on_selection(i, item)    -> Action or Handler when item is chosen
+
+    Class attributes:
+        TITLE      — frame title
+        EMPTY_TEXT  — shown when list is empty
+        use_cursor  — enables arrow/j/k navigation + Enter confirm + highlight
+    """
+
+    TITLE: str = "<missing title>"
+    EMPTY_TEXT: str = "(Empty)"
+    use_cursor: bool = False
+
+    def __init__(self, engine: Engine, cursor: int = 0):
+        super().__init__(engine)
+        self.cursor = cursor
+
+    def get_items(self) -> list:
+        raise NotImplementedError()
+
+    def get_display_string(self, index: int, item) -> str:
+        raise NotImplementedError()
+
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        raise NotImplementedError()
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        items = self.get_items()
+        num_items = len(items)
+        height = max(num_items + 2, 3)
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        item_strings = []
+        for i, item in enumerate(items):
+            item_key = chr(ord("a") + i)
+            item_strings.append(f"({item_key}) {self.get_display_string(i, item)}")
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=self.TITLE, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        if item_strings:
+            if self.use_cursor:
+                self.cursor = max(0, min(self.cursor, num_items - 1))
+            for i, s in enumerate(item_strings):
+                if self.use_cursor and i == self.cursor:
+                    console.print(x + 1, y + i + 1, s, fg=color.black, bg=color.white)
+                else:
+                    console.print(x + 1, y + i + 1, s)
+        else:
+            console.print(x + 1, y + 1, self.EMPTY_TEXT)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        items = self.get_items()
+        num_items = len(items)
+
+        if self.use_cursor:
+            if key in INVENTORY_CURSOR_UP_KEYS and num_items > 0:
+                self.cursor = (self.cursor - 1) % num_items
+                return None
+            elif key in INVENTORY_CURSOR_DOWN_KEYS and num_items > 0:
+                self.cursor = (self.cursor + 1) % num_items
+                return None
+            elif key in CONFIRM_KEYS and num_items > 0:
+                self.cursor = max(0, min(self.cursor, num_items - 1))
+                return self.on_selection(self.cursor, items[self.cursor])
+
+        index = key - tcod.event.KeySym.a
+        if 0 <= index <= 25:
+            if index < num_items:
+                if self.use_cursor:
+                    self.cursor = index
+                return self.on_selection(index, items[index])
+            else:
+                self.engine.message_log.add_message("Invalid entry.", color.invalid)
+                return None
+        return super().ev_keydown(event)
+
+
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Character Information"
 
@@ -466,108 +564,27 @@ INVENTORY_CURSOR_DOWN_KEYS = {
 }
 
 
-class InventoryEventHandler(AskUserEventHandler):
+class InventoryEventHandler(ListSelectionHandler):
     """This handler lets the user select an item.
     What happens then depends on the subclass.
     """
 
     TITLE = "<missing title>"
+    use_cursor = True
 
-    def __init__(self, engine: Engine, cursor: int = 0):
-        super().__init__(engine)
-        self.cursor = cursor
+    def get_items(self) -> list:
+        return self.engine.player.inventory.items
 
-    def on_render(self, console: tcod.Console) -> None:
-        """Render an inventory menu, which displays the items in the inventory, and the letter to select them.
-        Will move to a different position based on where the player is located, so the player can always see where
-        they are.
-        """
-        super().on_render(console)
-        number_of_items_in_inventory = len(self.engine.player.inventory.items)
+    def get_display_string(self, index: int, item) -> str:
+        s = item.name
+        if item.stackable and item.stack_count > 1:
+            s += f" (x{item.stack_count})"
+        if self.engine.player.equipment.item_is_equipped(item):
+            s += " (E)"
+        return s
 
-        height = number_of_items_in_inventory + 2
-
-        if height <= 3:
-            height = 3
-
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
-        y = 0
-
-        # Build item strings first to compute required width.
-        item_strings = []
-        if number_of_items_in_inventory > 0:
-            for i, item in enumerate(self.engine.player.inventory.items):
-                item_key = chr(ord("a") + i)
-                is_equipped = self.engine.player.equipment.item_is_equipped(item)
-                item_string = f"({item_key}) {item.name}"
-
-                if item.stackable and item.stack_count > 1:
-                    item_string = f"{item_string} (x{item.stack_count})"
-
-                if is_equipped:
-                    item_string = f"{item_string} (E)"
-
-                item_strings.append(item_string)
-
-        max_item_width = max((len(s) for s in item_strings), default=0)
-        width = max(len(self.TITLE) + 4, max_item_width + 2)
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-
-        if item_strings:
-            # Clamp cursor to valid range.
-            num_items = len(item_strings)
-            if num_items > 0:
-                self.cursor = max(0, min(self.cursor, num_items - 1))
-
-            for i, item_string in enumerate(item_strings):
-                if i == self.cursor:
-                    # Highlight cursor row with inverted colors.
-                    console.print(x + 1, y + i + 1, item_string, fg=color.black, bg=color.white)
-                else:
-                    console.print(x + 1, y + i + 1, item_string)
-        else:
-            console.print(x + 1, y + 1, "(Empty)")
-
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        player = self.engine.player
-        key = event.sym
-        items = player.inventory.items
-        num_items = len(items)
-
-        if key in INVENTORY_CURSOR_UP_KEYS and num_items > 0:
-            self.cursor = (self.cursor - 1) % num_items
-            return None
-        elif key in INVENTORY_CURSOR_DOWN_KEYS and num_items > 0:
-            self.cursor = (self.cursor + 1) % num_items
-            return None
-        elif key in CONFIRM_KEYS and num_items > 0:
-            self.cursor = max(0, min(self.cursor, num_items - 1))
-            return self.on_item_selected(items[self.cursor])
-
-        index = key - tcod.event.KeySym.a
-        if 0 <= index <= 26:
-            try:
-                selected_item = items[index]
-            except IndexError:
-                self.engine.message_log.add_message("Invalid entry.", color.invalid)
-                return None
-            self.cursor = index
-            return self.on_item_selected(selected_item)
-        return super().ev_keydown(event)
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        return self.on_item_selected(item)
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
         """Called when the user selects a valid item."""
@@ -594,78 +611,24 @@ class InventoryDropHandler(InventoryEventHandler):
         return actions.DropItem(self.engine.player, item)
 
 
-class QuaffHandler(AskUserEventHandler):
+class QuaffHandler(ListSelectionHandler):
     """Lets the player select a potion to quaff."""
 
     TITLE = "Quaff which potion?"
+    EMPTY_TEXT = "(No potions)"
+    use_cursor = True
 
-    def __init__(self, engine: Engine, cursor: int = 0):
-        super().__init__(engine)
-        self.cursor = cursor
-        self.potions = [
-            item for item in engine.player.inventory.items
-            if item.char == "!"
-        ]
+    def get_items(self) -> list:
+        return [item for item in self.engine.player.inventory.items if item.char == "!"]
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def get_display_string(self, index: int, item) -> str:
+        s = item.name
+        if item.stackable and item.stack_count > 1:
+            s += f" (x{item.stack_count})"
+        return s
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
-        y = 0
-        height = max(len(self.potions) + 2, 3)
-
-        item_strings = []
-        for i, item in enumerate(self.potions):
-            item_key = chr(ord("a") + i)
-            s = f"({item_key}) {item.name}"
-            if item.stackable and item.stack_count > 1:
-                s += f" (x{item.stack_count})"
-            item_strings.append(s)
-
-        max_item_width = max((len(s) for s in item_strings), default=0)
-        width = max(len(self.TITLE) + 4, max_item_width + 2)
-
-        console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=self.TITLE, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
-        )
-
-        if item_strings:
-            num = len(item_strings)
-            self.cursor = max(0, min(self.cursor, num - 1))
-            for i, s in enumerate(item_strings):
-                if i == self.cursor:
-                    console.print(x + 1, y + i + 1, s, fg=color.black, bg=color.white)
-                else:
-                    console.print(x + 1, y + i + 1, s)
-        else:
-            console.print(x + 1, y + 1, "(No potions)")
-
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        key = event.sym
-        num = len(self.potions)
-
-        if key in INVENTORY_CURSOR_UP_KEYS and num > 0:
-            self.cursor = (self.cursor - 1) % num
-            return None
-        elif key in INVENTORY_CURSOR_DOWN_KEYS and num > 0:
-            self.cursor = (self.cursor + 1) % num
-            return None
-        elif key in CONFIRM_KEYS and num > 0:
-            self.cursor = max(0, min(self.cursor, num - 1))
-            return self.potions[self.cursor].consumable.get_action(self.engine.player)
-
-        index = key - tcod.event.KeySym.a
-        if 0 <= index < num:
-            self.cursor = index
-            return self.potions[index].consumable.get_action(self.engine.player)
-
-        return super().ev_keydown(event)
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        return item.consumable.get_action(self.engine.player)
 
 
 class ItemDetailHandler(AskUserEventHandler):
@@ -842,7 +805,7 @@ class DropQuantityHandler(AskUserEventHandler):
         return None
 
 
-class WishItemHandler(AskUserEventHandler):
+class WishItemHandler(ListSelectionHandler):
     """Lets the player choose any game item to wish for."""
 
     TITLE = "Wish for an item"
@@ -850,57 +813,21 @@ class WishItemHandler(AskUserEventHandler):
     def __init__(self, engine: Engine, wand_item: Item):
         super().__init__(engine)
         self.wand_item = wand_item
-        self.item_list = sorted(
+        self._item_list = sorted(
             [(id, item.name) for id, item in engine.item_manager.items.items()
              if id != "wand_wishing"],
             key=lambda x: x[1],
         )
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def get_items(self) -> list:
+        return self._item_list
 
-        number_of_items = len(self.item_list)
-        height = number_of_items + 2
-        if height <= 3:
-            height = 3
+    def get_display_string(self, index: int, item) -> str:
+        return item[1]
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
-        y = 0
-
-        item_strings = []
-        for i, (item_id, item_name) in enumerate(self.item_list):
-            item_key = chr(ord("a") + i)
-            item_strings.append(f"({item_key}) {item_name}")
-
-        max_item_width = max((len(s) for s in item_strings), default=0)
-        width = max(len(self.TITLE) + 4, max_item_width + 2)
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-
-        for i, item_string in enumerate(item_strings):
-            console.print(x + 1, y + i + 1, item_string)
-
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        key = event.sym
-        index = key - tcod.event.KeySym.a
-
-        if 0 <= index < len(self.item_list):
-            item_id, item_name = self.item_list[index]
-            return actions.WishAction(self.engine.player, self.wand_item, item_id)
-        return super().ev_keydown(event)
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        item_id, item_name = item
+        return actions.WishAction(self.engine.player, self.wand_item, item_id)
 
 
 class SelectIndexHandler(AskUserEventHandler):
@@ -1049,7 +976,7 @@ class MonsterDetailHandler(AskUserEventHandler):
         return None
 
 
-class FloorItemListHandler(AskUserEventHandler):
+class FloorItemListHandler(ListSelectionHandler):
     """Lets the player select from multiple items on a floor tile."""
 
     TITLE = "Items on floor"
@@ -1060,54 +987,17 @@ class FloorItemListHandler(AskUserEventHandler):
         self.look_x = look_x
         self.look_y = look_y
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
+    def get_items(self) -> list:
+        return self.items_list
 
-        number_of_items = len(self.items_list)
-        height = number_of_items + 2
-        if height <= 3:
-            height = 3
+    def get_display_string(self, index: int, item) -> str:
+        return item.name
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        return FloorItemDetailHandler(self.engine, item, self.look_x, self.look_y)
 
-        y = 0
-
-        item_strings = []
-        for i, item in enumerate(self.items_list):
-            item_key = chr(ord("a") + i)
-            item_strings.append(f"({item_key}) {item.name}")
-
-        max_item_width = max((len(s) for s in item_strings), default=0)
-        width = max(len(self.TITLE) + 4, max_item_width + 2)
-
-        console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=self.TITLE, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
-        )
-
-        for i, item_string in enumerate(item_strings):
-            console.print(x + 1, y + i + 1, item_string)
-
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        key = event.sym
-        if key == tcod.event.KeySym.ESCAPE:
-            return LookHandler(self.engine, self.look_x, self.look_y)
-
-        index = key - tcod.event.KeySym.a
-        if 0 <= index < len(self.items_list):
-            return FloorItemDetailHandler(self.engine, self.items_list[index], self.look_x, self.look_y)
-
-        if key in {
-            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
-            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
-            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
-        }:
-            return None
-        return None
+    def on_exit(self) -> Optional[ActionOrHandler]:
+        return LookHandler(self.engine, self.look_x, self.look_y)
 
 
 class FloorItemDetailHandler(AskUserEventHandler):

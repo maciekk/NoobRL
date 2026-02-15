@@ -4,7 +4,7 @@ import tcod
 
 from engine import Engine
 from game_map import GameMap
-from input_handlers import AskUserEventHandler, MainGameEventHandler
+from input_handlers import AskUserEventHandler, ListSelectionHandler, MainGameEventHandler
 
 
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
@@ -87,54 +87,23 @@ class DebugHandler(AskUserEventHandler):
         return None
 
 
-class DebugSelectHandler(AskUserEventHandler):
+class DebugSelectHandler(ListSelectionHandler):
     """Select from multiple matching entities."""
+
+    TITLE = "Select entity to spawn"
 
     def __init__(self, engine: Engine, matches: List[Tuple[str, str]]):
         super().__init__(engine)
         self.matches = matches
 
-    def on_render(self, console: tcod.console.Console) -> None:
-        super().on_render(console)
+    def get_items(self) -> list:
+        return self.matches
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+    def get_display_string(self, index: int, item) -> str:
+        return item[1]
 
-        y = 0
-        height = len(self.matches) + 2
-
-        item_strings = []
-        for i, (entity_id, name) in enumerate(self.matches):
-            item_key = chr(ord("a") + i)
-            item_strings.append(f"({item_key}) {name}")
-
-        max_item_width = max((len(s) for s in item_strings), default=0)
-        title = "Select entity to spawn"
-        width = max(len(title) + 4, max_item_width + 2)
-
-        console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=title,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
-        )
-
-        for i, item_string in enumerate(item_strings):
-            console.print(x + 1, y + i + 1, item_string)
-
-    def ev_keydown(self, event: tcod.event.KeyDown):
-        key = event.sym
-        index = key - tcod.event.KeySym.a
-
-        if 0 <= index < len(self.matches):
-            entity_id, name = self.matches[index]
-            self.engine.message_log.add_message(f"Spawning {name}.")
-            spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
-            return MainGameEventHandler(self.engine)
-        return super().ev_keydown(event)
+    def on_selection(self, index: int, item):
+        entity_id, name = item
+        self.engine.message_log.add_message(f"Spawning {name}.")
+        spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
+        return MainGameEventHandler(self.engine)
