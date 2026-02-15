@@ -1083,6 +1083,33 @@ class FloorItemDetailHandler(AskUserEventHandler):
 
 
 class WalkChoiceHandler(SelectIndexHandler):
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        modifier = event.mod
+        game_map = self.engine.game_map
+
+        # '>' jumps cursor to downstairs if known.
+        if key == tcod.event.KeySym.PERIOD and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
+        ):
+            sx, sy = game_map.downstairs_location
+            if game_map.visible[sx, sy] or game_map.explored[sx, sy] or game_map.revealed[sx, sy]:
+                self.engine.mouse_location = sx, sy
+            return None
+
+        # '<' jumps cursor to upstairs if known.
+        if key == tcod.event.KeySym.COMMA and modifier & (
+            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
+        ):
+            ux, uy = game_map.upstairs_location
+            if (ux, uy) != (0, 0) and (
+                game_map.visible[ux, uy] or game_map.explored[ux, uy] or game_map.revealed[ux, uy]
+            ):
+                self.engine.mouse_location = ux, uy
+            return None
+
+        return super().ev_keydown(event)
+
     def on_index_selected(self, x: int, y: int):
         return TargetMovementAction(self.engine.player, x, y)
 
