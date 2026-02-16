@@ -60,6 +60,12 @@ _EFFECT_DEFS = [
     ]),
     ("but does no damage.", [
         "sfx/whoosh.wav",
+    ]),
+    ("Tick...", [
+        "sfx/clock-tick.wav",
+    ]),
+    ("BOOM!", [
+        "sfx/explosion1.wav",
     ])
 ]
 

@@ -72,12 +72,15 @@ class ExplodingCorpseAI(BaseAI):
         self.delay -= 1
         if self.delay <= 0:
             self.explode()
+        else:
+            self.engine.message_log.add_message("Tick...", color.enemy_atk)
 
     def explode(self) -> None:
         engine = self.engine
         gamemap = engine.game_map
         x, y = self.entity.x, self.entity.y
 
+        engine.message_log.add_message("BOOM!", color.enemy_atk)
         engine.message_log.add_message(
             f"The {self.entity.name} explodes!", color.enemy_atk
         )
