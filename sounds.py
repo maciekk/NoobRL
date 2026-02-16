@@ -1,7 +1,12 @@
 import random
+import threading
+import time
 
 import pygame.mixer
 
+# Stagger delay (seconds) between multiple sounds triggered in quick succession.
+_STAGGER_SECS = 0.1
+_next_play_time = 0.0
 
 _EFFECT_DEFS = [
     ("Hello and welcome", [
@@ -86,11 +91,20 @@ def init():
 
 
 def maybe_play_sfx(log_line):
+    global _next_play_time
     if _loaded_effects is None:
         return
     for match_str, sfx_options in _loaded_effects:
         if match_str in log_line:
-            random.choice(sfx_options).play()
+            sound = random.choice(sfx_options)
+            now = time.monotonic()
+            play_at = max(now, _next_play_time)
+            delay = play_at - now
+            if delay <= 0:
+                sound.play()
+            else:
+                threading.Timer(delay, sound.play).start()
+            _next_play_time = play_at + _STAGGER_SECS
             return
 
 
