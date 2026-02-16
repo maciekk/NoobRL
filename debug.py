@@ -4,7 +4,7 @@ import tcod
 
 from engine import Engine
 from game_map import GameMap
-from input_handlers import AskUserEventHandler, ListSelectionHandler, MainGameEventHandler
+from input_handlers import AskUserEventHandler, ListSelectionHandler, MainGameEventHandler, SelectIndexHandler
 
 
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
@@ -71,7 +71,7 @@ class DebugHandler(AskUserEventHandler):
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
-        console.print(x=x + 1, y=y + 1, string=f"Enter item to spawn: {self.buffer}")
+        console.print(x=x + 1, y=y + 1, string=f"Enter entity to spawn: {self.buffer}")
 
     def ev_keydown(self, event: tcod.event.KeyDown):
         key = event.sym
@@ -82,6 +82,8 @@ class DebugHandler(AskUserEventHandler):
                 return MainGameEventHandler(self.engine)
             elif len(matches) == 1:
                 entity_id, name = matches[0]
+                if entity_id in self.engine.monster_manager.monsters:
+                    return DebugPlaceMonsterHandler(self.engine, entity_id, name)
                 self.engine.message_log.add_message(f"Spawning {name}.")
                 spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
                 return MainGameEventHandler(self.engine)
@@ -118,6 +120,23 @@ class DebugSelectHandler(ListSelectionHandler):
 
     def on_selection(self, index: int, item):
         entity_id, name = item
+        if entity_id in self.engine.monster_manager.monsters:
+            return DebugPlaceMonsterHandler(self.engine, entity_id, name)
         self.engine.message_log.add_message(f"Spawning {name}.")
         spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
+        return MainGameEventHandler(self.engine)
+
+
+class DebugPlaceMonsterHandler(SelectIndexHandler):
+    """Lets the user choose where to place a debug-spawned monster."""
+
+    def __init__(self, engine: Engine, entity_id: str, name: str):
+        super().__init__(engine)
+        self.entity_id = entity_id
+        self.monster_name = name
+        engine.message_log.add_message(f"Where do you want to place {name}?")
+
+    def on_index_selected(self, x: int, y: int):
+        self.engine.message_log.add_message(f"Spawning {self.monster_name}.")
+        spawn_entity(self.entity_id, self.engine.game_map, x, y)
         return MainGameEventHandler(self.engine)
