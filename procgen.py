@@ -271,9 +271,13 @@ def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
         # Pick random center within room interior
         cx = random.randint(room.x1 + 1, room.x2 - 1)
         cy = random.randint(room.y1 + 1, room.y2 - 1)
-        # Random ellipse parameters
+        # Random ellipse parameters (10% chance of a super patch)
         semi_major = random.uniform(2.0, 4.3)
-        semi_minor = semi_major * random.uniform(0.4, 0.9)
+        if random.random() < 0.1:
+            semi_major *= 3
+            semi_minor = semi_major * random.uniform(0.15, 0.35)
+        else:
+            semi_minor = semi_major * random.uniform(0.4, 0.9)
         angle = random.uniform(0, math.pi)
         cos_a = math.cos(angle)
         sin_a = math.sin(angle)
