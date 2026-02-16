@@ -8,6 +8,34 @@ support.
 
 ![Screenshot](screenshot.png)
 
+## Design Choices
+
+### Item cardinality per floor square
+
+Choices:
+- one item per square (a la Nethack)
+- multiple items per square (a la CDDA)
+
+Issues:
+- if one item, then any event which drops multiple diff items on a square needs them to "spill out", and distribute across surrounding squares (which probably has many corner cases, such as enclosed rooms)
+- if multiple items, how best to effectively convey that a floor square has many items?
+
+Current choice (but re-negotiable): multiple items
+
+### Floor permanence
+
+Choices:
+- once generated, the floors persist during staircase travel (a la Nethack)
+- traveling up/down stairs always regenerates new dungeon, even if that depth previously visited (a la Angband)
+
+Current choice (but re-negotiable): always re-generate
+
+### Health regeneration by default
+
+Should health auto-regenerate over time, even without potions or other effects?
+
+Perhaps this could be like a race trait that player could choose at start.
+
 ## Work Items
 
 Ideas & efforts under way.
@@ -89,52 +117,3 @@ Ideas & efforts under way.
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 
-### DONE
-- [x] ability to "go to" dungeon feature (e.g., '>')
-- [x] secret doors - 10% of closed doors spawn as hidden walls, revealed on bump
-- [x] rooms have doors (but not always) - doors at corridor-room junctions with open/close mechanics
-- [x] potion of speed - double move speed for N turns
-- [x] want wider text on the bottom
-- [x] monsters should have memory of where they last saw you, and proceed there even if you disappeared
-- [x] potion of invisibility (useful for debugging monster memory)
-- [x] don't use color.health_recovered, unless specifically describing health
-- [x] why are orcs unable to damage you from the start? armor too strong?
-- [x] v command should show more info about the monsters, just like the details screen in inventory
-- [x] finish fixing the comb-like corridors; perhaps diff algo altogether?
-- [x] add amulets
-- [x] have an amulet of clairvoyance, which triggers effect on each level (not naturally spawnable; for debugging)
-- [x] avoid corridors two squares wide
-- [x] when you die, should be able to press Enter, and then be taken to Main Menu (also show stats)
-- [x] command which lists items, monsters, corpses, and features visible from current location (Shift+V), with relative directions and distance sorting
-- [x] there should be a distinction between a "known about" square vs "already visited"
-  - [x] claivoyance should only update unknown -> known
-- [x] add counters for how many of each monster you killed on current run
-- [x] print stats on run finish (death), or using special command (part of 'c'?)
-- [x] what's up with the debug console? does it work?
-- [x] wand of wishing - primarily for debugging purposes, allows spawning any item in the game
-- [x] clairvoyance reveals only room outlines and corridors, not deep rock
-- [x] add potion: Clairvoyance
-- [x] Wizards
-- [x] fully heal on level up!
-- [x] expand Look function (around level) to provide more info (incl. HP left on monster, maybe attack power, def)
-- [x] add scroll: Blink (and/or general Teleport)
-- [x] N/A name:(Fast enemy(2 studs), but is weak and not very strong.)
-- [x] add sfx for crit hits
-- [x] Higher crit chance for dragon enemy or overall powerful mobs
-- [x] help button that tells all the keybinds
-- [x] stack items (e.g., all potions of healing should take one inventory slot)
-- [x] fix Shift-motion, such that player DOES enter open room
-- [x] have upwards stairwells, but then regen levels (like in Angband)
-- [x] have function to examine item in inventory; flavour text, stats, etc
-
-## Design Choices
-
-Open question:
-- item cardinality per floor square
-  - should dungeon floor be restricted to one item per square? (a la Nethack)
-  - items than would have to "spill" over many squares (e.g., monster dies and drops multiple items)
-  - or do we allow multiple items, a la CDDA?
-    - if so, need some way to indicate (in ASCII mode) squares that contain >1 item
-  - currently proceeding with latter choice (multi-item) but have not figured out representation
-- Should health auto-regenerate over time?
-  - maybe this is a choosable character trait
