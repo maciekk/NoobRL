@@ -1478,6 +1478,8 @@ class MainGameEventHandler(EventHandler):
                 return OpenableSelectionHandler(self.engine, targets)
         elif key == tcod.event.KeySym.d:
             return InventoryDropHandler(self.engine)
+        elif is_shifted(event, tcod.event.KeySym.c):
+            return CharacterScreenEventHandler(self.engine)
         elif key == tcod.event.KeySym.c:
             # Find all closeable doors in 3x3 area
             targets = find_closeable_doors(self.engine)
@@ -1491,8 +1493,6 @@ class MainGameEventHandler(EventHandler):
             else:
                 # Multiple targets, show selection menu
                 return CloseableSelectionHandler(self.engine, targets)
-        elif is_shifted(event, tcod.event.KeySym.c):
-            return CharacterScreenEventHandler(self.engine)
         elif is_shifted(event, tcod.event.KeySym.v):
             return ViewSurroundingsHandler(self.engine)
         elif key == tcod.event.KeySym.v:
