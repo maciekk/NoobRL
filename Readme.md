@@ -12,27 +12,23 @@ support.
 
 Ideas & efforts under way.
 
-### FIXES / WIP
-- [ ] monsters should have different visibility ranges, some shorter than player's
-- [ ] some monsters should patrol rooms, even before spotting you
-- [ ] allow monsters to be asleep, fall asleep
-  - [ ] have Potion of sleep
-  - [ ] allow potions to be thrown (at monsters), and convey their powers when they break
-
-### General
-- [ ] ability to "go to" dungeon feature (e.g., '>')
-- [ ] JSON-ify all the tables (monsters, items, spells, loot drops)
-- [ ] use different, appropriate sfx for wizard attack
-- [ ] for variety, each text trigger maps to a SET of sfx, not just one
-- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
+### FIXES
+- [ ] for "multiple items" actually use ampersand (roguelikes convention?)
+- [ ] fix secret door rendering
+- [ ] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
 
 ### Interesting Mechanics
+- [ ] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ',' or ';' or ```
+- [ ] allow item throwing (e.g., dart, potion) #next
+    - [ ] thrown potions shatter, convey their benefit to any actor in that square #next
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] item weights and maximum carry weight
-- [ ] incremental knowledge: ability to see monster weaknesses, attack power, def, etc... depends on # vanquished
+- [ ] track how many of a monster SEEN in a run? (if don't kill everything you see)
+- [ ] incremental monster knowledge (scales w/# killed)
 - [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
-  - [ ] offer Scrolls of Identify to be found/bought, "identifying services"
+- [ ] maybe later add max stack size for consumables
+- [ ] wands should have charges, be non-stackable
 
 ### Map Generation
 - [ ] scrollable map (i.e., map larger than rendered window)
@@ -42,7 +38,19 @@ Ideas & efforts under way.
 - [ ] locked doors (requiring keys or lockpicking)
 - [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 
+### Monsters
+- [ ] monsters should have different visibility ranges, some shorter than player's
+- [ ] some monsters should patrol rooms, even before spotting you
+- [ ] allow monsters to be asleep, fall asleep
+- [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
+- [ ] add: Kobold (fast, but low HP, minimal damage... although groups dangerous?)
+- [ ] enemy special powers (Ex: speed, strength, invisibility, etc...)
+- [ ] enemies should sometimes drop loot when killed
+- [ ] find something useful to do with monster corpses (food? crafting?)
+
 ### Weapons & Armour
+- [ ] add darts at level 1, common #next
+- [ ] add bows & arrows
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
@@ -54,32 +62,35 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
-- [ ] add potion: Berserk - 50% more damage for 10 turns
-- [ ] add scroll: Teleport (user-controlled target, must be in explored space)
+- [ ] add: Potion of Sleep #next
+- [ ] add: Potion of Blindness #next
+- [ ] add: Scroll of Identify (blocked: anonymized item names)
+- [ ] add: Potion of Berserk - 50% more damage for 10 turns
+- [ ] add: Teleport scroll (user-controlled target, must be in explored space)
 - [ ] add rings
 - [ ] add more wands
-  - [ ] wands should have charges, be non-stackable
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
 - [ ] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
 - [ ] wand of wishing should even be able to spawn monsters
-- [ ] maybe later add max stack size for consumables
 - [ ] have various light sources, with various light radii
 
-### Enemies
-- [ ] Banshee:(Do not attack, but if seen, will scream and alert within a given radius)
-- [ ] Enemy special powers (Ex: speed, strength, invisibility, etc...)
-- [ ] Enemies should sometimes drop loot when killed
-- [ ] Find something useful to do with monster corpses (food? crafting?)
-
 ### UI
+- [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) #next
+- [ ] use different, appropriate sfx for wizard attack
+- [ ] for variety, each text trigger maps to a SET of sfx, not just one
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
+- [ ] JSON-ify: spells?
+- [ ] JSON-ify: loot drop tables?
+- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
+
 
 ### DONE
+- [x] ability to "go to" dungeon feature (e.g., '>')
 - [x] secret doors - 10% of closed doors spawn as hidden walls, revealed on bump
 - [x] rooms have doors (but not always) - doors at corridor-room junctions with open/close mechanics
 - [x] potion of speed - double move speed for N turns
