@@ -33,6 +33,14 @@ class GameMap:
         )  # Tiles revealed by clairvoyance but not yet visited
         self.downstairs_location = (0, 0)
         self.upstairs_location = (0, 0)
+        self.secret_doors: set[tuple[int, int]] = set()
+
+    def __getattr__(self, name: str):
+        # Backward-compat for saves created before secret_doors existed.
+        if name == "secret_doors":
+            self.secret_doors: set[tuple[int, int]] = set()
+            return self.secret_doors
+        raise AttributeError(name)
 
     @property
     def gamemap(self) -> GameMap:

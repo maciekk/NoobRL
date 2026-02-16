@@ -326,7 +326,8 @@ class BumpAction(ActionWithDirection):
 
         dest_x, dest_y = self.dest_xy
         if self.engine.game_map.in_bounds(dest_x, dest_y):
-            if self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_secret:
+            if (dest_x, dest_y) in self.engine.game_map.secret_doors:
+                self.engine.game_map.secret_doors.discard((dest_x, dest_y))
                 self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_closed
                 self.engine.message_log.add_message(
                     "You discover a secret door!", color.white

@@ -277,7 +277,7 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
         else:
             # Closed door (10% chance to be secret)
             if random.random() < 0.1:
-                dungeon.tiles[x, y] = tile_types.door_secret
+                dungeon.secret_doors.add((x, y))
             else:
                 dungeon.tiles[x, y] = tile_types.door_closed
 

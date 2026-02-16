@@ -73,13 +73,6 @@ door_closed = new_tile(
     revealed=(ord("+"), (64, 50, 0), (0, 0, 0)),
     light=(ord("+"), (139, 69, 19), (50, 50, 50)),
 )
-door_secret = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("#"), (32,32,32), (50, 50, 100)),
-    revealed=(ord("#"), (12, 12, 12), (17, 17, 35)),
-    light=(ord("#"), (128,128,0), (64, 64, 32)),
-)
 door_open = new_tile(
     walkable=True,
     transparent=True,
