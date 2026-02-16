@@ -59,6 +59,46 @@ class ConfusedEnemy(BaseAI):
             # Its possible the actor will just bump into the wall, wasting a turn.
             return BumpAction(self.entity, direction_x, direction_y,).perform()
 
+class ExplodingCorpseAI(BaseAI):
+    """AI for a dead Puffball corpse counting down to explosion."""
+
+    def __init__(self, entity: Actor, delay: int, radius: int, damage: int):
+        super().__init__(entity)
+        self.delay = delay
+        self.radius = radius
+        self.damage = damage
+
+    def perform(self) -> None:
+        self.delay -= 1
+        if self.delay <= 0:
+            self.explode()
+
+    def explode(self) -> None:
+        engine = self.engine
+        gamemap = engine.game_map
+        x, y = self.entity.x, self.entity.y
+
+        engine.message_log.add_message(
+            f"The {self.entity.name} explodes!", color.enemy_atk
+        )
+
+        # Damage all actors in radius (including player), excluding self
+        for actor in set(gamemap.actors) | {engine.player}:
+            if actor is self.entity:
+                continue
+            if actor.distance(x, y) <= self.radius:
+                engine.message_log.add_message(
+                    f"The {actor.name} is hit by the explosion for {self.damage} damage!",
+                    color.enemy_atk,
+                )
+                actor.fighter.take_damage(self.damage)
+
+        # Remove the corpse from the map
+        self.entity.ai = None
+        if self.entity in gamemap.entities:
+            gamemap.entities.remove(self.entity)
+
+
 class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)

@@ -52,6 +52,12 @@ class Fighter(BaseComponent):
             return 0
 
     def die(self) -> None:
+        # If already a corpse (e.g. exploding corpse hit by another explosion),
+        # just defuse the AI and stop — no double death messages or XP.
+        if self.parent.render_order == RenderOrder.CORPSE:
+            self.parent.ai = None
+            return
+
         # Add more to deathmessagelist
         deathmessagelist = [
             "impaled", "blown to smithereens", "sliced down", "beat to death", "butchered"
@@ -65,12 +71,25 @@ class Fighter(BaseComponent):
             kills = self.engine.kill_counts
             kills[self.parent.name] = kills.get(self.parent.name, 0) + 1
 
+        original_name = self.parent.name
+
         self.parent.char = "%"
         self.parent.color = (191, 0, 0)
         self.parent.blocks_movement = False
-        self.parent.ai = None
         self.parent.name = f"remains of {self.parent.name}"
         self.parent.render_order = RenderOrder.CORPSE
+
+        # Check for death explosion (e.g. Puffball)
+        from components.ai import ExplodingCorpseAI
+        if self.parent.death_explosion and not isinstance(self.parent.ai, ExplodingCorpseAI):
+            self.parent.ai = ExplodingCorpseAI(
+                self.parent, **self.parent.death_explosion
+            )
+            self.engine.message_log.add_message(
+                f"The {original_name} begins to glow!", color.enemy_atk
+            )
+        else:
+            self.parent.ai = None
 
         self.engine.message_log.add_message(death_message, death_message_color)
 
