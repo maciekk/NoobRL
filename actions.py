@@ -52,10 +52,19 @@ class WishAction(Action):
         item = self.engine.item_manager.clone(self.wish_item_id)
         if item is None:
             raise exceptions.Impossible("Nothing happens.")
-        item.place(self.entity.x, self.entity.y, self.engine.game_map)
-        self.engine.message_log.add_message(
-            f"You wished for a {item.name}!", color.status_effect_applied
-        )
+
+        # Try to add to inventory first
+        item.parent = self.entity.inventory
+        if not self.entity.inventory.add(item):
+            # Inventory is full, drop on floor instead
+            item.place(self.entity.x, self.entity.y, self.engine.game_map)
+            self.engine.message_log.add_message(
+                f"You wished for a {item.name}, but your inventory is full!", color.impossible
+            )
+        else:
+            self.engine.message_log.add_message(
+                f"You wished for a {item.name}!", color.status_effect_applied
+            )
         self.wand_item.consumable.consume()
 
 

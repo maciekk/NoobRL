@@ -41,9 +41,9 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] wished-for items should appear in player inventory, not on floor `#next`
-- [ ] for "multiple items" actually use ampersand (roguelikes convention?)
-- [ ] fix secret door rendering
+- [x] wished-for items should appear in player inventory, not on floor `#next`
+- [x] for "multiple items" actually use ampersand (roguelikes convention?)
+- [x] fix secret door rendering
 - [ ] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
 
 ### Interesting Mechanics

@@ -9,12 +9,26 @@ from input_handlers import AskUserEventHandler, ListSelectionHandler, MainGameEv
 
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
     entity = game_map.engine.item_manager.clone(entity_id)
+    is_item = entity is not None
     if entity is None:
         entity = game_map.engine.monster_manager.clone(entity_id)
     if entity is None:
         game_map.engine.message_log.add_message(f"Unknown object '{entity_id}' requested.")
         return None
-    return entity.spawn(game_map, x, y)
+
+    # Items go to inventory if there's room, otherwise drop on floor
+    if is_item:
+        player = game_map.engine.player
+        entity.parent = player.inventory
+        if not player.inventory.add(entity):
+            # Inventory is full, drop on floor instead
+            entity.spawn(game_map, x, y)
+            game_map.engine.message_log.add_message(f"Your inventory is full; {entity.name} dropped on floor.")
+        # If added to inventory successfully, no need to spawn on map
+        return entity
+    else:
+        # Monsters always spawn on the map
+        return entity.spawn(game_map, x, y)
 
 
 def find_matches(engine: Engine, query: str) -> List[Tuple[str, str]]:
