@@ -41,7 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] corpses in doorways should prevent closing the door (tactical interest)
+- [x] corpses in doorways should prevent closing the door (tactical interest)
 - [x] wished-for items should appear in player inventory, not on floor `#next`
 - [x] for "multiple items" actually use ampersand (roguelikes convention?)
 - [x] fix secret door rendering
