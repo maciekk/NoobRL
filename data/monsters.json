@@ -129,6 +129,8 @@
     "char": "W",
     "color": [255, 0, 255],
     "ai_cls": "HostileEnemy",
+    "attack_range": 3,
+    "ranged_attack": true,
     "equipment": {
     },
     "fighter": {
@@ -150,6 +152,7 @@
     "color": [110, 202, 255],
     "ai_cls": "HostileEnemy",
     "base_speed": 200,
+    "attack_range": 2,
     "equipment": {
     },
     "fighter": {

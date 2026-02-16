@@ -90,14 +90,9 @@ class HostileEnemy(BaseAI):
 
             self.last_known_target = (target.x, target.y)
 
-            if self.entity.name == "Wizard":
-                if distance <= 3:
+            if distance <= self.entity.attack_range:
+                if self.entity.ranged_attack:
                     return RangedAttackAction(self.entity, dx, dy).perform()
-            if self.entity.name == "Crawler":
-                if distance <= 2:
-                    return MeleeAction(self.entity, dx, dy).perform()
-
-            if distance <= 1:
                 return MeleeAction(self.entity, dx, dy).perform()
 
             self.path = self.entity.get_path_to(target.x, target.y)

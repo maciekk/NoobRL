@@ -168,6 +168,8 @@ class Actor(Entity):
         inventory: Inventory,
         level: Level,
         base_speed: int = 100,
+        attack_range: int = 1,
+        ranged_attack: bool = False,
 
     ):
         super().__init__(
@@ -204,6 +206,8 @@ class Actor(Entity):
         self.noticed_player = False
         self.is_invisible = False
         self.base_speed = base_speed
+        self.attack_range = attack_range
+        self.ranged_attack = ranged_attack
         self.energy = 0
         self.is_hasted = False
 
