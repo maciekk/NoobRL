@@ -127,7 +127,7 @@ class GameMap:
         # Draw pile symbol on top of tiles with 2+ items (but not if an actor is there)
         for (x, y), count in item_counts.items():
             if count >= 2 and self.get_actor_at_location(x, y) is None:
-                console.print(x=x, y=y, string="*", fg=(255, 255, 255))
+                console.print(x=x, y=y, string="&", fg=(255, 255, 255))
 
 class GameWorld:
     """
