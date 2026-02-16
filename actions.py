@@ -6,6 +6,8 @@ from typing import Optional, Tuple, TYPE_CHECKING
 
 import color
 import exceptions
+import options
+import tile_types
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -322,8 +324,15 @@ class BumpAction(ActionWithDirection):
         if self.target_actor:
             return MeleeAction(self.entity, self.dx, self.dy).perform()
 
-        else:
-            return MovementAction(self.entity, self.dx, self.dy).perform()
+        dest_x, dest_y = self.dest_xy
+        if (
+            options.auto_open_doors
+            and self.engine.game_map.in_bounds(dest_x, dest_y)
+            and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed
+        ):
+            return OpenDoorAction(self.entity, dest_x, dest_y).perform()
+
+        return MovementAction(self.entity, self.dx, self.dy).perform()
 
 class MovementRepeatedAction(MovementAction):
     def _walkable(self, x, y):
