@@ -39,7 +39,7 @@ Ideas & efforts under way.
 - [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 - [ ] procgen chests with loot
-- [ ] rooms should have doors (but not always); also, sometimes they would be locked
+- [ ] locked doors (requiring keys or lockpicking)
 - [ ] secret doors!
 - [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 
@@ -81,6 +81,7 @@ Ideas & efforts under way.
 - [ ] shop keepers
 
 ### DONE
+- [x] rooms have doors (but not always) - doors at corridor-room junctions with open/close mechanics
 - [x] potion of speed - double move speed for N turns
 - [x] want wider text on the bottom
 - [x] monsters should have memory of where they last saw you, and proceed there even if you disappeared

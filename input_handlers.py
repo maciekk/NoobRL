@@ -857,6 +857,147 @@ class WishItemHandler(ListSelectionHandler):
         return actions.WishAction(self.engine.player, self.wand_item, item_id)
 
 
+def find_openable_targets(engine: Engine) -> list:
+    """Find all openable things (chests, closed doors) in 3x3 area around player.
+
+    Returns list of tuples: (description, action)
+    """
+    import tile_types
+    targets = []
+    px, py = engine.player.x, engine.player.y
+
+    # Check 3x3 area around player
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            x, y = px + dx, py + dy
+            if not engine.game_map.in_bounds(x, y):
+                continue
+
+            # Check for closed door
+            if engine.game_map.tiles[x, y] == tile_types.door_closed:
+                direction = ""
+                if dx == 0 and dy == -1:
+                    direction = "north"
+                elif dx == 0 and dy == 1:
+                    direction = "south"
+                elif dx == -1 and dy == 0:
+                    direction = "west"
+                elif dx == 1 and dy == 0:
+                    direction = "east"
+                elif dx == 0 and dy == 0:
+                    direction = "here"
+                elif dx == -1 and dy == -1:
+                    direction = "northwest"
+                elif dx == 1 and dy == -1:
+                    direction = "northeast"
+                elif dx == -1 and dy == 1:
+                    direction = "southwest"
+                else:
+                    direction = "southeast"
+
+                targets.append((f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y)))
+
+            # Check for openable entities (chests)
+            for entity in engine.game_map.entities:
+                if entity.x == x and entity.y == y and hasattr(entity, 'open'):
+                    direction = "here" if (dx == 0 and dy == 0) else "nearby"
+                    targets.append((f"{entity.name.capitalize()} ({direction})", entity))
+
+    return targets
+
+
+class OpenableSelectionHandler(ListSelectionHandler):
+    """Lets the player choose which openable thing to open."""
+
+    TITLE = "Open what?"
+    EMPTY_TEXT = "(Nothing to open)"
+
+    def __init__(self, engine: Engine, targets: list):
+        super().__init__(engine)
+        self.targets = targets
+
+    def get_items(self) -> list:
+        return self.targets
+
+    def get_display_string(self, index: int, item) -> str:
+        description, _ = item
+        return description
+
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        description, target = item
+        if isinstance(target, Action):
+            return target
+        else:
+            # It's an entity with open() method
+            target.open(self.engine.player)
+            return MainGameEventHandler(self.engine)
+
+
+def find_closeable_doors(engine: Engine) -> list:
+    """Find all open doors in 3x3 area around player.
+
+    Returns list of tuples: (description, action)
+    """
+    import tile_types
+    targets = []
+    px, py = engine.player.x, engine.player.y
+
+    # Check 3x3 area around player
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            x, y = px + dx, py + dy
+            if not engine.game_map.in_bounds(x, y):
+                continue
+
+            # Check for open door
+            if engine.game_map.tiles[x, y] == tile_types.door_open:
+                direction = ""
+                if dx == 0 and dy == -1:
+                    direction = "north"
+                elif dx == 0 and dy == 1:
+                    direction = "south"
+                elif dx == -1 and dy == 0:
+                    direction = "west"
+                elif dx == 1 and dy == 0:
+                    direction = "east"
+                elif dx == 0 and dy == 0:
+                    direction = "here"
+                elif dx == -1 and dy == -1:
+                    direction = "northwest"
+                elif dx == 1 and dy == -1:
+                    direction = "northeast"
+                elif dx == -1 and dy == 1:
+                    direction = "southwest"
+                else:
+                    direction = "southeast"
+
+                targets.append((f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y)))
+
+    return targets
+
+
+class CloseableSelectionHandler(ListSelectionHandler):
+    """Lets the player choose which open door to close."""
+
+    TITLE = "Close what?"
+    EMPTY_TEXT = "(No open doors)"
+
+    def __init__(self, engine: Engine, targets: list):
+        super().__init__(engine)
+        self.targets = targets
+
+    def get_items(self) -> list:
+        return self.targets
+
+    def get_display_string(self, index: int, item) -> str:
+        description, _ = item
+        return description
+
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        description, action = item
+        return action
+
+
 class SelectIndexHandler(AskUserEventHandler):
     """Handles asking the user for an index on the map."""
 
@@ -1230,10 +1371,39 @@ class MainGameEventHandler(EventHandler):
         elif key == tcod.event.KeySym.i:
             return InventoryActivateHandler(self.engine)
         elif key == tcod.event.KeySym.o:
-            action = actions.OpenAction(player)
+            # Find all openable targets in 3x3 area
+            targets = find_openable_targets(self.engine)
+            if len(targets) == 0:
+                self.engine.message_log.add_message("There is nothing here to open.", color.impossible)
+                return None
+            elif len(targets) == 1:
+                # Only one target, open it directly
+                _, target = targets[0]
+                if isinstance(target, Action):
+                    action = target
+                else:
+                    # It's an entity, call its open method
+                    target.open(player)
+                    return None
+            else:
+                # Multiple targets, show selection menu
+                return OpenableSelectionHandler(self.engine, targets)
         elif key == tcod.event.KeySym.d:
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
+            # Find all closeable doors in 3x3 area
+            targets = find_closeable_doors(self.engine)
+            if len(targets) == 0:
+                self.engine.message_log.add_message("There are no open doors nearby.", color.impossible)
+                return None
+            elif len(targets) == 1:
+                # Only one target, close it directly
+                _, action = targets[0]
+                return action
+            else:
+                # Multiple targets, show selection menu
+                return CloseableSelectionHandler(self.engine, targets)
+        elif is_shifted(event, tcod.event.KeySym.c):
             return CharacterScreenEventHandler(self.engine)
         elif is_shifted(event, tcod.event.KeySym.v):
             return ViewSurroundingsHandler(self.engine)
@@ -1376,11 +1546,12 @@ class ViewKeybinds(AskUserEventHandler):
         ";: log",
         "?: keybinds",
         "g: get item",
-        "o: open (chest)",
+        "o: open (chest/door)",
+        "c: close door",
         "q: quaff potion",
         "i: inventory",
         "d: drop",
-        "c: character stats",
+        "C: character stats",
         ">: descend",
         "<: ascend",
         "v: examine dungeon (Enter: inspect)",

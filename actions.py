@@ -144,6 +144,54 @@ class OpenAction(Action):
         raise exceptions.Impossible("There is nothing here to open.")
 
 
+class OpenDoorAction(Action):
+    """Open a door at a specific location."""
+
+    def __init__(self, entity: Actor, x: int, y: int):
+        super().__init__(entity)
+        self.x = x
+        self.y = y
+
+    def perform(self) -> None:
+        import tile_types
+
+        if not self.engine.game_map.in_bounds(self.x, self.y):
+            raise exceptions.Impossible("There is no door there.")
+
+        tile = self.engine.game_map.tiles[self.x, self.y]
+        if tile == tile_types.door_closed:
+            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
+            self.engine.message_log.add_message("You open the door.", color.white)
+        else:
+            raise exceptions.Impossible("There is no closed door there.")
+
+
+class CloseDoorAction(Action):
+    """Close a door at a specific location."""
+
+    def __init__(self, entity: Actor, x: int, y: int):
+        super().__init__(entity)
+        self.x = x
+        self.y = y
+
+    def perform(self) -> None:
+        import tile_types
+
+        if not self.engine.game_map.in_bounds(self.x, self.y):
+            raise exceptions.Impossible("There is no door there.")
+
+        # Check if there's a blocking entity at the door location
+        if self.engine.game_map.get_blocking_entity_at_location(self.x, self.y):
+            raise exceptions.Impossible("Something is blocking the door.")
+
+        tile = self.engine.game_map.tiles[self.x, self.y]
+        if tile == tile_types.door_open:
+            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
+            self.engine.message_log.add_message("You close the door.", color.white)
+        else:
+            raise exceptions.Impossible("There is no open door there.")
+
+
 class WaitAction(Action):
     def perform(self) -> None:
         pass

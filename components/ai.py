@@ -6,7 +6,7 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np  # type: ignore
 import tcod
 
-from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction, RangedAttackAction
+from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction, RangedAttackAction, OpenDoorAction
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -111,6 +111,13 @@ class HostileEnemy(BaseAI):
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)
+
+            # Wizards can open doors
+            if self.entity.name == "Wizard":
+                import tile_types
+                if self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed:
+                    return OpenDoorAction(self.entity, dest_x, dest_y).perform()
+
             return MovementAction(
                 self.entity, dest_x - self.entity.x, dest_y - self.entity.y,
             ).perform()

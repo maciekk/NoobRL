@@ -202,6 +202,56 @@ def _would_create_wide_corridor(tiles, x, y, planned_floor=None):
     return False
 
 
+def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, int]]:
+    """Find corridor-room junctions where doors can be placed.
+
+    A junction is a floor tile that:
+    - Is NOT part of a room (it's a corridor)
+    - Is cardinally adjacent to at least one room tile
+    - Only considers orthogonal (cardinal) adjacency, not diagonal
+    """
+    door_locations = []
+    width, height = dungeon.width, dungeon.height
+
+    for x in range(width):
+        for y in range(height):
+            # Skip if not walkable or is a room tile
+            if not dungeon.tiles["walkable"][x, y] or (x, y) in room_tiles:
+                continue
+
+            # Check if this corridor tile is adjacent to a room tile (cardinally)
+            adjacent_to_room = False
+            for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # N, S, W, E
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < width and 0 <= ny < height:
+                    if (nx, ny) in room_tiles:
+                        adjacent_to_room = True
+                        break
+
+            if adjacent_to_room:
+                door_locations.append((x, y))
+
+    return door_locations
+
+
+def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None:
+    """Place doors at junction locations.
+
+    20% no door, 50% open door, 30% closed door.
+    """
+    for x, y in door_locations:
+        roll = random.random()
+        if roll < 0.20:
+            # No door
+            pass
+        elif roll < 0.70:  # 0.20 + 0.50
+            # Open door
+            dungeon.tiles[x, y] = tile_types.door_open
+        else:
+            # Closed door
+            dungeon.tiles[x, y] = tile_types.door_closed
+
+
 def generate_dungeon(
     max_rooms: int,
     room_min_size: int,
@@ -216,6 +266,7 @@ def generate_dungeon(
     dungeon = GameMap(engine, map_width, map_height, entities=[player])
 
     rooms: List[RectangularRoom] = []
+    room_tiles: set = set()  # Track which tiles are part of rooms
 
     center_of_last_room = (0, 0)
     center_of_first_room = (0, 0)
@@ -237,6 +288,11 @@ def generate_dungeon(
 
         # Dig out this rooms inner area.
         dungeon.tiles[new_room.inner] = tile_types.floor
+
+        # Track room tiles for door placement
+        for x in range(new_room.x1 + 1, new_room.x2):
+            for y in range(new_room.y1 + 1, new_room.y2):
+                room_tiles.add((x, y))
 
         if len(rooms) == 0:
             # The first room, where the player starts.
@@ -277,5 +333,9 @@ def generate_dungeon(
         if engine.game_world.current_floor > 1:
             dungeon.tiles[center_of_first_room] = tile_types.up_stairs
             dungeon.upstairs_location = center_of_first_room
+
+    # Place doors at corridor-room junctions.
+    door_locations = find_door_locations(dungeon, room_tiles)
+    place_doors(dungeon, door_locations)
 
     return dungeon
