@@ -47,8 +47,8 @@ Ideas & efforts under way.
 
 ### Interesting Mechanics
 - [ ] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ',' or ';' or ```
-- [ ] allow item throwing (e.g., dart, potion) #next
-    - [ ] thrown potions shatter, convey their benefit to any actor in that square #next
+- [ ] allow item throwing (e.g., dart, potion) `#next`
+    - [ ] thrown potions shatter, convey their benefit to any actor in that square `#next`
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] item weights and maximum carry weight
@@ -77,7 +77,7 @@ Ideas & efforts under way.
 - [ ] find something useful to do with monster corpses (food? crafting?)
 
 ### Weapons & Armour
-- [ ] add darts at level 1, common #next
+- [ ] add darts at level 1, common `#next`
 - [ ] add bows & arrows
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
@@ -90,8 +90,8 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
-- [ ] add: Potion of Sleep #next
-- [ ] add: Potion of Blindness #next
+- [ ] add: Potion of Sleep `#next`
+- [ ] add: Potion of Blindness `#next`
 - [ ] add: Scroll of Identify (blocked: anonymized item names)
 - [ ] add: Potion of Berserk - 50% more damage for 10 turns
 - [ ] add: Teleport scroll (user-controlled target, must be in explored space)
@@ -105,7 +105,8 @@ Ideas & efforts under way.
 - [ ] have various light sources, with various light radii
 
 ### UI
-- [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) #next
+- [ ] tileset should be specified in options.py (currently hard-coded in main.py) `#next`
+- [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) `#next`
 - [ ] use different, appropriate sfx for wizard attack
 - [ ] for variety, each text trigger maps to a SET of sfx, not just one
 
@@ -114,6 +115,7 @@ Ideas & efforts under way.
 - [ ] shop keepers
 - [ ] JSON-ify: spells?
 - [ ] JSON-ify: loot drop tables?
+- [ ] JSON-ify: tile_types.py
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
 
