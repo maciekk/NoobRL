@@ -325,12 +325,18 @@ class BumpAction(ActionWithDirection):
             return MeleeAction(self.entity, self.dx, self.dy).perform()
 
         dest_x, dest_y = self.dest_xy
-        if (
-            options.auto_open_doors
-            and self.engine.game_map.in_bounds(dest_x, dest_y)
-            and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed
-        ):
-            return OpenDoorAction(self.entity, dest_x, dest_y).perform()
+        if self.engine.game_map.in_bounds(dest_x, dest_y):
+            if self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_secret:
+                self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_closed
+                self.engine.message_log.add_message(
+                    "You discover a secret door!", color.white
+                )
+                return
+            if (
+                options.auto_open_doors
+                and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed
+            ):
+                return OpenDoorAction(self.entity, dest_x, dest_y).perform()
 
         return MovementAction(self.entity, self.dx, self.dy).perform()
 

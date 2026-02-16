@@ -40,7 +40,6 @@ Ideas & efforts under way.
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 - [ ] procgen chests with loot
 - [ ] locked doors (requiring keys or lockpicking)
-- [ ] secret doors!
 - [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 
 ### Weapons & Armour
@@ -81,6 +80,7 @@ Ideas & efforts under way.
 - [ ] shop keepers
 
 ### DONE
+- [x] secret doors - 10% of closed doors spawn as hidden walls, revealed on bump
 - [x] rooms have doors (but not always) - doors at corridor-room junctions with open/close mechanics
 - [x] potion of speed - double move speed for N turns
 - [x] want wider text on the bottom
