@@ -70,6 +70,33 @@ CONFIRM_KEYS = {
 
 MIN_FRAME_INTERVAL = 0.01
 
+
+# Modifier key helpers
+def has_shift(mod: int) -> bool:
+    """Check if Shift modifier is held."""
+    return bool(mod & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT))
+
+
+def has_ctrl(mod: int) -> bool:
+    """Check if Ctrl modifier is held."""
+    return bool(mod & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL))
+
+
+def has_alt(mod: int) -> bool:
+    """Check if Alt modifier is held."""
+    return bool(mod & (tcod.event.Modifier.LALT | tcod.event.Modifier.RALT))
+
+
+def is_shifted(event: tcod.event.KeyDown, key: tcod.event.KeySym) -> bool:
+    """Check if a specific key was pressed with Shift modifier."""
+    return event.sym == key and has_shift(event.mod)
+
+
+def is_ctrl(event: tcod.event.KeyDown, key: tcod.event.KeySym) -> bool:
+    """Check if a specific key was pressed with Ctrl modifier."""
+    return event.sym == key and has_ctrl(event.mod)
+
+
 # TODO: theoretically newer notation is preferred:
 #        Action | "BaseEventHandler"
 # See:
@@ -851,11 +878,11 @@ class SelectIndexHandler(AskUserEventHandler):
         key = event.sym
         if key in MOVE_KEYS:
             modifier = 1  # Holding modifier keys will speed up key movement.
-            if event.mod & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+            if has_shift(event.mod):
                 modifier *= 5
-            if event.mod & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL):
+            if has_ctrl(event.mod):
                 modifier *= 10
-            if event.mod & (tcod.event.Modifier.LALT | tcod.event.Modifier.RALT):
+            if has_alt(event.mod):
                 modifier *= 20
 
             x, y = self.engine.mouse_location
@@ -1084,23 +1111,17 @@ class FloorItemDetailHandler(AskUserEventHandler):
 
 class WalkChoiceHandler(SelectIndexHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        key = event.sym
-        modifier = event.mod
         game_map = self.engine.game_map
 
         # '>' jumps cursor to downstairs if known.
-        if key == tcod.event.KeySym.PERIOD and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
-        ):
+        if is_shifted(event, tcod.event.KeySym.PERIOD):
             sx, sy = game_map.downstairs_location
             if game_map.visible[sx, sy] or game_map.explored[sx, sy] or game_map.revealed[sx, sy]:
                 self.engine.mouse_location = sx, sy
             return None
 
         # '<' jumps cursor to upstairs if known.
-        if key == tcod.event.KeySym.COMMA and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT
-        ):
+        if is_shifted(event, tcod.event.KeySym.COMMA):
             ux, uy = game_map.upstairs_location
             if (ux, uy) != (0, 0) and (
                 game_map.visible[ux, uy] or game_map.explored[ux, uy] or game_map.revealed[ux, uy]
@@ -1174,12 +1195,10 @@ class MainGameEventHandler(EventHandler):
 
         player = self.engine.player
 
-        if key == tcod.event.KeySym.PERIOD and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        if is_shifted(event, tcod.event.KeySym.PERIOD):
             return actions.TakeStairsAction(player)
 
-        if key == tcod.event.KeySym.N1 and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        if is_shifted(event, tcod.event.KeySym.N1):
             wand = self.engine.item_manager.clone("wand_wishing")
             if wand:
                 wand.parent = self.engine.player.inventory
@@ -1187,15 +1206,14 @@ class MainGameEventHandler(EventHandler):
                 self.engine.message_log.add_message("A Wand of Wishing appears in your pack!")
             return None
 
-        if key == tcod.event.KeySym.COMMA and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        if is_shifted(event, tcod.event.KeySym.COMMA):
             return actions.TakeUpStairsAction(player)
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]
-            if modifier & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+            if has_shift(modifier):
                 action = CarefulMovementAction(player, dx, dy)
-            elif modifier & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL):
+            elif has_ctrl(modifier):
                 action = MovementRepeatedAction(player, dx, dy)
             else:
                 action = BumpAction(player, dx, dy)
@@ -1205,8 +1223,7 @@ class MainGameEventHandler(EventHandler):
             raise SystemExit()
         elif key == tcod.event.KeySym.SEMICOLON:
             return HistoryViewer(self.engine)
-        elif key == tcod.event.KeySym.SLASH and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        elif is_shifted(event, tcod.event.KeySym.SLASH):
             return ViewKeybinds(self.engine)
         elif key == tcod.event.KeySym.g:
             action = PickupAction(player)
@@ -1218,8 +1235,7 @@ class MainGameEventHandler(EventHandler):
             return InventoryDropHandler(self.engine)
         elif key == tcod.event.KeySym.c:
             return CharacterScreenEventHandler(self.engine)
-        elif key == tcod.event.KeySym.v and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        elif is_shifted(event, tcod.event.KeySym.v):
             return ViewSurroundingsHandler(self.engine)
         elif key == tcod.event.KeySym.v:
             return LookHandler(self.engine)
@@ -1227,8 +1243,7 @@ class MainGameEventHandler(EventHandler):
             return WalkChoiceHandler(self.engine)
         elif key == tcod.event.KeySym.q:
             return QuaffHandler(self.engine)
-        elif key == tcod.event.KeySym.N2 and modifier & (
-            tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT):
+        elif is_shifted(event, tcod.event.KeySym.N2):
             return DebugHandler(self.engine)
         # No valid key was pressed
         return action
