@@ -80,6 +80,9 @@ class ExplodingCorpseAI(BaseAI):
         gamemap = engine.game_map
         x, y = self.entity.x, self.entity.y
 
+        # Defuse self first to prevent re-triggering during chain reactions
+        self.entity.ai = None
+
         engine.message_log.add_message("BOOM!", color.enemy_atk)
         engine.message_log.add_message(
             f"The {self.entity.name} explodes!", color.enemy_atk
@@ -97,7 +100,6 @@ class ExplodingCorpseAI(BaseAI):
                 actor.fighter.take_damage(self.damage)
 
         # Remove the corpse from the map
-        self.entity.ai = None
         if self.entity in gamemap.entities:
             gamemap.entities.remove(self.entity)
 

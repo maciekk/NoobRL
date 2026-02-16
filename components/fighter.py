@@ -52,10 +52,12 @@ class Fighter(BaseComponent):
             return 0
 
     def die(self) -> None:
-        # If already a corpse (e.g. exploding corpse hit by another explosion),
-        # just defuse the AI and stop — no double death messages or XP.
+        # If already a corpse, don't re-run death logic.
+        # If it's a primed exploding corpse, trigger its chain explosion.
         if self.parent.render_order == RenderOrder.CORPSE:
-            self.parent.ai = None
+            from components.ai import ExplodingCorpseAI
+            if isinstance(self.parent.ai, ExplodingCorpseAI):
+                self.parent.ai.explode()
             return
 
         # Add more to deathmessagelist
