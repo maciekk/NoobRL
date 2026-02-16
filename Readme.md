@@ -6,7 +6,7 @@ generated dungeons, component-based entities, JSON-driven monster and item
 definitions, equipment, consumables, a leveling system, and full save/load
 support.
 
-![Screenshot](screenshot.png)
+![Screenshot](pics/screenshot2.png)
 
 ## Design Choices
 
@@ -41,6 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] opening an already open chest throws exception
 - [x] corpses in doorways should prevent closing the door (tactical interest)
 - [x] wished-for items should appear in player inventory, not on floor `#next`
 - [x] for "multiple items" actually use ampersand (roguelikes convention?)
@@ -92,6 +93,7 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
+- [ ] add: amulet & potion of detect monster `#next`
 - [ ] add: Potion of Sleep `#next`
 - [ ] add: Potion of Blindness `#next`
 - [ ] add: Scroll of Identify (blocked: anonymized item names)
