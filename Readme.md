@@ -44,7 +44,7 @@ Ideas & efforts under way.
 - [x] wished-for items should appear in player inventory, not on floor `#next`
 - [x] for "multiple items" actually use ampersand (roguelikes convention?)
 - [x] fix secret door rendering
-- [ ] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
+- [x] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
 
 ### Interesting Mechanics
 - [ ] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ',' or ';' or ```
@@ -106,7 +106,7 @@ Ideas & efforts under way.
 - [ ] have various light sources, with various light radii
 
 ### UI
-- [ ] tileset should be specified in options.py (currently hard-coded in main.py) `#next`
+- [x] tileset should be specified in options.py (currently hard-coded in main.py) `#next`
 - [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) `#next`
 - [ ] use different, appropriate sfx for wizard attack
 - [ ] for variety, each text trigger maps to a SET of sfx, not just one

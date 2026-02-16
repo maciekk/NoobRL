@@ -6,6 +6,7 @@ import tcod
 import color
 import exceptions
 import input_handlers
+import options
 import setup_game
 import tilesets
 
@@ -23,7 +24,7 @@ def main() -> None:
     # TODO: fix; no longer scales
     scale_factor = 1
 
-    tileset, scale_factor, player_char = tilesets.load_sheet("Bedstead")
+    tileset, scale_factor, player_char = tilesets.load_sheet(options.tileset)
 
     handler = setup_game.MainMenu()
 

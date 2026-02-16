@@ -331,6 +331,104 @@ class ListSelectionHandler(AskUserEventHandler):
         return super().ev_keydown(event)
 
 
+# Mapping from (dx, dy) offsets to direction keys and key symbols
+DIRECTION_KEY_MAP = {
+    (0, -1): ('k', tcod.event.KeySym.k),      # north
+    (0, 1): ('j', tcod.event.KeySym.j),       # south
+    (-1, 0): ('h', tcod.event.KeySym.h),      # west
+    (1, 0): ('l', tcod.event.KeySym.l),       # east
+    (-1, -1): ('y', tcod.event.KeySym.y),     # northwest
+    (1, -1): ('u', tcod.event.KeySym.u),      # northeast
+    (-1, 1): ('b', tcod.event.KeySym.b),      # southwest
+    (1, 1): ('n', tcod.event.KeySym.n),       # southeast
+}
+
+
+class DirectionalSelectionHandler(AskUserEventHandler):
+    """Base class for selection menus that use directional keys (h,j,k,l,y,u,b,n).
+
+    Used for actions targeting locations around the player. Items are mapped to
+    direction keys based on their position relative to the player.
+
+    Subclasses override:
+        get_directional_items() -> list of (dx, dy, description, target) tuples
+        on_directional_selection(dx, dy, target) -> Action or Handler
+
+    Class attributes:
+        TITLE      — frame title
+        EMPTY_TEXT — shown when list is empty
+    """
+
+    TITLE: str = "<missing title>"
+    EMPTY_TEXT: str = "(Empty)"
+
+    def __init__(self, engine: Engine):
+        super().__init__(engine)
+
+    def get_directional_items(self) -> list:
+        """Return list of (dx, dy, description, target) tuples."""
+        raise NotImplementedError()
+
+    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+        """Called when user selects a direction."""
+        raise NotImplementedError()
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+
+        items = self.get_directional_items()
+        num_items = len(items)
+        height = max(num_items + 2, 3)
+
+        if self.engine.player.x <= 30:
+            x = 40
+        else:
+            x = 0
+
+        y = 0
+
+        item_strings = []
+        for dx, dy, description, _ in items:
+            if (dx, dy) in DIRECTION_KEY_MAP:
+                dir_key, _ = DIRECTION_KEY_MAP[(dx, dy)]
+                item_strings.append(f"({dir_key}) {description}")
+            else:
+                # Fallback for (0,0) or unexpected offsets
+                item_strings.append(f"(?) {description}")
+
+        max_item_width = max((len(s) for s in item_strings), default=0)
+        width = max(len(self.TITLE) + 4, max_item_width + 2)
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=self.TITLE, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        if item_strings:
+            for i, s in enumerate(item_strings):
+                console.print(x + 1, y + i + 1, s)
+        else:
+            console.print(x + 1, y + 1, self.EMPTY_TEXT)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+        items = self.get_directional_items()
+
+        # Build a map from key symbol to (dx, dy, target)
+        key_to_item = {}
+        for dx, dy, _, target in items:
+            if (dx, dy) in DIRECTION_KEY_MAP:
+                _, key_sym = DIRECTION_KEY_MAP[(dx, dy)]
+                key_to_item[key_sym] = (dx, dy, target)
+
+        if key in key_to_item:
+            dx, dy, target = key_to_item[key]
+            return self.on_directional_selection(dx, dy, target)
+
+        return super().ev_keydown(event)
+
+
 class CharacterScreenEventHandler(AskUserEventHandler):
     TITLE = "Character Information"
 
@@ -860,7 +958,7 @@ class WishItemHandler(ListSelectionHandler):
 def find_openable_targets(engine: Engine) -> list:
     """Find all openable things (chests, closed doors) in 3x3 area around player.
 
-    Returns list of tuples: (description, action)
+    Returns list of tuples: (dx, dy, description, action)
     """
     import tile_types
     targets = []
@@ -895,19 +993,19 @@ def find_openable_targets(engine: Engine) -> list:
                 else:
                     direction = "southeast"
 
-                targets.append((f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y)))
+                targets.append((dx, dy, f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y)))
 
             # Check for openable entities (chests)
             for entity in engine.game_map.entities:
                 if entity.x == x and entity.y == y and hasattr(entity, 'open'):
                     direction = "here" if (dx == 0 and dy == 0) else "nearby"
-                    targets.append((f"{entity.name.capitalize()} ({direction})", entity))
+                    targets.append((dx, dy, f"{entity.name.capitalize()} ({direction})", entity))
 
     return targets
 
 
-class OpenableSelectionHandler(ListSelectionHandler):
-    """Lets the player choose which openable thing to open."""
+class OpenableSelectionHandler(DirectionalSelectionHandler):
+    """Lets the player choose which openable thing to open using directional keys."""
 
     TITLE = "Open what?"
     EMPTY_TEXT = "(Nothing to open)"
@@ -916,15 +1014,10 @@ class OpenableSelectionHandler(ListSelectionHandler):
         super().__init__(engine)
         self.targets = targets
 
-    def get_items(self) -> list:
+    def get_directional_items(self) -> list:
         return self.targets
 
-    def get_display_string(self, index: int, item) -> str:
-        description, _ = item
-        return description
-
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
-        description, target = item
+    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
         if isinstance(target, Action):
             return target
         else:
@@ -936,7 +1029,7 @@ class OpenableSelectionHandler(ListSelectionHandler):
 def find_closeable_doors(engine: Engine) -> list:
     """Find all open doors in 3x3 area around player.
 
-    Returns list of tuples: (description, action)
+    Returns list of tuples: (dx, dy, description, action)
     """
     import tile_types
     targets = []
@@ -971,13 +1064,13 @@ def find_closeable_doors(engine: Engine) -> list:
                 else:
                     direction = "southeast"
 
-                targets.append((f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y)))
+                targets.append((dx, dy, f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y)))
 
     return targets
 
 
-class CloseableSelectionHandler(ListSelectionHandler):
-    """Lets the player choose which open door to close."""
+class CloseableSelectionHandler(DirectionalSelectionHandler):
+    """Lets the player choose which open door to close using directional keys."""
 
     TITLE = "Close what?"
     EMPTY_TEXT = "(No open doors)"
@@ -986,16 +1079,11 @@ class CloseableSelectionHandler(ListSelectionHandler):
         super().__init__(engine)
         self.targets = targets
 
-    def get_items(self) -> list:
+    def get_directional_items(self) -> list:
         return self.targets
 
-    def get_display_string(self, index: int, item) -> str:
-        description, _ = item
-        return description
-
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
-        description, action = item
-        return action
+    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+        return target
 
 
 class SelectIndexHandler(AskUserEventHandler):
@@ -1378,7 +1466,7 @@ class MainGameEventHandler(EventHandler):
                 return None
             elif len(targets) == 1:
                 # Only one target, open it directly
-                _, target = targets[0]
+                dx, dy, description, target = targets[0]
                 if isinstance(target, Action):
                     action = target
                 else:
@@ -1398,7 +1486,7 @@ class MainGameEventHandler(EventHandler):
                 return None
             elif len(targets) == 1:
                 # Only one target, close it directly
-                _, action = targets[0]
+                dx, dy, description, action = targets[0]
                 return action
             else:
                 # Multiple targets, show selection menu
