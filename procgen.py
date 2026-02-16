@@ -205,9 +205,10 @@ def _would_create_wide_corridor(tiles, x, y, planned_floor=None):
 def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, int]]:
     """Find corridor-room junctions where doors can be placed.
 
-    A junction is a floor tile that:
+    A junction is a corridor tile where:
     - Is NOT part of a room (it's a corridor)
-    - Is cardinally adjacent to at least one room tile
+    - Is cardinally adjacent to exactly ONE or TWO room tiles in a line
+    - Not surrounded by room tiles (which would mean it's running parallel)
     - Only considers orthogonal (cardinal) adjacency, not diagonal
     """
     door_locations = []
@@ -219,17 +220,32 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
             if not dungeon.tiles["walkable"][x, y] or (x, y) in room_tiles:
                 continue
 
-            # Check if this corridor tile is adjacent to a room tile (cardinally)
-            adjacent_to_room = False
-            for dx, dy in [(0, -1), (0, 1), (-1, 0), (1, 0)]:  # N, S, W, E
+            # Count adjacent room tiles in each cardinal direction
+            directions = [(0, -1), (0, 1), (-1, 0), (1, 0)]  # N, S, W, E
+            room_neighbors = []
+            for i, (dx, dy) in enumerate(directions):
                 nx, ny = x + dx, y + dy
                 if 0 <= nx < width and 0 <= ny < height:
                     if (nx, ny) in room_tiles:
-                        adjacent_to_room = True
-                        break
+                        room_neighbors.append(i)
 
-            if adjacent_to_room:
+            # Valid junction: adjacent to room in exactly one direction
+            # (N or S, or W or E, but not multiple perpendicular directions)
+            if len(room_neighbors) == 0:
+                continue
+
+            # Check if room neighbors are in opposite directions (0-1 are N-S, 2-3 are W-E)
+            # or the same direction - this is good (entering room)
+            # But if they're perpendicular, we're running along the room edge - skip
+            if len(room_neighbors) == 1:
+                # Single room neighbor - this is a valid entrance
                 door_locations.append((x, y))
+            elif len(room_neighbors) == 2:
+                # Two room neighbors - only valid if they're in opposite directions
+                # (forming a straight line through the junction)
+                if (room_neighbors == [0, 1]) or (room_neighbors == [2, 3]):
+                    door_locations.append((x, y))
+                # Otherwise skip (perpendicular = running along edge)
 
     return door_locations
 
