@@ -238,8 +238,19 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
             # or the same direction - this is good (entering room)
             # But if they're perpendicular, we're running along the room edge - skip
             if len(room_neighbors) == 1:
-                # Single room neighbor - this is a valid entrance
-                door_locations.append((x, y))
+                # Single room neighbor - only valid if in a 1-wide passage
+                # (flanked by non-walkable tiles perpendicular to room direction)
+                dir_idx = room_neighbors[0]
+                if dir_idx <= 1:  # N or S: check east/west
+                    perp_a = (x - 1, y)
+                    perp_b = (x + 1, y)
+                else:  # W or E: check north/south
+                    perp_a = (x, y - 1)
+                    perp_b = (x, y + 1)
+                a_blocked = not (0 <= perp_a[0] < width and 0 <= perp_a[1] < height and dungeon.tiles["walkable"][perp_a])
+                b_blocked = not (0 <= perp_b[0] < width and 0 <= perp_b[1] < height and dungeon.tiles["walkable"][perp_b])
+                if a_blocked and b_blocked:
+                    door_locations.append((x, y))
             elif len(room_neighbors) == 2:
                 # Two room neighbors - only valid if they're in opposite directions
                 # (forming a straight line through the junction)
