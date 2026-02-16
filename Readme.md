@@ -41,6 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] wished-for items should appear in player inventory, not on floor `#next`
 - [ ] for "multiple items" actually use ampersand (roguelikes convention?)
 - [ ] fix secret door rendering
 - [ ] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
@@ -117,5 +118,4 @@ Ideas & efforts under way.
 - [ ] JSON-ify: loot drop tables?
 - [ ] JSON-ify: tile_types.py
 - [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
-
 
