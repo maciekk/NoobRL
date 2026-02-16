@@ -45,9 +45,9 @@ Ideas & efforts under way.
 - [x] for "multiple items" actually use ampersand (roguelikes convention?)
 - [x] fix secret door rendering
 - [x] certain "select choice" dialogs should use Nethack directions (e.g., open/close)
+- [x] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ';'
 
 ### Interesting Mechanics
-- [ ] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ',' or ';' or ```
 - [ ] allow item throwing (e.g., dart, potion) `#next`
     - [ ] thrown potions shatter, convey their benefit to any actor in that square `#next`
 - [ ] simulate noise and monster hearing

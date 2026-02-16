@@ -10,3 +10,6 @@ auto_open_doors = True
 #            "Tocky_square", "Terminus", "Cheepicus_12x12", "Cheepicus_14x14",
 #            "Talryth_square"
 tileset = "Bedstead"
+
+# Probability each room gets a tall grass patch (0.0 disables).
+grass_patch_chance = 0.1

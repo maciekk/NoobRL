@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 import random
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
@@ -261,6 +262,44 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
     return door_locations
 
 
+def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
+    """Place roughly elliptical patches of tall grass in some rooms."""
+    import options
+    for room in rooms:
+        if random.random() >= options.grass_patch_chance:
+            continue
+        # Pick random center within room interior
+        cx = random.randint(room.x1 + 1, room.x2 - 1)
+        cy = random.randint(room.y1 + 1, room.y2 - 1)
+        # Random ellipse parameters
+        semi_major = random.uniform(2.0, 4.3)
+        semi_minor = semi_major * random.uniform(0.4, 0.9)
+        angle = random.uniform(0, math.pi)
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        # Bounding box (generous)
+        radius = int(semi_major) + 1
+        for x in range(cx - radius, cx + radius + 1):
+            for y in range(cy - radius, cy + radius + 1):
+                # Skip map borders
+                if x <= 0 or x >= dungeon.width - 1 or y <= 0 or y >= dungeon.height - 1:
+                    continue
+                # Rotated ellipse distance
+                dx = x - cx
+                dy = y - cy
+                rx = dx * cos_a + dy * sin_a
+                ry = -dx * sin_a + dy * cos_a
+                dist = (rx / semi_major) ** 2 + (ry / semi_minor) ** 2
+                # Noise for organic edges
+                threshold = 1.0 + random.uniform(-0.15, 0.15)
+                if dist >= threshold:
+                    continue
+                # Only convert floor and wall tiles
+                tile = dungeon.tiles[x, y]
+                if (tile == tile_types.floor or tile == tile_types.wall) and (x, y) not in dungeon.secret_doors:
+                    dungeon.tiles[x, y] = tile_types.tall_grass
+
+
 def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None:
     """Place doors at junction locations.
 
@@ -368,5 +407,8 @@ def generate_dungeon(
     # Place doors at corridor-room junctions.
     door_locations = find_door_locations(dungeon, room_tiles)
     place_doors(dungeon, door_locations)
+
+    # Place tall grass patches in some rooms.
+    place_grass_patches(dungeon, rooms)
 
     return dungeon

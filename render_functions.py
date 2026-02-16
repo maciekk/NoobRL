@@ -31,6 +31,8 @@ def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
         return "wall"
     elif tile == tile_types.floor:
         return "floor"
+    elif tile == tile_types.tall_grass:
+        return "tall grass"
     return ""
 
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:

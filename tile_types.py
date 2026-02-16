@@ -80,6 +80,13 @@ door_open = new_tile(
     revealed=(ord("'"), (64, 50, 0), (0, 0, 0)),
     light=(ord("'"), (139, 69, 19), (32, 32, 0)),
 )
+tall_grass = new_tile(
+    walkable=True,
+    transparent=False,
+    dark=(ord(";"), (20, 80, 20), (0, 20, 0)),
+    revealed=(ord(";"), (10, 35, 10), (0, 8, 0)),
+    light=(ord(";"), (50, 200, 50), (10, 50, 10)),
+)
 
 # Tiles that should cause careful movement to stop when stepped on.
-interesting_tiles = [down_stairs, up_stairs, door_closed, door_open]
+interesting_tiles = [down_stairs, up_stairs, door_closed, door_open, tall_grass]
