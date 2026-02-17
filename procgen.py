@@ -25,7 +25,7 @@ max_monsters_by_floor = [
 ]
 
 item_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [("p_heal", 35)],
+    0: [("p_heal", 35), ("dart", 20)],
     2: [("s_confusion", 10)],
     3: [("s_blink", 15), ("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5)],
     4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5)],

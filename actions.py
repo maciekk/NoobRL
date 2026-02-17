@@ -6,6 +6,8 @@ import math
 import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
+import tcod
+
 import color
 import exceptions
 import options
@@ -594,3 +596,97 @@ class TargetMovementAction(Action):
             return False
         self.entity.move(x - self.entity.x, y - self.entity.y)
         return True  # keep going
+
+
+class ThrowAction(Action):
+    """Throw an item from inventory in a direction."""
+
+    MAX_RANGE = 10
+
+    def __init__(self, entity: Actor, item: Item, target_xy: Tuple[int, int]):
+        super().__init__(entity)
+        self.item = item
+        self.target_xy = target_xy
+
+    def _compute_damage(self, item: Item) -> int:
+        from equipment_types import EquipmentType
+
+        if item.equippable:
+            if item.equippable.equipment_type == EquipmentType.THROWN:
+                return item.equippable.power_bonus
+            elif item.equippable.equipment_type == EquipmentType.WEAPON:
+                return max(1, item.equippable.power_bonus // 2)
+        return 1
+
+    def perform(self) -> None:
+        game_map = self.engine.game_map
+        sx, sy = self.entity.x, self.entity.y
+        tx, ty = self.target_xy
+
+        # Compute Bresenham line from thrower to target.
+        line = tcod.los.bresenham((sx, sy), (tx, ty)).tolist()
+        # Skip the starting tile (thrower's position).
+        if line and (line[0][0], line[0][1]) == (sx, sy):
+            line = line[1:]
+
+        # Walk the line up to MAX_RANGE tiles.
+        final_x, final_y = sx, sy
+        hit_actor = None
+
+        for i, (lx, ly) in enumerate(line):
+            if i >= self.MAX_RANGE:
+                break
+            if not game_map.in_bounds(lx, ly):
+                break
+            if not game_map.tiles["walkable"][lx, ly]:
+                break
+            actor = game_map.get_actor_at_location(lx, ly)
+            if actor:
+                final_x, final_y = lx, ly
+                hit_actor = actor
+                break
+            final_x, final_y = lx, ly
+
+        # Remove one item from inventory.
+        import copy as _copy
+
+        if self.item.stackable and self.item.stack_count > 1:
+            self.item.stack_count -= 1
+            thrown_item = _copy.deepcopy(self.item)
+            thrown_item.stack_count = 1
+        else:
+            if self.item in self.entity.inventory.items:
+                self.entity.inventory.items.remove(self.item)
+            thrown_item = self.item
+
+        # Log the throw.
+        self.engine.message_log.add_message(
+            f"You throw the {thrown_item.name}!", color.white
+        )
+
+        # Deal damage if we hit an actor.
+        if hit_actor:
+            damage = self._compute_damage(thrown_item)
+            self.engine.message_log.add_message(
+                f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
+                color.player_atk,
+            )
+            hit_actor.fighter.hp -= damage
+
+        # Place item on the floor at final position.
+        thrown_item.place(final_x, final_y, game_map)
+
+        # Merge with existing floor stack if applicable.
+        if thrown_item.stackable:
+            for entity in list(game_map.entities):
+                if (
+                    entity is not thrown_item
+                    and hasattr(entity, "stackable")
+                    and entity.stackable
+                    and entity.name == thrown_item.name
+                    and entity.x == final_x
+                    and entity.y == final_y
+                ):
+                    entity.stack_count += thrown_item.stack_count
+                    game_map.entities.discard(thrown_item)
+                    break

@@ -53,6 +53,7 @@ EQUIPPABLE_MAP = {
     "SteelArmor": equippable.SteelArmor,
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
     "AmuletOfDetectMonster": equippable.AmuletOfDetectMonster,
+    "Dart": equippable.Dart,
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,
@@ -328,6 +329,10 @@ class Item(Entity):
 
     @property
     def stackable(self) -> bool:
+        from equipment_types import EquipmentType
+
+        if self.equippable is not None and self.equippable.equipment_type == EquipmentType.THROWN:
+            return True
         return self.consumable is not None and self.equippable is None
 
 

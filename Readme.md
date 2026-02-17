@@ -50,7 +50,7 @@ Ideas & efforts under way.
 - [x] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ';'
 
 ### Interesting Mechanics
-- [ ] allow item throwing (e.g., dart, potion) `#next`
+- [x] allow item throwing (e.g., dart, potion)
     - [ ] thrown potions shatter, convey their benefit to any actor in that square `#next`
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
@@ -80,7 +80,7 @@ Ideas & efforts under way.
 - [ ] find something useful to do with monster corpses (food? crafting?)
 
 ### Weapons & Armour
-- [ ] add darts at level 1, common `#next`
+- [x] add darts at level 1, common
 - [ ] add bows & arrows
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.

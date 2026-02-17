@@ -17,6 +17,7 @@ from actions import (
     OpenAction,
     PickupAction,
     TargetMovementAction,
+    ThrowAction,
     WaitAction,
 )
 import color
@@ -837,6 +838,11 @@ class ItemDetailHandler(AskUserEventHandler):
                 lines.append(("Weapon", color.white))
             elif item.equippable.equipment_type == EquipmentType.AMULET:
                 lines.append(("Amulet", color.white))
+            elif item.equippable.equipment_type == EquipmentType.THROWN:
+                if item.stackable and item.stack_count > 1:
+                    lines.append((f"Thrown weapon (x{item.stack_count})", color.white))
+                else:
+                    lines.append(("Thrown weapon", color.white))
             else:
                 lines.append(("Armor", color.white))
         elif item.consumable:
@@ -862,22 +868,24 @@ class ItemDetailHandler(AskUserEventHandler):
                 lines.append(
                     (f"Defense bonus: +{item.equippable.defense_bonus}", color.white)
                 )
-            if player.equipment.item_is_equipped(item):
-                lines.append(("Currently equipped", color.safe))
-            else:
-                lines.append(("Not equipped", color.white))
+            if item.equippable.equipment_type != EquipmentType.THROWN:
+                if player.equipment.item_is_equipped(item):
+                    lines.append(("Currently equipped", color.safe))
+                else:
+                    lines.append(("Not equipped", color.white))
 
         # Separator.
         lines.append(("", color.white))
 
         # Actions.
-        if item.equippable:
+        if item.equippable and item.equippable.equipment_type != EquipmentType.THROWN:
             if player.equipment.item_is_equipped(item):
                 lines.append(("(e) Unequip", color.white))
             else:
                 lines.append(("(e) Equip", color.white))
         if item.consumable:
             lines.append(("(a) Apply", color.white))
+        lines.append(("(t) Throw", color.white))
         lines.append(("(d) Drop", color.white))
         lines.append(("(Esc) Back", color.white))
 
@@ -911,9 +919,15 @@ class ItemDetailHandler(AskUserEventHandler):
         player = self.engine.player
 
         if key == tcod.event.KeySym.e and item.equippable:
+            from equipment_types import EquipmentType
+
+            if item.equippable.equipment_type == EquipmentType.THROWN:
+                return None  # Can't equip thrown weapons
             return actions.EquipAction(player, item)
         elif key == tcod.event.KeySym.a and item.consumable:
             return item.consumable.get_action(player)
+        elif key == tcod.event.KeySym.t:
+            return ThrowTargetHandler(self.engine, item)
         elif key == tcod.event.KeySym.d:
             if item.stackable and item.stack_count > 1:
                 return DropQuantityHandler(self.engine, item)
@@ -1388,6 +1402,11 @@ class FloorItemDetailHandler(AskUserEventHandler):
                 lines.append(("Weapon", color.white))
             elif item.equippable.equipment_type == EquipmentType.AMULET:
                 lines.append(("Amulet", color.white))
+            elif item.equippable.equipment_type == EquipmentType.THROWN:
+                if item.stackable and item.stack_count > 1:
+                    lines.append((f"Thrown weapon (x{item.stack_count})", color.white))
+                else:
+                    lines.append(("Thrown weapon", color.white))
             else:
                 lines.append(("Armor", color.white))
         elif item.consumable:
@@ -1632,6 +1651,8 @@ class MainGameEventHandler(EventHandler):
             return WalkChoiceHandler(self.engine)
         elif key == tcod.event.KeySym.q:
             return QuaffHandler(self.engine)
+        elif key == tcod.event.KeySym.t:
+            return ThrowItemHandler(self.engine)
         elif is_shifted(event, tcod.event.KeySym.N2):
             return DebugHandler(self.engine)
         # No valid key was pressed
@@ -1776,6 +1797,7 @@ class ViewKeybinds(AskUserEventHandler):
         "o: open (chest/door)",
         "c: close door",
         "q: quaff potion",
+        "t: throw item",
         "i: inventory",
         "d: drop",
         "C: character stats",
@@ -1811,6 +1833,105 @@ class ViewKeybinds(AskUserEventHandler):
 
         for i, line in enumerate(self.TEXT):
             console.print(x=x + 1, y=y + 1 + i, string=line)
+
+
+class ThrowItemHandler(InventoryEventHandler):
+    """Lets the player select an item to throw."""
+
+    TITLE = "Throw what?"
+    use_cursor = True
+
+    def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        return ThrowTargetHandler(self.engine, item)
+
+
+class ThrowTargetHandler(SelectIndexHandler):
+    """Lets the player aim a thrown item with a cursor.
+
+    Controls:
+        Direction keys: move cursor (Shift = 5x, Ctrl = 10x speed)
+        Alt + direction: throw immediately in that direction
+        Tab: snap cursor to closest visible enemy
+        Enter / click: throw at cursor position
+        Escape: back to item selection
+    """
+
+    def __init__(self, engine: Engine, item: Item):
+        super().__init__(engine)
+        self.item = item
+        engine.message_log.add_message(
+            "Aim: move keys, Tab=nearest enemy, Alt+dir=throw, Enter=confirm",
+            color.white,
+        )
+
+    def _snap_to_nearest_enemy(self) -> None:
+        """Move cursor to the closest visible enemy relative to current cursor position."""
+        game_map = self.engine.game_map
+        cx, cy = self.engine.mouse_location
+        best_dist = float("inf")
+        best_pos = None
+
+        for actor in game_map.actors:
+            if actor is self.engine.player:
+                continue
+            if not actor.is_alive:
+                continue
+            if not game_map.visible[actor.x, actor.y]:
+                continue
+            if (actor.x, actor.y) == (cx, cy):
+                continue
+            dist = (actor.x - cx) ** 2 + (actor.y - cy) ** 2
+            if dist < best_dist:
+                best_dist = dist
+                best_pos = (actor.x, actor.y)
+
+        if best_pos:
+            self.engine.mouse_location = best_pos
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        key = event.sym
+
+        if key == tcod.event.KeySym.ESCAPE:
+            return ThrowItemHandler(self.engine)
+
+        # Tab: snap to nearest visible enemy.
+        if key == tcod.event.KeySym.TAB:
+            self._snap_to_nearest_enemy()
+            return None
+
+        # Alt + direction: throw immediately in that direction.
+        if key in MOVE_KEYS and has_alt(event.mod):
+            dx, dy = MOVE_KEYS[key]
+            player = self.engine.player
+            target_x = player.x + dx * ThrowAction.MAX_RANGE
+            target_y = player.y + dy * ThrowAction.MAX_RANGE
+            return ThrowAction(player, self.item, (target_x, target_y))
+
+        # Everything else (cursor movement, confirm) handled by SelectIndexHandler.
+        # Override Alt speed-up: only Shift and Ctrl modify cursor speed.
+        if key in MOVE_KEYS:
+            modifier = 1
+            if has_shift(event.mod):
+                modifier *= 5
+            if has_ctrl(event.mod):
+                modifier *= 10
+
+            x, y = self.engine.mouse_location
+            dx, dy = MOVE_KEYS[key]
+            x += dx * modifier
+            y += dy * modifier
+            x = max(0, min(x, self.engine.game_map.width - 1))
+            y = max(0, min(y, self.engine.game_map.height - 1))
+            self.engine.mouse_location = x, y
+            return None
+
+        if key in CONFIRM_KEYS:
+            return self.on_index_selected(*self.engine.mouse_location)
+
+        return super().ev_keydown(event)
+
+    def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
+        return ThrowAction(self.engine.player, self.item, (x, y))
 
 
 # Import at end, to avoid circular dependency.

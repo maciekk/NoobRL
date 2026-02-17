@@ -75,6 +75,11 @@ class AmuletOfClairvoyance(Equippable):
         apply_clairvoyance(self.engine)
 
 
+class Dart(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.THROWN, power_bonus=4)
+
+
 class AmuletOfDetectMonster(Equippable):
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.AMULET)
