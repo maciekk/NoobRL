@@ -74,7 +74,7 @@ Ideas & efforts under way.
 - [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs
 - [ ] monsters should have different visibility ranges, some shorter than player's
 - [ ] allow monsters to be asleep, fall asleep
-- [ ] monsters not asleep should have Brownian motion
+- [x] monsters not asleep should have Brownian motion
 - [ ] certain monsters should patrol the corridors (more guard-like races)
 - [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
 - [ ] add: Kobold (fast, but low HP, minimal damage... although groups dangerous?)

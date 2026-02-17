@@ -128,6 +128,26 @@ class HostileEnemy(BaseAI):
         self.path: List[Tuple[int, int]] = []
         self.last_known_target: Optional[Tuple[int, int]] = None
 
+    def _wander_randomly(self) -> None:
+        """Move in a random direction (Brownian motion). Just moves; doesn't attack."""
+        direction_x, direction_y = random.choice(
+            [
+                (-1, -1),  # Northwest
+                (0, -1),   # North
+                (1, -1),   # Northeast
+                (-1, 0),   # West
+                (1, 0),    # East
+                (-1, 1),   # Southwest
+                (0, 1),    # South
+                (1, 1),    # Southeast
+            ]
+        )
+        try:
+            MovementAction(self.entity, direction_x, direction_y).perform()
+        except:
+            # Blocked by wall, entity, or out of bounds: simply don't move
+            pass
+
     def perform(self) -> None:
         target = self.engine.player
         dx = target.x - self.entity.x
@@ -192,4 +212,5 @@ class HostileEnemy(BaseAI):
                 dest_y - self.entity.y,
             ).perform()
 
-        return WaitAction(self.entity).perform()
+        # No path and not aware of player: wander randomly
+        self._wander_randomly()
