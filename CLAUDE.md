@@ -12,6 +12,14 @@ NoobRL is a traditional turn-based roguelike dungeon crawler written in Python 3
 SDL_VIDEODRIVER=x11 python main.py
 ```
 
+If you get error about tcod missing, you likely need to do:
+
+```
+source venv/bin/activate
+```
+
+```
+```
 Dependencies: `tcod`, `numpy`, `pygame`. No requirements.txt exists; install manually via pip.
 
 There is no test suite, linter configuration, or formal build system. The Makefile only generates ctags (`make ctags`).
