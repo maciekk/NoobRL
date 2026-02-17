@@ -60,27 +60,31 @@ Ideas & efforts under way.
 - [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
 - [ ] maybe later add max stack size for consumables
 - [ ] wands should have charges, be non-stackable
+- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
+- [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
 
-### Map Generation
+### Dungeon
+- [x] procgen chests with loot
+- [ ] locked doors (requiring keys or lockpicking)
 - [ ] scrollable map (i.e., map larger than rendered window)
 - [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
-- [ ] procgen chests with loot
-- [ ] locked doors (requiring keys or lockpicking)
-- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 
 ### Monsters
+- [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs
 - [ ] monsters should have different visibility ranges, some shorter than player's
-- [ ] some monsters should patrol rooms, even before spotting you
 - [ ] allow monsters to be asleep, fall asleep
+- [ ] monsters not asleep should have Brownian motion
+- [ ] certain monsters should patrol the corridors (more guard-like races)
 - [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
 - [ ] add: Kobold (fast, but low HP, minimal damage... although groups dangerous?)
 - [ ] enemy special powers (Ex: speed, strength, invisibility, etc...)
-- [ ] enemies should sometimes drop loot when killed
+- [ ] enemies should sometimes drop loot when killed (is corpse part of drop?)
 - [ ] find something useful to do with monster corpses (food? crafting?)
 
 ### Weapons & Armour
 - [x] add darts at level 1, common
+- [ ] add bombs/grenades - thrown weapon, but gets consumed on use `#next`
 - [ ] add bows & arrows
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
