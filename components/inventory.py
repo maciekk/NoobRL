@@ -1,3 +1,5 @@
+"""Component that manages item storage and stack merging."""
+
 from __future__ import annotations
 
 import copy
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class Inventory(BaseComponent):
+    """Manages an actor's items with support for stackable items and capacity limits."""
     parent: Actor
 
     def __init__(self, capacity: int):

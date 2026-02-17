@@ -1,3 +1,5 @@
+"""Component that makes items equippable with stat bonuses and hooks."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class Equippable(BaseComponent):
+    """Makes an item equippable with power/defense bonuses and equip/unequip hooks."""
     parent: Item
 
     def __init__(
@@ -24,48 +27,65 @@ class Equippable(BaseComponent):
         self.defense_bonus = defense_bonus
 
     def on_equip(self) -> None:
+        """Called when this equippable is equipped; can be overridden for special effects."""
         pass
 
     def on_unequip(self) -> None:
+        """Called when this equippable is unequipped; can be overridden to reverse effects."""
         pass
 
 
 class Dagger(Equippable):
+    """A basic dagger with +2 power bonus."""
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=2)
 
 
 class Sword(Equippable):
+    """A standard sword with +4 power bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=4)
 
 
 class LongSword(Equippable):
+    """A powerful sword with +6 power bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=6)
 
 
 class Odachi(Equippable):
+    """A legendary sword with +9 power bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=9)
 
 
 class LeatherArmor(Equippable):
+    """Basic leather armor with +1 defense bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=1)
 
 
 class ChainMail(Equippable):
+    """Moderate armor with +3 defense bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=3)
 
 
 class SteelArmor(Equippable):
+    """Heavy armor with +5 defense bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=5)
 
 
 class AmuletOfClairvoyance(Equippable):
+    """An amulet that reveals the dungeon layout when equipped."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.AMULET)
 
@@ -76,11 +96,15 @@ class AmuletOfClairvoyance(Equippable):
 
 
 class Dart(Equippable):
+    """A thrown weapon with +4 power bonus."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.THROWN, power_bonus=4)
 
 
 class AmuletOfDetectMonster(Equippable):
+    """An amulet that reveals all monsters while equipped."""
+
     def __init__(self) -> None:
         super().__init__(equipment_type=EquipmentType.AMULET)
 

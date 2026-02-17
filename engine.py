@@ -1,3 +1,4 @@
+"""Core game engine managing game state, turn cycle, and rendering."""
 from __future__ import annotations
 
 import copy
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
 
 
 class Engine:
+    """Central game state: manages map, player, entities, turns, and rendering."""
+
     game_map: GameMap
     game_world: GameWorld
 
@@ -34,6 +37,7 @@ class Engine:
         self._bonus_actions = 0
 
     def handle_enemy_turns(self) -> None:
+        """Process AI actions for all non-player actors."""
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
                 entity.energy += entity.speed
@@ -55,6 +59,7 @@ class Engine:
         self.game_map.explored |= self.game_map.visible
 
     def render(self, console: Console) -> None:
+        """Render the game map, UI bars, and message log to the console."""
         self.game_map.render(console)
 
         self.message_log.render(console=console, x=21, y=45, width=99, height=5)
@@ -100,12 +105,14 @@ class Engine:
         with open(filename, "wb") as f:
             f.write(save_data)
 
-    def apply_timed_effects(self):
+    def apply_timed_effects(self) -> None:
+        """Apply per-turn logic for all active timed effects on actors."""
         for entity in set(self.game_map.actors):
             for eff in entity.effects:
                 eff.apply_turn()
 
-    def end_turn(self):
+    def end_turn(self) -> None:
+        """Advance the game state: apply effects, handle AI, update FOV, increment turn."""
         if self._bonus_actions > 0:
             self._bonus_actions -= 1
             self.update_fov()

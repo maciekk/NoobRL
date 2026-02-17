@@ -1,3 +1,4 @@
+"""Entity classes for game objects: Entity, Actor, Item, and their managers."""
 from __future__ import annotations
 
 import copy
@@ -94,6 +95,7 @@ class Entity:
 
     @property
     def gamemap(self) -> Optional[GameMap]:
+        """Get the GameMap containing this entity, if any."""
         if self.parent is None:
             return None
         return self.parent.gamemap
@@ -125,7 +127,7 @@ class Entity:
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
     def move(self, dx: int, dy: int) -> None:
-        # Move the entity by a given amount
+        """Move the entity by a given offset."""
         self.x += dx
         self.y += dy
 
@@ -159,6 +161,8 @@ class Entity:
 
 
 class Actor(Entity):
+    """A living entity with combat stats, AI, inventory, and equipment."""
+
     def __init__(
         self,
         *,
@@ -220,6 +224,7 @@ class Actor(Entity):
 
     @property
     def speed(self) -> int:
+        """Effective speed; doubled if hasted."""
         return self.base_speed * (2 if self.is_hasted else 1)
 
     @property
@@ -228,10 +233,12 @@ class Actor(Entity):
         return bool(self.ai)
 
     def take(self, item: Item) -> None:
+        """Add an item to this actor's inventory."""
         if item not in self.inventory.items:
             self.inventory.add(item)
 
     def take_and_equip(self, item: Item) -> None:
+        """Add an item to inventory and equip it."""
         self.take(item)
         if not self.equipment.item_is_equipped(item):
             self.equipment.toggle_equip(item)
@@ -258,6 +265,7 @@ class Chest(Entity):
         self.opened = False
 
     def open(self, opener: Actor) -> None:
+        """Open the chest and spawn random items."""
         import exceptions
 
         if self.opened:
@@ -329,6 +337,7 @@ class Item(Entity):
 
     @property
     def stackable(self) -> bool:
+        """True if this item can be stacked in inventory."""
         from equipment_types import EquipmentType
 
         if self.equippable is not None and self.equippable.equipment_type == EquipmentType.THROWN:
@@ -341,7 +350,8 @@ class ItemManager:
         self.items = {}
         self.load(fname)
 
-    def load(self, fname: string):
+    def load(self, fname: string) -> None:
+        """Load item templates from a JSON file."""
         with open(fname, "r") as f:
             data = f.read()
             for item in json.loads(data):
@@ -357,6 +367,7 @@ class ItemManager:
                 self.items[id] = Item(**item)
 
     def clone(self, name: Optional[string]) -> Optional[Item]:
+        """Return a deep copy of an item template by name."""
         if name is None:
             return None
         if name not in self.items:
@@ -370,7 +381,8 @@ class MonsterManager:
         self.item_manager = item_manager
         self.load(fname)
 
-    def load(self, fname: string):
+    def load(self, fname: string) -> None:
+        """Load actor templates from a JSON file."""
         with open(fname, "r") as f:
             data = f.read()
             for item in json.loads(data):
@@ -393,6 +405,7 @@ class MonsterManager:
                 self.monsters[id] = Actor(**item)
 
     def clone(self, name: string) -> Actor:
+        """Return a deep copy of an actor template by name."""
         if name is None:
             return None
         if name not in self.monsters:

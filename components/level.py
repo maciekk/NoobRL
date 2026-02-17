@@ -1,3 +1,5 @@
+"""Component that manages character leveling and experience points."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,6 +15,7 @@ HP_LEVEL_UP_DICE = "5d2"
 
 
 class Level(BaseComponent):
+    """Tracks XP, levels, and provides methods to increase stats on level up."""
     parent: Actor
 
     def __init__(
@@ -38,6 +41,7 @@ class Level(BaseComponent):
         return self.current_xp >= self.experience_to_next_level
 
     def add_xp(self, xp: int) -> None:
+        """Award experience points and message if a level up is available."""
         if xp == 0 or self.level_up_base == 0:
             return
 
@@ -51,6 +55,7 @@ class Level(BaseComponent):
             )
 
     def increase_level(self) -> None:
+        """Advance to next level and restore all HP."""
         self.current_xp -= self.experience_to_next_level
 
         self.current_level += 1
@@ -59,6 +64,7 @@ class Level(BaseComponent):
         self.parent.fighter.hp = self.parent.fighter.max_hp
 
     def increase_max_hp(self) -> None:
+        """Increase max HP by rolled dice and level up."""
         amount = dice.roll(HP_LEVEL_UP_DICE)
         self.parent.fighter.max_hp += amount
         self.parent.fighter.hp += amount
@@ -68,6 +74,7 @@ class Level(BaseComponent):
         self.increase_level()
 
     def increase_power(self, amount: int = 1) -> None:
+        """Increase power stat by amount and level up."""
         self.parent.fighter.base_power += amount
 
         self.engine.message_log.add_message("You feel stronger!")
@@ -75,6 +82,7 @@ class Level(BaseComponent):
         self.increase_level()
 
     def increase_defense(self, amount: int = 1) -> None:
+        """Increase defense stat by amount and level up."""
         self.parent.fighter.base_defense += amount
 
         self.engine.message_log.add_message("Your movements are getting swifter!")

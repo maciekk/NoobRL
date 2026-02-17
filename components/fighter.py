@@ -1,3 +1,5 @@
+"""Component that manages actor combat statistics (HP, power, defense)."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
+    """Manages an actor's health, damage, and defense stats including equipment bonuses."""
     parent: Actor
 
     def __init__(self, hp: int, base_defense: int, base_power: int):
@@ -52,6 +55,7 @@ class Fighter(BaseComponent):
             return 0
 
     def die(self) -> None:
+        """Transform actor into a corpse, trigger chain explosions, and award XP to player."""
         # If already a corpse, don't re-run death logic.
         # If it's a primed exploding corpse, trigger its chain explosion.
         if self.parent.render_order == RenderOrder.CORPSE:
@@ -110,6 +114,7 @@ class Fighter(BaseComponent):
         self.engine.player.level.add_xp(self.parent.level.xp_given)
 
     def heal(self, amount: int) -> int:
+        """Restore HP up to max and return the amount actually healed."""
         if self.hp == self.max_hp:
             return 0
 
@@ -125,4 +130,5 @@ class Fighter(BaseComponent):
         return amount_recovered
 
     def take_damage(self, amount: int) -> None:
+        """Reduce HP by the given amount (triggers death at 0 HP)."""
         self.hp -= amount

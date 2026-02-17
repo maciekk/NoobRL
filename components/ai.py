@@ -1,3 +1,5 @@
+"""Artificial intelligence behavior for enemies and effects."""
+
 from __future__ import annotations
 
 import random, color
@@ -21,6 +23,7 @@ if TYPE_CHECKING:
 
 
 class BaseAI(Action):
+    """Base class for AI behaviors that act as actions on entities."""
     def perform(self) -> None:
         raise NotImplementedError()
 
@@ -118,6 +121,8 @@ class ExplodingCorpseAI(BaseAI):
 
 
 class HostileEnemy(BaseAI):
+    """Standard monster AI that uses pathfinding to chase and attack the player."""
+
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []

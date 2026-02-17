@@ -1,3 +1,5 @@
+"""Component that defines consumable item abilities."""
+
 from __future__ import annotations
 
 import random
@@ -27,6 +29,7 @@ if TYPE_CHECKING:
 
 
 class Consumable(BaseComponent):
+    """Base class for consumable items with ability to be used and consumed."""
     parent: Item
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
@@ -54,6 +57,7 @@ class Consumable(BaseComponent):
 
 
 class WishingWandConsumable(Consumable):
+    """A wand that grants any single wish-able item."""
     def get_description(self) -> list[str]:
         return ["Grants a wish for any item"]
 
@@ -63,6 +67,8 @@ class WishingWandConsumable(Consumable):
 
 
 class ConfusionConsumable(Consumable):
+    """Confuses a target for a set number of turns."""
+
     def __init__(self, number_of_turns: int):
         self.number_of_turns = number_of_turns
 
@@ -102,6 +108,8 @@ class ConfusionConsumable(Consumable):
 
 
 class HealingConsumable(Consumable):
+    """Restores a fixed amount of HP to the consumer."""
+
     def __init__(self, amount: int):
         self.amount = amount
 
@@ -123,6 +131,8 @@ class HealingConsumable(Consumable):
 
 
 class RageConsumable(Consumable):
+    """Temporarily increases damage output."""
+
     def __init__(self, amount: int):
         self.amount = amount
 
@@ -143,6 +153,8 @@ class RageConsumable(Consumable):
 
 
 class InvisibilityConsumable(Consumable):
+    """Grants invisibility to the consumer for a set duration."""
+
     def __init__(self, duration: int):
         self.duration = duration
 
@@ -163,6 +175,8 @@ class InvisibilityConsumable(Consumable):
 
 
 class SpeedConsumable(Consumable):
+    """Doubles movement and action speed for a set duration."""
+
     def __init__(self, duration: int):
         self.duration = duration
 
@@ -183,6 +197,8 @@ class SpeedConsumable(Consumable):
 
 
 class BlinkConsumable(Consumable):
+    """Teleports the consumer to a random nearby location."""
+
     def get_description(self) -> list[str]:
         return ["Teleports randomly up to 5 tiles"]
 
@@ -212,6 +228,8 @@ class BlinkConsumable(Consumable):
 
 
 class FireballDamageConsumable(Consumable):
+    """Deals area damage in a radius around a target location."""
+
     def __init__(self, damage: int, radius: int):
         self.damage = damage
         self.radius = radius
@@ -250,7 +268,7 @@ class FireballDamageConsumable(Consumable):
 
 
 def apply_clairvoyance(engine) -> None:
-    """Reveal the dungeon layout (walls adjacent to walkable tiles)."""
+    """Reveal the dungeon layout by showing walls adjacent to walkable tiles."""
     game_map = engine.game_map
     walkable = game_map.tiles["walkable"]
     reveal = walkable.copy()
@@ -278,6 +296,8 @@ def apply_clairvoyance(engine) -> None:
 
 
 class ClairvoyanceConsumable(Consumable):
+    """Reveals the entire dungeon layout."""
+
     def get_description(self) -> list[str]:
         return ["Reveals the dungeon layout"]
 
@@ -287,6 +307,8 @@ class ClairvoyanceConsumable(Consumable):
 
 
 class LightningDamageConsumable(Consumable):
+    """Strikes the nearest enemy within range with lightning."""
+
     def __init__(self, damage: int, maximum_range: int):
         self.damage = damage
         self.maximum_range = maximum_range
@@ -321,6 +343,8 @@ class LightningDamageConsumable(Consumable):
 
 
 class DetectMonsterConsumable(Consumable):
+    """Reveals all monsters on the map for a set duration."""
+
     def __init__(self, duration: int):
         self.duration = duration
 

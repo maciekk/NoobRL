@@ -1,3 +1,5 @@
+"""Keyboard and mouse input handling via a state machine of handler classes."""
+
 from __future__ import annotations
 
 import os
@@ -113,6 +115,8 @@ MainGameEventHandler will become the active handler.
 
 
 class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
+    """Base class for all event handlers; implements the state machine interface."""
+
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle an event and return the next active event handler."""
         state = self.dispatch(event)
@@ -122,14 +126,16 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
         return self
 
     def on_render(self, console: tcod.Console) -> None:
+        """Render the current UI state to the console."""
         raise NotImplementedError()
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
+        """Handle window close or application quit."""
         raise SystemExit()
 
 
 class PopupMessage(BaseEventHandler):
-    """Display a popup text window."""
+    """Displays a dimmed overlay with a centered message; any key dismisses it."""
 
     def __init__(self, parent_handler: BaseEventHandler, text: str):
         self.parent = parent_handler
@@ -156,11 +162,13 @@ class PopupMessage(BaseEventHandler):
 
 
 class EventHandler(BaseEventHandler):
+    """Base handler for handlers that operate within the game engine."""
+
     def __init__(self, engine: Engine):
         self.engine = engine
 
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
-        """Handle events for input handlers with an engine."""
+        """Handle events and dispatch actions; check for death and level-up conditions."""
         action_or_state = self.dispatch(event)
         if isinstance(action_or_state, BaseEventHandler):
             return action_or_state
@@ -176,9 +184,7 @@ class EventHandler(BaseEventHandler):
         return self
 
     def handle_action(self, action: Optional[Action]) -> bool:
-        """Handle actions returned from event methods.
-        Returns True if the action will advance a turn.
-        """
+        """Execute an action and advance the turn if valid; return True if turn advanced."""
         if action is None:
             return False
 
@@ -198,18 +204,21 @@ class EventHandler(BaseEventHandler):
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
+        """Track mouse position within map bounds."""
         if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
             self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
+        """Handle window close by raising SystemExit."""
         raise SystemExit()
 
     def on_render(self, console: tcod.Console) -> None:
+        """Render the full game state."""
         self.engine.render(console)
 
 
 class AskUserEventHandler(EventHandler):
-    """Handles user input for actions which require special input."""
+    """Base for modal dialogs and menus; dismissible by Escape or click."""
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """By default, any key exits this input handler."""
@@ -231,24 +240,15 @@ class AskUserEventHandler(EventHandler):
         return self.on_exit()
 
     def on_exit(self) -> Optional[ActionOrHandler]:
-        """Called when the user is trying to exit or cancel an action.
-        By default, this returns to the main event handler.
-        """
+        """Called when the user exits or cancels; default returns to main handler."""
         return MainGameEventHandler(self.engine)
 
 
 class ListSelectionHandler(AskUserEventHandler):
-    """Base class for selection menus with (a) Label style choices.
+    """Base class for item selection menus with (a) Label style letter-based selection.
 
-    Subclasses override:
-        get_items()              -> list of selectable objects
-        get_display_string(i, item) -> label text (letter prefix added automatically)
-        on_selection(i, item)    -> Action or Handler when item is chosen
-
-    Class attributes:
-        TITLE      — frame title
-        EMPTY_TEXT  — shown when list is empty
-        use_cursor  — enables arrow/j/k navigation + Enter confirm + highlight
+    Subclasses must override get_items(), get_display_string(), and on_selection().
+    Set TITLE, EMPTY_TEXT, and optionally use_cursor=True for arrow navigation.
     """
 
     TITLE: str = "<missing title>"
@@ -260,12 +260,15 @@ class ListSelectionHandler(AskUserEventHandler):
         self.cursor = cursor
 
     def get_items(self) -> list:
+        """Return the list of items to display in the selection menu."""
         raise NotImplementedError()
 
     def get_display_string(self, index: int, item) -> str:
+        """Return the display label for an item (letter prefix added automatically)."""
         raise NotImplementedError()
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        """Handle selection of an item; return an Action or Handler."""
         raise NotImplementedError()
 
     def on_render(self, console: tcod.Console) -> None:
@@ -354,18 +357,9 @@ DIRECTION_KEY_MAP = {
 
 
 class DirectionalSelectionHandler(AskUserEventHandler):
-    """Base class for selection menus that use directional keys (h,j,k,l,y,u,b,n).
+    """Base for directional selection menus (h,j,k,l,y,u,b,n keys for directions).
 
-    Used for actions targeting locations around the player. Items are mapped to
-    direction keys based on their position relative to the player.
-
-    Subclasses override:
-        get_directional_items() -> list of (dx, dy, description, target) tuples
-        on_directional_selection(dx, dy, target) -> Action or Handler
-
-    Class attributes:
-        TITLE      — frame title
-        EMPTY_TEXT — shown when list is empty
+    Subclasses must override get_directional_items() and on_directional_selection().
     """
 
     TITLE: str = "<missing title>"
@@ -375,13 +369,13 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         super().__init__(engine)
 
     def get_directional_items(self) -> list:
-        """Return list of (dx, dy, description, target) tuples."""
+        """Return list of (dx, dy, description, target) tuples for directional choices."""
         raise NotImplementedError()
 
     def on_directional_selection(
         self, dx: int, dy: int, target
     ) -> Optional[ActionOrHandler]:
-        """Called when user selects a direction."""
+        """Handle user selection of a direction; return an Action or Handler."""
         raise NotImplementedError()
 
     def on_render(self, console: tcod.Console) -> None:
@@ -446,6 +440,8 @@ class DirectionalSelectionHandler(AskUserEventHandler):
 
 
 class CharacterScreenEventHandler(AskUserEventHandler):
+    """Displays player statistics, experience, and kill counts."""
+
     TITLE = "Character Information"
 
     def on_render(self, console: tcod.Console) -> None:
@@ -515,6 +511,8 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
 
 class ViewSurroundingsHandler(AskUserEventHandler):
+    """Lists visible monsters, corpses, items, and features with relative positions."""
+
     TITLE = "View Surroundings"
 
     @staticmethod
@@ -662,6 +660,8 @@ class ViewSurroundingsHandler(AskUserEventHandler):
 
 
 class LevelUpEventHandler(AskUserEventHandler):
+    """Allows player to choose which stat to increase when leveling up (1-3 keys)."""
+
     TITLE = "Level Up"
 
     def on_render(self, console: tcod.Console) -> None:
@@ -744,17 +744,17 @@ INVENTORY_CURSOR_DOWN_KEYS = {
 
 
 class InventoryEventHandler(ListSelectionHandler):
-    """This handler lets the user select an item.
-    What happens then depends on the subclass.
-    """
+    """Base for inventory selection menus (subclasses handle specific actions)."""
 
     TITLE = "<missing title>"
     use_cursor = True
 
     def get_items(self) -> list:
+        """Return the player's inventory items."""
         return self.engine.player.inventory.items
 
     def get_display_string(self, index: int, item) -> str:
+        """Return display string with stack count and equipped status."""
         s = item.name
         if item.stackable and item.stack_count > 1:
             s += f" (x{item.stack_count})"
@@ -763,56 +763,61 @@ class InventoryEventHandler(ListSelectionHandler):
         return s
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        """Dispatch selection to subclass handler."""
         return self.on_item_selected(item)
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        """Called when the user selects a valid item."""
+        """Called when the user selects a valid item; implement in subclass."""
         raise NotImplementedError()
 
 
 class InventoryActivateHandler(InventoryEventHandler):
-    """Handle using an inventory item."""
+    """Lets player select an item to use; opens item detail screen."""
 
     TITLE = "Select an item to use"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+        """Show item details for the selected item."""
         return ItemDetailHandler(self.engine, item, self.cursor)
 
 
 class InventoryDropHandler(InventoryEventHandler):
-    """Handle dropping an inventory item."""
+    """Lets player select an item to drop from inventory."""
 
     TITLE = "Select an item to drop"
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        """Drop this item, or ask how many for stacks."""
+        """Drop item or ask quantity for stacks."""
         if item.stackable and item.stack_count > 1:
             return DropQuantityHandler(self.engine, item)
         return actions.DropItem(self.engine.player, item)
 
 
 class QuaffHandler(ListSelectionHandler):
-    """Lets the player select a potion to quaff."""
+    """Lets the player select a potion to drink from inventory."""
 
     TITLE = "Quaff which potion?"
     EMPTY_TEXT = "(No potions)"
     use_cursor = True
 
     def get_items(self) -> list:
+        """Return only potion items from inventory."""
         return [item for item in self.engine.player.inventory.items if item.char == "!"]
 
     def get_display_string(self, index: int, item) -> str:
+        """Return display string with stack count for potions."""
         s = item.name
         if item.stackable and item.stack_count > 1:
             s += f" (x{item.stack_count})"
         return s
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        """Get and return the consumable action for the selected potion."""
         return item.consumable.get_action(self.engine.player)
 
 
 class ItemDetailHandler(AskUserEventHandler):
-    """Shows item details and offers contextual actions."""
+    """Displays item stats and offers equip/use/throw/drop actions."""
 
     def __init__(self, engine: Engine, item: Item, inventory_cursor: int = 0):
         super().__init__(engine)
@@ -949,7 +954,7 @@ class ItemDetailHandler(AskUserEventHandler):
 
 
 class DropQuantityHandler(AskUserEventHandler):
-    """Ask how many items to drop from a stack."""
+    """Prompts for a number to specify how many items to drop from a stack."""
 
     def __init__(self, engine: Engine, item: Item):
         super().__init__(engine)
@@ -1013,7 +1018,7 @@ class DropQuantityHandler(AskUserEventHandler):
 
 
 class WishItemHandler(ListSelectionHandler):
-    """Lets the player choose any game item to wish for."""
+    """Displays all available items for selection via Wand of Wishing."""
 
     TITLE = "Wish for an item"
 
@@ -1041,10 +1046,7 @@ class WishItemHandler(ListSelectionHandler):
 
 
 def find_openable_targets(engine: Engine) -> list:
-    """Find all openable things (chests, closed doors) in 3x3 area around player.
-
-    Returns list of tuples: (dx, dy, description, action)
-    """
+    """Find openable targets (chests, closed doors) in 3x3 area; return (dx, dy, desc, action)."""
     import tile_types
 
     targets = []
@@ -1100,7 +1102,7 @@ def find_openable_targets(engine: Engine) -> list:
 
 
 class OpenableSelectionHandler(DirectionalSelectionHandler):
-    """Lets the player choose which openable thing to open using directional keys."""
+    """Allows player to select which openable to open using directional keys."""
 
     TITLE = "Open what?"
     EMPTY_TEXT = "(Nothing to open)"
@@ -1110,11 +1112,13 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
         self.targets = targets
 
     def get_directional_items(self) -> list:
+        """Return the list of available openable targets."""
         return self.targets
 
     def on_directional_selection(
         self, dx: int, dy: int, target
     ) -> Optional[ActionOrHandler]:
+        """Execute the open action or method for the selected target."""
         if isinstance(target, Action):
             return target
         else:
@@ -1124,10 +1128,7 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
 
 
 def find_closeable_doors(engine: Engine) -> list:
-    """Find all open doors in 3x3 area around player.
-
-    Returns list of tuples: (dx, dy, description, action)
-    """
+    """Find open doors in 3x3 area; return (dx, dy, description, action) tuples."""
     import tile_types
 
     targets = []

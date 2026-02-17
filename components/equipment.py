@@ -1,3 +1,5 @@
+"""Component that manages equipped items and their stat bonuses."""
+
 from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
@@ -10,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class Equipment(BaseComponent):
+    """Manages weapon, armor, and amulet slots with computed power/defense bonuses."""
     parent: Actor
 
     def __init__(
@@ -53,6 +56,7 @@ class Equipment(BaseComponent):
         return bonus
 
     def item_is_equipped(self, item: Item) -> bool:
+        """Check if an item is currently equipped in any slot."""
         return self.weapon == item or self.armor == item or self.amulet == item
 
     def unequip_message(self, item_name: str) -> None:
@@ -74,6 +78,7 @@ class Equipment(BaseComponent):
         )
 
     def equip_to_slot(self, slot: str, item: Item, add_message: bool) -> None:
+        """Equip an item to a specific slot, unequipping any existing item first."""
         current_item = getattr(self, slot)
 
         if current_item is not None:
@@ -99,6 +104,7 @@ class Equipment(BaseComponent):
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:
+        """Toggle an item equipped/unequipped based on equipment type."""
         if (
             equippable_item.equippable
             and equippable_item.equippable.equipment_type == EquipmentType.WEAPON

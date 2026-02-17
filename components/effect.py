@@ -1,3 +1,5 @@
+"""Component for temporary status effects that apply per-turn and expire."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -9,6 +11,7 @@ if TYPE_CHECKING:
 
 
 class TimedEffect(BaseComponent):
+    """Base class for temporary effects that tick down each turn and can expire."""
     parent: Actor
 
     def __init__(self, engine: Engine):
@@ -20,17 +23,18 @@ class TimedEffect(BaseComponent):
         self.turns_left = self.max_turns
 
     def apply_turn(self):
-        """Perform any per-turn effect."""
+        """Decrement duration and expire when time runs out."""
         self.turns_left -= 1
         if self.turns_left <= 0:
             self.expire()
 
     def expire(self):
-        """Action to perform once effect wears off."""
+        """Called when the effect's duration expires; can be overridden for cleanup."""
         pass
 
 
 class RageEffect(TimedEffect):
+    """Increases damage output for a limited duration."""
     def __init__(self, engine: Engine, dmg_mult: float, duration: int):
         super().__init__(engine)
         self.max_turns = duration
@@ -50,6 +54,8 @@ class RageEffect(TimedEffect):
 
 
 class InvisibilityEffect(TimedEffect):
+    """Makes the actor invisible to enemies while active."""
+
     def __init__(self, engine: Engine, duration: int):
         super().__init__(engine)
         self.max_turns = duration
@@ -66,6 +72,8 @@ class InvisibilityEffect(TimedEffect):
 
 
 class SpeedEffect(TimedEffect):
+    """Doubles the actor's movement and action speed."""
+
     def __init__(self, engine: Engine, duration: int):
         super().__init__(engine)
         self.max_turns = duration
@@ -85,6 +93,8 @@ class SpeedEffect(TimedEffect):
 
 
 class DetectMonsterEffect(TimedEffect):
+    """Reveals the location of all monsters on the map."""
+
     def __init__(self, engine: Engine, duration: int):
         super().__init__(engine)
         self.max_turns = duration

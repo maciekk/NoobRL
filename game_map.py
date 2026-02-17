@@ -1,3 +1,5 @@
+"""Manages the dungeon map grid, entities, and field-of-view state for a single floor."""
+
 from __future__ import annotations
 
 from typing import Iterable, Iterator, Optional, TYPE_CHECKING
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
 
 
 class GameMap:
+    """Represents a single dungeon floor with tile data, entities, and visibility state."""
     def __init__(
         self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()
     ):
@@ -44,11 +47,12 @@ class GameMap:
 
     @property
     def gamemap(self) -> GameMap:
+        """Returns self (for compatibility with component access chain)."""
         return self
 
     @property
     def actors(self) -> Iterator[Actor]:
-        """Iterate over this maps living actors."""
+        """Iterate over living actors on this map."""
         yield from (
             entity
             for entity in self.entities
@@ -57,9 +61,11 @@ class GameMap:
 
     @property
     def items(self) -> Iterator[Item]:
+        """Iterate over all items on this map."""
         yield from (entity for entity in self.entities if isinstance(entity, Item))
 
-    def any_monsters_visible(self):
+    def any_monsters_visible(self) -> bool:
+        """Check if any non-player monsters are currently visible."""
         for a in self.actors:
             if a == self.engine.player:
                 continue
@@ -72,6 +78,7 @@ class GameMap:
         location_x: int,
         location_y: int,
     ) -> Optional[Entity]:
+        """Return the blocking entity at a location, or None if empty."""
         for entity in self.entities:
             if (
                 entity.blocks_movement
@@ -83,6 +90,7 @@ class GameMap:
         return None
 
     def get_actor_at_location(self, x: int, y: int) -> Optional[Actor]:
+        """Return the living actor at a location, or None if empty."""
         for actor in self.actors:
             if actor.x == x and actor.y == y:
                 return actor
@@ -94,12 +102,7 @@ class GameMap:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:
-        """
-        Renders the map.
-        If a tile is in the "visible" array, then draw it with the "light" colors.
-        If it isn't, but it's in the "explored" array, then draw it with the "dark" colors.
-        Otherwise, the default is "SHROUD".
-        """
+        """Render the map to the console using visibility, exploration, and clairvoyance states."""
         console.rgb[0 : self.width, 0 : self.height] = np.select(
             condlist=[self.visible, self.explored, self.revealed],
             choicelist=[

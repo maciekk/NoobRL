@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Main entry point for NoobRL roguelike game."""
 import traceback
 
 import tcod
@@ -19,6 +20,7 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
 
 
 def main() -> None:
+    """Run the main game loop."""
     n_cols = 120
     n_rows = 50
 
