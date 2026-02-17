@@ -126,6 +126,7 @@ class BaseEventHandler(tcod.event.EventDispatch[ActionOrHandler]):
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         raise SystemExit()
 
+
 class PopupMessage(BaseEventHandler):
     """Display a popup text window."""
 
@@ -151,6 +152,7 @@ class PopupMessage(BaseEventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
         """Any key returns to the parent handler."""
         return self.parent
+
 
 class EventHandler(BaseEventHandler):
     def __init__(self, engine: Engine):
@@ -233,6 +235,7 @@ class AskUserEventHandler(EventHandler):
         """
         return MainGameEventHandler(self.engine)
 
+
 class ListSelectionHandler(AskUserEventHandler):
     """Base class for selection menus with (a) Label style choices.
 
@@ -287,9 +290,14 @@ class ListSelectionHandler(AskUserEventHandler):
         width = max(len(self.TITLE) + 4, max_item_width + 2)
 
         console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=self.TITLE, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
 
         if item_strings:
@@ -333,14 +341,14 @@ class ListSelectionHandler(AskUserEventHandler):
 
 # Mapping from (dx, dy) offsets to direction keys and key symbols
 DIRECTION_KEY_MAP = {
-    (0, -1): ('k', tcod.event.KeySym.k),      # north
-    (0, 1): ('j', tcod.event.KeySym.j),       # south
-    (-1, 0): ('h', tcod.event.KeySym.h),      # west
-    (1, 0): ('l', tcod.event.KeySym.l),       # east
-    (-1, -1): ('y', tcod.event.KeySym.y),     # northwest
-    (1, -1): ('u', tcod.event.KeySym.u),      # northeast
-    (-1, 1): ('b', tcod.event.KeySym.b),      # southwest
-    (1, 1): ('n', tcod.event.KeySym.n),       # southeast
+    (0, -1): ("k", tcod.event.KeySym.k),  # north
+    (0, 1): ("j", tcod.event.KeySym.j),  # south
+    (-1, 0): ("h", tcod.event.KeySym.h),  # west
+    (1, 0): ("l", tcod.event.KeySym.l),  # east
+    (-1, -1): ("y", tcod.event.KeySym.y),  # northwest
+    (1, -1): ("u", tcod.event.KeySym.u),  # northeast
+    (-1, 1): ("b", tcod.event.KeySym.b),  # southwest
+    (1, 1): ("n", tcod.event.KeySym.n),  # southeast
 }
 
 
@@ -369,7 +377,9 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         """Return list of (dx, dy, description, target) tuples."""
         raise NotImplementedError()
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(
+        self, dx: int, dy: int, target
+    ) -> Optional[ActionOrHandler]:
         """Called when user selects a direction."""
         raise NotImplementedError()
 
@@ -400,9 +410,14 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         width = max(len(self.TITLE) + 4, max_item_width + 2)
 
         console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=self.TITLE, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=self.TITLE,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
 
         if item_strings:
@@ -473,20 +488,30 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             bg=(0, 0, 0),
         )
 
-        console.print(x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}")
-        console.print(x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}")
         console.print(
-            x=x + 1, y=y + 3,
+            x=x + 1, y=y + 1, string=f"Level: {self.engine.player.level.current_level}"
+        )
+        console.print(
+            x=x + 1, y=y + 2, string=f"XP: {self.engine.player.level.current_xp}"
+        )
+        console.print(
+            x=x + 1,
+            y=y + 3,
             string=f"XP for next Level: {self.engine.player.level.experience_to_next_level}",
         )
-        console.print(x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}")
-        console.print(x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}")
+        console.print(
+            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
+        )
+        console.print(
+            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
+        )
 
         if kill_lines:
             row = y + stats_height
             console.print(x=x + 1, y=row, string=f"Kills: {total_kills}")
             for i, line in enumerate(kill_lines):
                 console.print(x + 1, row + 1 + i, line)
+
 
 class ViewSurroundingsHandler(AskUserEventHandler):
     TITLE = "View Surroundings"
@@ -527,32 +552,59 @@ class ViewSurroundingsHandler(AskUserEventHandler):
             if actor is self.engine.player:
                 continue
             if visible[actor.x, actor.y]:
-                monsters.append((dist2(px, py, actor.x, actor.y), actor.name, direction(px, py, actor.x, actor.y)))
+                monsters.append(
+                    (
+                        dist2(px, py, actor.x, actor.y),
+                        actor.name,
+                        direction(px, py, actor.x, actor.y),
+                    )
+                )
         monsters.sort()
 
         # Gather visible corpses, sorted by distance.
         from entity import Actor
+
         corpses = []
         for entity in game_map.entities:
-            if isinstance(entity, Actor) and not entity.is_alive and visible[entity.x, entity.y]:
-                corpses.append((dist2(px, py, entity.x, entity.y), entity.name, direction(px, py, entity.x, entity.y)))
+            if (
+                isinstance(entity, Actor)
+                and not entity.is_alive
+                and visible[entity.x, entity.y]
+            ):
+                corpses.append(
+                    (
+                        dist2(px, py, entity.x, entity.y),
+                        entity.name,
+                        direction(px, py, entity.x, entity.y),
+                    )
+                )
         corpses.sort()
 
         # Gather visible items with directions, sorted by distance.
         items_sorted: list[tuple[int, str, str]] = []
         for item in game_map.items:
             if visible[item.x, item.y]:
-                items_sorted.append((dist2(px, py, item.x, item.y), item.name, direction(px, py, item.x, item.y)))
+                items_sorted.append(
+                    (
+                        dist2(px, py, item.x, item.y),
+                        item.name,
+                        direction(px, py, item.x, item.y),
+                    )
+                )
         items_sorted.sort()
 
         # Gather visible features (stairs), sorted by distance.
         features: list[tuple[int, str]] = []
         sx, sy = game_map.downstairs_location
         if visible[sx, sy]:
-            features.append((dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}"))
+            features.append(
+                (dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}")
+            )
         ux, uy = game_map.upstairs_location
         if (ux, uy) != (0, 0) and visible[ux, uy]:
-            features.append((dist2(px, py, ux, uy), f"Stairs up {direction(px, py, ux, uy)}"))
+            features.append(
+                (dist2(px, py, ux, uy), f"Stairs up {direction(px, py, ux, uy)}")
+            )
         features.sort()
 
         # Build lines for display.
@@ -676,6 +728,7 @@ class LevelUpEventHandler(AskUserEventHandler):
         """
         return None
 
+
 INVENTORY_CURSOR_UP_KEYS = {
     tcod.event.KeySym.UP,
     tcod.event.KeySym.k,
@@ -723,6 +776,7 @@ class InventoryActivateHandler(InventoryEventHandler):
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
         return ItemDetailHandler(self.engine, item, self.cursor)
+
 
 class InventoryDropHandler(InventoryEventHandler):
     """Handle dropping an inventory item."""
@@ -778,6 +832,7 @@ class ItemDetailHandler(AskUserEventHandler):
         # Type line.
         if item.equippable:
             from equipment_types import EquipmentType
+
             if item.equippable.equipment_type == EquipmentType.WEAPON:
                 lines.append(("Weapon", color.white))
             elif item.equippable.equipment_type == EquipmentType.AMULET:
@@ -800,9 +855,13 @@ class ItemDetailHandler(AskUserEventHandler):
         # Stats for equippable items.
         if item.equippable:
             if item.equippable.power_bonus:
-                lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
+                lines.append(
+                    (f"Attack bonus: +{item.equippable.power_bonus}", color.white)
+                )
             if item.equippable.defense_bonus:
-                lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+                lines.append(
+                    (f"Defense bonus: +{item.equippable.defense_bonus}", color.white)
+                )
             if player.equipment.item_is_equipped(item):
                 lines.append(("Currently equipped", color.safe))
             else:
@@ -864,9 +923,12 @@ class ItemDetailHandler(AskUserEventHandler):
 
         # Ignore other keys — don't exit on random keypresses.
         if key in {
-            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
-            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
-            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+            tcod.event.KeySym.LSHIFT,
+            tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL,
+            tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT,
+            tcod.event.KeySym.RALT,
         }:
             return None
         return None
@@ -894,9 +956,14 @@ class DropQuantityHandler(AskUserEventHandler):
         width = len(prompt) + max_digits + 4
 
         console.draw_frame(
-            x=x, y=0, width=width, height=3,
-            title="Drop", clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            x=x,
+            y=0,
+            width=width,
+            height=3,
+            title="Drop",
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
         console.print(x + 1, 1, f"{prompt} {self.text}_")
 
@@ -912,7 +979,8 @@ class DropQuantityHandler(AskUserEventHandler):
                 return None
             if count < 1 or count > self.item.stack_count:
                 self.engine.message_log.add_message(
-                    f"Enter a number between 1 and {self.item.stack_count}.", color.invalid
+                    f"Enter a number between 1 and {self.item.stack_count}.",
+                    color.invalid,
                 )
                 return None
             return actions.DropItem(self.engine.player, self.item, count=count)
@@ -939,8 +1007,11 @@ class WishItemHandler(ListSelectionHandler):
         super().__init__(engine)
         self.wand_item = wand_item
         self._item_list = sorted(
-            [(id, item.name) for id, item in engine.item_manager.items.items()
-             if id != "wand_wishing"],
+            [
+                (id, item.name)
+                for id, item in engine.item_manager.items.items()
+                if id != "wand_wishing"
+            ],
             key=lambda x: x[1],
         )
 
@@ -961,6 +1032,7 @@ def find_openable_targets(engine: Engine) -> list:
     Returns list of tuples: (dx, dy, description, action)
     """
     import tile_types
+
     targets = []
     px, py = engine.player.x, engine.player.y
 
@@ -993,13 +1065,22 @@ def find_openable_targets(engine: Engine) -> list:
                 else:
                     direction = "southeast"
 
-                targets.append((dx, dy, f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y)))
+                targets.append(
+                    (
+                        dx,
+                        dy,
+                        f"Door ({direction})",
+                        actions.OpenDoorAction(engine.player, x, y),
+                    )
+                )
 
             # Check for openable entities (chests)
             for entity in engine.game_map.entities:
-                if entity.x == x and entity.y == y and hasattr(entity, 'open'):
+                if entity.x == x and entity.y == y and hasattr(entity, "open"):
                     direction = "here" if (dx == 0 and dy == 0) else "nearby"
-                    targets.append((dx, dy, f"{entity.name.capitalize()} ({direction})", entity))
+                    targets.append(
+                        (dx, dy, f"{entity.name.capitalize()} ({direction})", entity)
+                    )
 
     return targets
 
@@ -1017,7 +1098,9 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
     def get_directional_items(self) -> list:
         return self.targets
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(
+        self, dx: int, dy: int, target
+    ) -> Optional[ActionOrHandler]:
         if isinstance(target, Action):
             return target
         else:
@@ -1032,6 +1115,7 @@ def find_closeable_doors(engine: Engine) -> list:
     Returns list of tuples: (dx, dy, description, action)
     """
     import tile_types
+
     targets = []
     px, py = engine.player.x, engine.player.y
 
@@ -1064,7 +1148,14 @@ def find_closeable_doors(engine: Engine) -> list:
                 else:
                     direction = "southeast"
 
-                targets.append((dx, dy, f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y)))
+                targets.append(
+                    (
+                        dx,
+                        dy,
+                        f"Door ({direction})",
+                        actions.CloseDoorAction(engine.player, x, y),
+                    )
+                )
 
     return targets
 
@@ -1082,7 +1173,9 @@ class CloseableSelectionHandler(DirectionalSelectionHandler):
     def get_directional_items(self) -> list:
         return self.targets
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(
+        self, dx: int, dy: int, target
+    ) -> Optional[ActionOrHandler]:
         return target
 
 
@@ -1144,7 +1237,9 @@ class SelectIndexHandler(AskUserEventHandler):
 class LookHandler(SelectIndexHandler):
     """Lets the player look around using the keyboard."""
 
-    def __init__(self, engine: Engine, look_x: Optional[int] = None, look_y: Optional[int] = None):
+    def __init__(
+        self, engine: Engine, look_x: Optional[int] = None, look_y: Optional[int] = None
+    ):
         super().__init__(engine)
         if look_x is not None and look_y is not None:
             engine.mouse_location = look_x, look_y
@@ -1160,7 +1255,9 @@ class LookHandler(SelectIndexHandler):
                 return MonsterDetailHandler(self.engine, actor, x, y)
 
             # Check for visible items on this tile.
-            items_here = [item for item in game_map.items if item.x == x and item.y == y]
+            items_here = [
+                item for item in game_map.items if item.x == x and item.y == y
+            ]
             if items_here:
                 if len(items_here) == 1:
                     return FloorItemDetailHandler(self.engine, items_here[0], x, y)
@@ -1168,6 +1265,7 @@ class LookHandler(SelectIndexHandler):
                     return FloorItemListHandler(self.engine, items_here, x, y)
 
         return MainGameEventHandler(self.engine)
+
 
 class MonsterDetailHandler(AskUserEventHandler):
     """Shows detailed stats for a monster under the look cursor."""
@@ -1211,9 +1309,14 @@ class MonsterDetailHandler(AskUserEventHandler):
         height = len(lines) + 2
 
         console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=actor.name, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=actor.name,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
 
         for i, (text, fg) in enumerate(lines):
@@ -1224,9 +1327,12 @@ class MonsterDetailHandler(AskUserEventHandler):
         if key == tcod.event.KeySym.ESCAPE:
             return LookHandler(self.engine, self.look_x, self.look_y)
         if key in {
-            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
-            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
-            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+            tcod.event.KeySym.LSHIFT,
+            tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL,
+            tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT,
+            tcod.event.KeySym.RALT,
         }:
             return None
         return None
@@ -1277,6 +1383,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
         # Type line.
         if item.equippable:
             from equipment_types import EquipmentType
+
             if item.equippable.equipment_type == EquipmentType.WEAPON:
                 lines.append(("Weapon", color.white))
             elif item.equippable.equipment_type == EquipmentType.AMULET:
@@ -1299,9 +1406,13 @@ class FloorItemDetailHandler(AskUserEventHandler):
         # Stats for equippable items.
         if item.equippable:
             if item.equippable.power_bonus:
-                lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
+                lines.append(
+                    (f"Attack bonus: +{item.equippable.power_bonus}", color.white)
+                )
             if item.equippable.defense_bonus:
-                lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+                lines.append(
+                    (f"Defense bonus: +{item.equippable.defense_bonus}", color.white)
+                )
 
         lines.append(("", color.white))
         lines.append(("(Esc) Back", color.white))
@@ -1317,9 +1428,14 @@ class FloorItemDetailHandler(AskUserEventHandler):
         height = len(lines) + 2
 
         console.draw_frame(
-            x=x, y=y, width=width, height=height,
-            title=item.name, clear=True,
-            fg=(255, 255, 255), bg=(0, 0, 0),
+            x=x,
+            y=y,
+            width=width,
+            height=height,
+            title=item.name,
+            clear=True,
+            fg=(255, 255, 255),
+            bg=(0, 0, 0),
         )
 
         for i, (text, fg) in enumerate(lines):
@@ -1330,9 +1446,12 @@ class FloorItemDetailHandler(AskUserEventHandler):
         if key == tcod.event.KeySym.ESCAPE:
             return LookHandler(self.engine, self.look_x, self.look_y)
         if key in {
-            tcod.event.KeySym.LSHIFT, tcod.event.KeySym.RSHIFT,
-            tcod.event.KeySym.LCTRL, tcod.event.KeySym.RCTRL,
-            tcod.event.KeySym.LALT, tcod.event.KeySym.RALT,
+            tcod.event.KeySym.LSHIFT,
+            tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL,
+            tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT,
+            tcod.event.KeySym.RALT,
         }:
             return None
         return None
@@ -1345,7 +1464,11 @@ class WalkChoiceHandler(SelectIndexHandler):
         # '>' jumps cursor to downstairs if known.
         if is_shifted(event, tcod.event.KeySym.PERIOD):
             sx, sy = game_map.downstairs_location
-            if game_map.visible[sx, sy] or game_map.explored[sx, sy] or game_map.revealed[sx, sy]:
+            if (
+                game_map.visible[sx, sy]
+                or game_map.explored[sx, sy]
+                or game_map.revealed[sx, sy]
+            ):
                 self.engine.mouse_location = sx, sy
             return None
 
@@ -1353,7 +1476,9 @@ class WalkChoiceHandler(SelectIndexHandler):
         if is_shifted(event, tcod.event.KeySym.COMMA):
             ux, uy = game_map.upstairs_location
             if (ux, uy) != (0, 0) and (
-                game_map.visible[ux, uy] or game_map.explored[ux, uy] or game_map.revealed[ux, uy]
+                game_map.visible[ux, uy]
+                or game_map.explored[ux, uy]
+                or game_map.revealed[ux, uy]
             ):
                 self.engine.mouse_location = ux, uy
             return None
@@ -1402,8 +1527,8 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         console.draw_frame(
             x=x - self.radius - 1,
             y=y - self.radius - 1,
-            width=self.radius ** 2,
-            height=self.radius ** 2,
+            width=self.radius**2,
+            height=self.radius**2,
             fg=color.red,
             clear=False,
         )
@@ -1432,7 +1557,9 @@ class MainGameEventHandler(EventHandler):
             if wand:
                 wand.parent = self.engine.player.inventory
                 self.engine.player.inventory.add(wand)
-                self.engine.message_log.add_message("A Wand of Wishing appears in your pack!")
+                self.engine.message_log.add_message(
+                    "A Wand of Wishing appears in your pack!"
+                )
             return None
 
         if is_shifted(event, tcod.event.KeySym.COMMA):
@@ -1462,7 +1589,9 @@ class MainGameEventHandler(EventHandler):
             # Find all openable targets in 3x3 area
             targets = find_openable_targets(self.engine)
             if len(targets) == 0:
-                self.engine.message_log.add_message("There is nothing here to open.", color.impossible)
+                self.engine.message_log.add_message(
+                    "There is nothing here to open.", color.impossible
+                )
                 return None
             elif len(targets) == 1:
                 # Only one target, open it directly
@@ -1484,7 +1613,9 @@ class MainGameEventHandler(EventHandler):
             # Find all closeable doors in 3x3 area
             targets = find_closeable_doors(self.engine)
             if len(targets) == 0:
-                self.engine.message_log.add_message("There are no open doors nearby.", color.impossible)
+                self.engine.message_log.add_message(
+                    "There are no open doors nearby.", color.impossible
+                )
                 return None
             elif len(targets) == 1:
                 # Only one target, close it directly
@@ -1537,9 +1668,14 @@ class GameOverEventHandler(EventHandler):
             y = (console.height - height) // 2
 
             console.draw_frame(
-                x=x, y=y, width=width, height=height,
-                title=title, clear=True,
-                fg=(255, 255, 255), bg=(0, 0, 0),
+                x=x,
+                y=y,
+                width=width,
+                height=height,
+                title=title,
+                clear=True,
+                fg=(255, 255, 255),
+                bg=(0, 0, 0),
             )
             for i, line in enumerate(lines):
                 console.print(x + 1, y + 1 + i, line)
@@ -1562,6 +1698,7 @@ class GameOverEventHandler(EventHandler):
             if os.path.exists("savegame.sav"):
                 os.remove("savegame.sav")
             import setup_game
+
             return setup_game.MainMenu()
         if event.sym == tcod.event.KeySym.ESCAPE:
             self.on_quit()
@@ -1627,8 +1764,10 @@ class HistoryViewer(EventHandler):
             return MainGameEventHandler(self.engine)
         return None
 
+
 class ViewKeybinds(AskUserEventHandler):
     """Print the history on a larger window which can be navigated."""
+
     TITLE = "KEYBOARD SHORTCUTS"
     TEXT = [
         ";: log",
@@ -1646,6 +1785,7 @@ class ViewKeybinds(AskUserEventHandler):
         "V: view surroundings",
         "w: walk",
     ]
+
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
@@ -1662,7 +1802,7 @@ class ViewKeybinds(AskUserEventHandler):
             x=x,
             y=y,
             width=width,
-            height=len(self.TEXT)+2,
+            height=len(self.TEXT) + 2,
             title=self.TITLE,
             clear=True,
             fg=(255, 255, 255),

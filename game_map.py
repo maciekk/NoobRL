@@ -68,7 +68,9 @@ class GameMap:
         return False
 
     def get_blocking_entity_at_location(
-        self, location_x: int, location_y: int,
+        self,
+        location_x: int,
+        location_y: int,
     ) -> Optional[Entity]:
         for entity in self.entities:
             if (
@@ -100,7 +102,11 @@ class GameMap:
         """
         console.rgb[0 : self.width, 0 : self.height] = np.select(
             condlist=[self.visible, self.explored, self.revealed],
-            choicelist=[self.tiles["light"], self.tiles["dark"], self.tiles["revealed"]],
+            choicelist=[
+                self.tiles["light"],
+                self.tiles["dark"],
+                self.tiles["revealed"],
+            ],
             default=tile_types.SHROUD,
         )
 
@@ -120,14 +126,13 @@ class GameMap:
                 fg = entity.color
                 if entity is self.engine.player and entity.is_invisible:
                     fg = (100, 100, 100)
-                console.print(
-                    x=entity.x, y=entity.y, string=entity.char, fg=fg
-                )
+                console.print(x=entity.x, y=entity.y, string=entity.char, fg=fg)
 
         # Draw pile symbol on top of tiles with 2+ items (but not if an actor is there)
         for (x, y), count in item_counts.items():
             if count >= 2 and self.get_actor_at_location(x, y) is None:
                 console.print(x=x, y=y, string="&", fg=(255, 255, 255))
+
 
 class GameWorld:
     """
@@ -143,7 +148,7 @@ class GameWorld:
         max_rooms: int,
         room_min_size: int,
         room_max_size: int,
-        current_floor: int = 0
+        current_floor: int = 0,
     ):
         self.engine = engine
 
@@ -173,7 +178,9 @@ class GameWorld:
         )
 
         from components.equippable import AmuletOfClairvoyance
+
         amulet = self.engine.player.equipment.amulet
         if amulet and isinstance(amulet.equippable, AmuletOfClairvoyance):
             from components.consumable import apply_clairvoyance
+
             apply_clairvoyance(self.engine)

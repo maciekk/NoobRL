@@ -6,7 +6,12 @@ import tcod
 
 from engine import Engine
 from game_map import GameMap
-from input_handlers import AskUserEventHandler, ListSelectionHandler, MainGameEventHandler, SelectIndexHandler
+from input_handlers import (
+    AskUserEventHandler,
+    ListSelectionHandler,
+    MainGameEventHandler,
+    SelectIndexHandler,
+)
 
 
 def parse_query(buffer: str) -> Tuple[str, int]:
@@ -18,7 +23,7 @@ def parse_query(buffer: str) -> Tuple[str, int]:
     if not parts:
         return ("", 1)
 
-    count_re = re.compile(r'^x?(\d+)x?$', re.IGNORECASE)
+    count_re = re.compile(r"^x?(\d+)x?$", re.IGNORECASE)
 
     # Check last token
     m = count_re.match(parts[-1])
@@ -33,7 +38,9 @@ def parse_query(buffer: str) -> Tuple[str, int]:
     return (" ".join(parts), 1)
 
 
-def find_cluster_positions(cx: int, cy: int, count: int, game_map: GameMap) -> List[Tuple[int, int]]:
+def find_cluster_positions(
+    cx: int, cy: int, count: int, game_map: GameMap
+) -> List[Tuple[int, int]]:
     """Find up to `count` walkable, unoccupied tiles near (cx, cy) using BFS."""
     positions = []
     visited = set()
@@ -43,11 +50,27 @@ def find_cluster_positions(cx: int, cy: int, count: int, game_map: GameMap) -> L
 
     while queue and len(positions) < count:
         x, y = queue.popleft()
-        if game_map.tiles["walkable"][x, y] and game_map.get_blocking_entity_at_location(x, y) is None:
+        if (
+            game_map.tiles["walkable"][x, y]
+            and game_map.get_blocking_entity_at_location(x, y) is None
+        ):
             positions.append((x, y))
-        for dx, dy in ((-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)):
+        for dx, dy in (
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1),
+            (-1, -1),
+            (-1, 1),
+            (1, -1),
+            (1, 1),
+        ):
             nx, ny = x + dx, y + dy
-            if 0 <= nx < game_map.width and 0 <= ny < game_map.height and (nx, ny) not in visited:
+            if (
+                0 <= nx < game_map.width
+                and 0 <= ny < game_map.height
+                and (nx, ny) not in visited
+            ):
                 visited.add((nx, ny))
                 queue.append((nx, ny))
 
@@ -60,7 +83,9 @@ def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
     if entity is None:
         entity = game_map.engine.monster_manager.clone(entity_id)
     if entity is None:
-        game_map.engine.message_log.add_message(f"Unknown object '{entity_id}' requested.")
+        game_map.engine.message_log.add_message(
+            f"Unknown object '{entity_id}' requested."
+        )
         return None
 
     # Items go to inventory if there's room, otherwise drop on floor
@@ -70,7 +95,9 @@ def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
         if not player.inventory.add(entity):
             # Inventory is full, drop on floor instead
             entity.spawn(game_map, x, y)
-            game_map.engine.message_log.add_message(f"Your inventory is full; {entity.name} dropped on floor.")
+            game_map.engine.message_log.add_message(
+                f"Your inventory is full; {entity.name} dropped on floor."
+            )
         # If added to inventory successfully, no need to spawn on map
         return entity
     else:
@@ -93,6 +120,7 @@ def find_matches(engine: Engine, query: str) -> List[Tuple[str, str]]:
 
 class DebugHandler(AskUserEventHandler):
     """Debug menu."""
+
     def __init__(self, engine: Engine):
         super().__init__(engine)
         self.buffer = ""
@@ -137,7 +165,12 @@ class DebugHandler(AskUserEventHandler):
                 label = f"{count}x {name}" if count > 1 else name
                 self.engine.message_log.add_message(f"Spawning {label}.")
                 for _ in range(count):
-                    spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
+                    spawn_entity(
+                        entity_id,
+                        self.engine.game_map,
+                        self.engine.player.x,
+                        self.engine.player.y,
+                    )
                 return MainGameEventHandler(self.engine)
             else:
                 return DebugSelectHandler(self.engine, matches, count)
@@ -150,7 +183,7 @@ class DebugHandler(AskUserEventHandler):
         else:
             try:
                 c = chr(key)
-                if c.isalnum() or c == '_':
+                if c.isalnum() or c == "_":
                     self.buffer += c
             except (ValueError, OverflowError):
                 pass
@@ -180,7 +213,12 @@ class DebugSelectHandler(ListSelectionHandler):
         label = f"{self.count}x {name}" if self.count > 1 else name
         self.engine.message_log.add_message(f"Spawning {label}.")
         for _ in range(self.count):
-            spawn_entity(entity_id, self.engine.game_map, self.engine.player.x, self.engine.player.y)
+            spawn_entity(
+                entity_id,
+                self.engine.game_map,
+                self.engine.player.x,
+                self.engine.player.y,
+            )
         return MainGameEventHandler(self.engine)
 
 
@@ -197,7 +235,11 @@ class DebugPlaceMonsterHandler(SelectIndexHandler):
 
     def on_index_selected(self, x: int, y: int):
         positions = find_cluster_positions(x, y, self.count, self.engine.game_map)
-        label = f"{len(positions)}x {self.monster_name}" if self.count > 1 else self.monster_name
+        label = (
+            f"{len(positions)}x {self.monster_name}"
+            if self.count > 1
+            else self.monster_name
+        )
         self.engine.message_log.add_message(f"Spawning {label}.")
         for px, py in positions:
             spawn_entity(self.entity_id, self.engine.game_map, px, py)

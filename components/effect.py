@@ -43,7 +43,9 @@ class RageEffect(TimedEffect):
 
     def expire(self):
         super().expire()
-        self.parent.fighter.base_power = round(self.parent.fighter.base_power / self.dmg_mult)
+        self.parent.fighter.base_power = round(
+            self.parent.fighter.base_power / self.dmg_mult
+        )
         self.parent.effects.remove(self)
 
 
@@ -77,4 +79,6 @@ class SpeedEffect(TimedEffect):
         super().expire()
         self.parent.is_hasted = False
         self.parent.effects.remove(self)
-        self.engine.message_log.add_message("You feel yourself slowing down.", (0x80, 0x80, 0x80))
+        self.engine.message_log.add_message(
+            "You feel yourself slowing down.", (0x80, 0x80, 0x80)
+        )

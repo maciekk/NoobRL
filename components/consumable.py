@@ -53,9 +53,7 @@ class WishingWandConsumable(Consumable):
         return ["Grants a wish for any item"]
 
     def get_action(self, consumer: Actor) -> WishItemHandler:
-        self.engine.message_log.add_message(
-            "What do you wish for?", color.needs_target
-        )
+        self.engine.message_log.add_message("What do you wish for?", color.needs_target)
         return WishItemHandler(self.engine, self.parent)
 
 
@@ -91,7 +89,9 @@ class ConfusionConsumable(Consumable):
             color.status_effect_applied,
         )
         target.ai = components.ai.ConfusedEnemy(
-            entity=target, previous_ai=target.ai, turns_remaining=self.number_of_turns,
+            entity=target,
+            previous_ai=target.ai,
+            turns_remaining=self.number_of_turns,
         )
         self.consume()
 
@@ -126,12 +126,12 @@ class RageConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        eff = RageEffect(engine= self.engine, dmg_mult=self.amount, duration=10)
+        eff = RageEffect(engine=self.engine, dmg_mult=self.amount, duration=10)
         consumer.effects.append(eff)
         eff.parent = consumer
         self.engine.message_log.add_message(
             f"You are filled in with rage! (Damage increased by +1)",
-            color.damage_increased
+            color.damage_increased,
         )
         eff.activate()
         self.consume()
@@ -187,17 +187,23 @@ class BlinkConsumable(Consumable):
         # TODO: make this more robust; e.g., ask GameMap to give you all possible free locations within max_range.
         max_tries = 10
         for i in range(max_tries):
-            dx, dy = random.randint(-max_range, max_range), random.randint(-max_range, max_range)
+            dx, dy = random.randint(-max_range, max_range), random.randint(
+                -max_range, max_range
+            )
             x = self.engine.player.x + dx
             y = self.engine.player.y + dy
             # TODO: check for out of bounds (x,y)
-            if (self.engine.game_map.tiles["walkable"][x, y] and
-                    self.engine.game_map.get_blocking_entity_at_location(x, y) is None):
+            if (
+                self.engine.game_map.tiles["walkable"][x, y]
+                and self.engine.game_map.get_blocking_entity_at_location(x, y) is None
+            ):
                 self.engine.message_log.add_message("You blinked.")
                 self.engine.player.x, self.engine.player.y = x, y
                 self.consume()
                 return
-        self.engine.message_log.add_message("Mysterious force prevents you from blinking.")
+        self.engine.message_log.add_message(
+            "Mysterious force prevents you from blinking."
+        )
 
 
 class FireballDamageConsumable(Consumable):
@@ -281,8 +287,10 @@ class LightningDamageConsumable(Consumable):
         self.maximum_range = maximum_range
 
     def get_description(self) -> list[str]:
-        return [f"Deals {self.damage} damage to nearest enemy",
-                f"Range: {self.maximum_range}"]
+        return [
+            f"Deals {self.damage} damage to nearest enemy",
+            f"Range: {self.maximum_range}",
+        ]
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity

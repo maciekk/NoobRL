@@ -9,7 +9,6 @@ import tcod, string
 from game_map import GameMap
 import tile_types
 
-
 if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
@@ -26,25 +25,37 @@ max_monsters_by_floor = [
 ]
 
 item_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [('p_heal', 35)],
-    2: [('s_confusion', 10)],
-    3: [('s_blink', 15), ('p_damage', 1), ('p_invisibility', 5), ('p_speed', 5)],
-    4: [('s_lightning', 25), ('sword', 5), ('p_clairvoyance', 5)],
-    5: [('sword', 3), ('long_sword', 3), ('odachi', 2), ('p_damage', 3)],
-    6: [('s_fireball', 25), ('chain_mail', 15), ('steel_armor', 5), ('wand_wishing', 1)],
-    7: [('odachi', 4)],
-    8: [('steel_armor', 10), ("p_damage", 6)],
+    0: [("p_heal", 35)],
+    2: [("s_confusion", 10)],
+    3: [("s_blink", 15), ("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5)],
+    4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5)],
+    5: [("sword", 3), ("long_sword", 3), ("odachi", 2), ("p_damage", 3)],
+    6: [
+        ("s_fireball", 25),
+        ("chain_mail", 15),
+        ("steel_armor", 5),
+        ("wand_wishing", 1),
+    ],
+    7: [("odachi", 4)],
+    8: [("steel_armor", 10), ("p_damage", 6)],
 }
 
 enemy_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [('orc', 80)],
-    2: [('crawler', 20), ('puffball', 15)],
-    3: [('troll', 5)],
-    5: [('troll', 15), ('crawler', 35)],
-    6: [('wizard', 8), ('troll', 20)],
-    7: [('troll', 60), ('dragon', 1), ('ender_dragon', 1), ('hydra', 1), ('wizard', 12)],
-    10: [('troll', 65), ('dragon', 2), ('ender_dragon', 2), ('hydra', 2)],
+    0: [("orc", 80)],
+    2: [("crawler", 20), ("puffball", 15)],
+    3: [("troll", 5)],
+    5: [("troll", 15), ("crawler", 35)],
+    6: [("wizard", 8), ("troll", 20)],
+    7: [
+        ("troll", 60),
+        ("dragon", 1),
+        ("ender_dragon", 1),
+        ("hydra", 1),
+        ("wizard", 12),
+    ],
+    10: [("troll", 65), ("dragon", 2), ("ender_dragon", 2), ("hydra", 2)],
 }
+
 
 def get_max_value_for_floor(
     max_value_by_floor: List[Tuple[int, int]], floor: int
@@ -58,6 +69,7 @@ def get_max_value_for_floor(
             current_value = value
 
     return current_value
+
 
 def get_entities_at_random(
     engine: Engine,
@@ -118,7 +130,11 @@ class RectangularRoom:
         )
 
 
-def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) -> None:
+def place_entities(
+    room: RectangularRoom,
+    dungeon: GameMap,
+    floor_number: int,
+) -> None:
     number_of_monsters = random.randint(
         0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
     )
@@ -133,23 +149,27 @@ def place_entities(room: RectangularRoom, dungeon: GameMap, floor_number: int,) 
         dungeon.engine, item_chances, number_of_items, floor_number
     )
 
-
     for entity in monsters + items:
         if entity is None:
-            print(f"WARNING: None entity in spawn list (floor {floor_number}, room at {room.x1},{room.y1})")
+            print(
+                f"WARNING: None entity in spawn list (floor {floor_number}, room at {room.x1},{room.y1})"
+            )
             continue
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             if entity is None:
-                print(f"WARNING: None entity in dungeon (floor {floor_number}, room at {room.x1},{room.y1})")
+                print(
+                    f"WARNING: None entity in dungeon (floor {floor_number}, room at {room.x1},{room.y1})"
+                )
                 continue
             entity.spawn(dungeon, x, y)
 
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
         from entity import Chest
+
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
@@ -248,8 +268,16 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
                 else:  # W or E: check north/south
                     perp_a = (x, y - 1)
                     perp_b = (x, y + 1)
-                a_blocked = not (0 <= perp_a[0] < width and 0 <= perp_a[1] < height and dungeon.tiles["walkable"][perp_a])
-                b_blocked = not (0 <= perp_b[0] < width and 0 <= perp_b[1] < height and dungeon.tiles["walkable"][perp_b])
+                a_blocked = not (
+                    0 <= perp_a[0] < width
+                    and 0 <= perp_a[1] < height
+                    and dungeon.tiles["walkable"][perp_a]
+                )
+                b_blocked = not (
+                    0 <= perp_b[0] < width
+                    and 0 <= perp_b[1] < height
+                    and dungeon.tiles["walkable"][perp_b]
+                )
                 if a_blocked and b_blocked:
                     door_locations.append((x, y))
             elif len(room_neighbors) == 2:
@@ -265,6 +293,7 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
 def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
     """Place roughly elliptical patches of tall grass in some rooms."""
     import options
+
     for room in rooms:
         if random.random() >= options.grass_patch_chance:
             continue
@@ -286,7 +315,12 @@ def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
         for x in range(cx - radius, cx + radius + 1):
             for y in range(cy - radius, cy + radius + 1):
                 # Skip map borders
-                if x <= 0 or x >= dungeon.width - 1 or y <= 0 or y >= dungeon.height - 1:
+                if (
+                    x <= 0
+                    or x >= dungeon.width - 1
+                    or y <= 0
+                    or y >= dungeon.height - 1
+                ):
                     continue
                 # Rotated ellipse distance
                 dx = x - cx
@@ -300,7 +334,10 @@ def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
                     continue
                 # Only convert floor and wall tiles
                 tile = dungeon.tiles[x, y]
-                if (tile == tile_types.floor or tile == tile_types.wall) and (x, y) not in dungeon.secret_doors:
+                if (tile == tile_types.floor or tile == tile_types.wall) and (
+                    x,
+                    y,
+                ) not in dungeon.secret_doors:
                     dungeon.tiles[x, y] = tile_types.tall_grass
 
 

@@ -1,4 +1,5 @@
 """Handle the loading and initialization of game sessions."""
+
 from __future__ import annotations
 
 import copy
@@ -16,7 +17,6 @@ from engine import Engine
 from game_map import GameWorld
 import input_handlers
 import sounds
-
 
 # Load the background image and remove the alpha channel.
 background_image = tcod.image.load("pics/menu_background.png")[:, :, :3]
@@ -54,10 +54,12 @@ def new_game() -> Engine:
     engine.update_fov()
 
     engine.message_log.add_message(
-        "Hello and welcome, adventurer, to yet another dungeon!", color.welcome_text,
+        "Hello and welcome, adventurer, to yet another dungeon!",
+        color.welcome_text,
     )
     engine.message_log.add_message("Press '?' to view all possible keybinds!")
     return engine
+
 
 def load_game(filename: str) -> Engine:
     """Load an Engine instance from a file."""
@@ -66,8 +68,10 @@ def load_game(filename: str) -> Engine:
     assert isinstance(engine, Engine)
     return engine
 
+
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
+
     def __init__(self):
         _init_audio()
         self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav")

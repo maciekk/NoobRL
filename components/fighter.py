@@ -56,19 +56,28 @@ class Fighter(BaseComponent):
         # If it's a primed exploding corpse, trigger its chain explosion.
         if self.parent.render_order == RenderOrder.CORPSE:
             from components.ai import ExplodingCorpseAI
+
             if isinstance(self.parent.ai, ExplodingCorpseAI):
                 self.parent.ai.explode()
             return
 
         # Add more to deathmessagelist
         deathmessagelist = [
-            "impaled", "blown to smithereens", "sliced down", "beat to death", "butchered"
+            "impaled",
+            "blown to smithereens",
+            "sliced down",
+            "beat to death",
+            "butchered",
         ]
         if self.engine.player is self.parent:
-            death_message = f"You were {deathmessagelist[random.randint(0, 3)]}. You are dead."
+            death_message = (
+                f"You were {deathmessagelist[random.randint(0, 3)]}. You are dead."
+            )
             death_message_color = color.player_die
         else:
-            death_message = f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
+            death_message = (
+                f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
+            )
             death_message_color = color.enemy_die
             kills = self.engine.kill_counts
             kills[self.parent.name] = kills.get(self.parent.name, 0) + 1
@@ -83,7 +92,10 @@ class Fighter(BaseComponent):
 
         # Check for death explosion (e.g. Puffball)
         from components.ai import ExplodingCorpseAI
-        if self.parent.death_explosion and not isinstance(self.parent.ai, ExplodingCorpseAI):
+
+        if self.parent.death_explosion and not isinstance(
+            self.parent.ai, ExplodingCorpseAI
+        ):
             self.parent.ai = ExplodingCorpseAI(
                 self.parent, **self.parent.death_explosion
             )

@@ -28,7 +28,7 @@ class Engine:
         self.mouse_location = (0, 0)
         self.item_manager = ItemManager("data/items.json")
         self.monster_manager = MonsterManager("data/monsters.json", self.item_manager)
-        self.player = self.monster_manager.clone('player')
+        self.player = self.monster_manager.clone("player")
         self.turn = 1
         self.kill_counts: dict[str, int] = {}
         self._bonus_actions = 0
@@ -66,7 +66,8 @@ class Engine:
             maximum_value=self.player.fighter.max_hp,
             color_fg=color.hp_bar_filled,
             color_bg=color.hp_bar_empty,
-            x=0, y=45,
+            x=0,
+            y=45,
             total_width=20,
         )
         render_functions.render_bar(
@@ -76,7 +77,8 @@ class Engine:
             maximum_value=self.player.level.experience_to_next_level,
             color_fg=color.xp_bar_filled,
             color_bg=color.xp_bar_empty,
-            x=0, y=46,
+            x=0,
+            y=46,
             total_width=20,
         )
         render_functions.render_dungeon_level(
@@ -90,8 +92,7 @@ class Engine:
         y = 48
         console.print(x=1, y=y, string=f"Turn: {self.turn}")
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
-        console.print(x=1, y=y+1, string=s)
-
+        console.print(x=1, y=y + 1, string=s)
 
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""

@@ -66,12 +66,9 @@ class WishAction(Action):
         item.parent = self.entity.inventory
         if not self.entity.inventory.add(item):
             # Inventory is full, drop on floor instead
-            item.place(
-                self.entity.x, self.entity.y, self.engine.game_map
-            )
+            item.place(self.entity.x, self.entity.y, self.engine.game_map)
             self.engine.message_log.add_message(
-                f"You wished for a {item.name},"
-                " but your inventory is full!",
+                f"You wished for a {item.name}," " but your inventory is full!",
                 color.impossible,
             )
         else:
@@ -91,23 +88,17 @@ class PickupAction(Action):
         inventory = self.entity.inventory
 
         items_here = [
-            item for item in self.engine.game_map.items
-            if item.x == actor_location_x
-            and item.y == actor_location_y
+            item
+            for item in self.engine.game_map.items
+            if item.x == actor_location_x and item.y == actor_location_y
         ]
 
         if not items_here:
-            raise exceptions.Impossible(
-                "There is nothing here to pick up."
-            )
+            raise exceptions.Impossible("There is nothing here to pick up.")
 
         for item in items_here:
-            can_stack = (
-                item.stackable
-                and inventory.find_stack(item.name) is not None
-            )
-            if (not can_stack
-                    and len(inventory.items) >= inventory.capacity):
+            can_stack = item.stackable and inventory.find_stack(item.name) is not None
+            if not can_stack and len(inventory.items) >= inventory.capacity:
                 self.engine.message_log.add_message(
                     "Your inventory is full.", color.impossible
                 )
@@ -119,9 +110,7 @@ class PickupAction(Action):
             inventory.add(item)
 
             count_text = (
-                f" (x{pickup_count})"
-                if item.stackable and pickup_count > 1
-                else ""
+                f" (x{pickup_count})" if item.stackable and pickup_count > 1 else ""
             )
             self.engine.message_log.add_message(
                 f"You picked up the {item.name}{count_text}!"
@@ -132,7 +121,9 @@ class ItemAction(Action):
     """Action involving an inventory item."""
 
     def __init__(
-        self, entity: Actor, item: Item,
+        self,
+        entity: Actor,
+        item: Item,
         target_xy: Optional[Tuple[int, int]] = None,
     ):
         super().__init__(entity)
@@ -144,9 +135,7 @@ class ItemAction(Action):
     @property
     def target_actor(self) -> Optional[Actor]:
         """Return the actor at this actions destination."""
-        return self.engine.game_map.get_actor_at_location(
-            *self.target_xy
-        )
+        return self.engine.game_map.get_actor_at_location(*self.target_xy)
 
     def perform(self) -> None:
         """Invoke the items ability."""
@@ -158,7 +147,9 @@ class DropItem(ItemAction):
     """Drop an item from inventory."""
 
     def __init__(
-        self, entity: Actor, item: Item,
+        self,
+        entity: Actor,
+        item: Item,
         target_xy: Optional[Tuple[int, int]] = None,
         count: int = 0,
     ):
@@ -189,13 +180,10 @@ class OpenAction(Action):
     def perform(self) -> None:
         x, y = self.entity.x, self.entity.y
         for entity in self.engine.game_map.entities:
-            if (entity.x == x and entity.y == y
-                    and hasattr(entity, 'open')):
+            if entity.x == x and entity.y == y and hasattr(entity, "open"):
                 entity.open(self.entity)
                 return
-        raise exceptions.Impossible(
-            "There is nothing here to open."
-        )
+        raise exceptions.Impossible("There is nothing here to open.")
 
 
 class OpenDoorAction(Action):
@@ -212,16 +200,10 @@ class OpenDoorAction(Action):
 
         tile = self.engine.game_map.tiles[self.x, self.y]
         if tile == tile_types.door_closed:
-            self.engine.game_map.tiles[self.x, self.y] = (
-                tile_types.door_open
-            )
-            self.engine.message_log.add_message(
-                "You open the door.", color.white
-            )
+            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
+            self.engine.message_log.add_message("You open the door.", color.white)
         else:
-            raise exceptions.Impossible(
-                "There is no closed door there."
-            )
+            raise exceptions.Impossible("There is no closed door there.")
 
 
 class CloseDoorAction(Action):
@@ -238,24 +220,15 @@ class CloseDoorAction(Action):
 
         # Check for entities at the door location
         for entity in self.engine.game_map.entities:
-            if (entity.x == self.x and entity.y == self.y
-                    and entity is not self.entity):
-                raise exceptions.Impossible(
-                    "There is something in the way."
-                )
+            if entity.x == self.x and entity.y == self.y and entity is not self.entity:
+                raise exceptions.Impossible("There is something in the way.")
 
         tile = self.engine.game_map.tiles[self.x, self.y]
         if tile == tile_types.door_open:
-            self.engine.game_map.tiles[self.x, self.y] = (
-                tile_types.door_closed
-            )
-            self.engine.message_log.add_message(
-                "You close the door.", color.white
-            )
+            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
+            self.engine.message_log.add_message("You close the door.", color.white)
         else:
-            raise exceptions.Impossible(
-                "There is no open door there."
-            )
+            raise exceptions.Impossible("There is no open door there.")
 
 
 class WaitAction(Action):
@@ -269,38 +242,28 @@ class TakeStairsAction(Action):
     """Descend stairs to the next floor."""
 
     def perform(self) -> None:
-        if (self.entity.x, self.entity.y) == (
-            self.engine.game_map.downstairs_location
-        ):
+        if (self.entity.x, self.entity.y) == (self.engine.game_map.downstairs_location):
             self.engine.game_world.generate_floor()
             self.engine.message_log.add_message(
                 "You descend the staircase.", color.descend
             )
         else:
-            raise exceptions.Impossible(
-                "There are no stairs here."
-            )
+            raise exceptions.Impossible("There are no stairs here.")
 
 
 class TakeUpStairsAction(Action):
     """Ascend stairs to the previous floor."""
 
     def perform(self) -> None:
-        if (self.entity.x, self.entity.y) == (
-            self.engine.game_map.upstairs_location
-        ):
+        if (self.entity.x, self.entity.y) == (self.engine.game_map.upstairs_location):
             if self.engine.game_world.current_floor <= 1:
-                raise exceptions.Impossible(
-                    "You cannot go further up."
-                )
+                raise exceptions.Impossible("You cannot go further up.")
             self.engine.game_world.generate_floor(direction=-1)
             self.engine.message_log.add_message(
                 "You ascend the staircase.", color.ascend
             )
         else:
-            raise exceptions.Impossible(
-                "There are no stairs here."
-            )
+            raise exceptions.Impossible("There are no stairs here.")
 
 
 class ActionWithDirection(Action):
@@ -320,16 +283,12 @@ class ActionWithDirection(Action):
     @property
     def blocking_entity(self) -> Optional[Entity]:
         """Return the blocking entity at this actions destination."""
-        return self.engine.game_map.get_blocking_entity_at_location(
-            *self.dest_xy
-        )
+        return self.engine.game_map.get_blocking_entity_at_location(*self.dest_xy)
 
     @property
     def target_actor(self) -> Optional[Actor]:
         """Return the actor at this actions destination."""
-        return self.engine.game_map.get_actor_at_location(
-            *self.dest_xy
-        )
+        return self.engine.game_map.get_actor_at_location(*self.dest_xy)
 
     def perform(self) -> None:
         raise NotImplementedError()
@@ -353,9 +312,7 @@ class MeleeAction(ActionWithDirection):
             target.fighter.defense,
             crit_chance,
         )
-        attack_desc = (
-            f"{self.entity.name.capitalize()} attacks {target.name}"
-        )
+        attack_desc = f"{self.entity.name.capitalize()} attacks {target.name}"
         crit_text = ""
         if self.entity is self.engine.player:
             attack_color = color.player_atk
@@ -366,8 +323,7 @@ class MeleeAction(ActionWithDirection):
             crit_text = " [CRIT!]"
         if damage > 0:
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points"
-                f"{crit_text}.",
+                f"{attack_desc} for {damage} hit points" f"{crit_text}.",
                 attack_color,
             )
             target.fighter.hp -= damage
@@ -387,9 +343,7 @@ class RangedAttackAction(ActionWithDirection):
             self.entity.fighter.power, target.fighter.defense
         )
 
-        attack_desc = (
-            f"{self.entity.name.capitalize()} zaps {target.name}"
-        )
+        attack_desc = f"{self.entity.name.capitalize()} zaps {target.name}"
         crit_text = ""
         attack_color = color.enemy_atk
         if is_crit:
@@ -398,8 +352,7 @@ class RangedAttackAction(ActionWithDirection):
 
         if damage > 0:
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points."
-                f"{crit_text}",
+                f"{attack_desc} for {damage} hit points." f"{crit_text}",
                 attack_color,
             )
             target.fighter.hp -= damage
@@ -419,14 +372,10 @@ class MovementAction(ActionWithDirection):
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
             # Destination is out of bounds.
             raise exceptions.Impossible("That way is blocked.")
-        if not self.engine.game_map.tiles["walkable"][
-            dest_x, dest_y
-        ]:
+        if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
             # Destination is blocked by a tile.
             raise exceptions.Impossible("That way is blocked.")
-        if self.engine.game_map.get_blocking_entity_at_location(
-            dest_x, dest_y
-        ):
+        if self.engine.game_map.get_blocking_entity_at_location(dest_x, dest_y):
             # Destination is blocked by an entity.
             raise exceptions.Impossible("That way is blocked.")
 
@@ -438,34 +387,23 @@ class BumpAction(ActionWithDirection):
 
     def perform(self) -> None:
         if self.target_actor:
-            MeleeAction(
-                self.entity, self.dx, self.dy
-            ).perform()
+            MeleeAction(self.entity, self.dx, self.dy).perform()
             return
 
         dest_x, dest_y = self.dest_xy
         if self.engine.game_map.in_bounds(dest_x, dest_y):
-            if (dest_x, dest_y) in (
-                self.engine.game_map.secret_doors
-            ):
-                self.engine.game_map.secret_doors.discard(
-                    (dest_x, dest_y)
-                )
-                self.engine.game_map.tiles[dest_x, dest_y] = (
-                    tile_types.door_closed
-                )
+            if (dest_x, dest_y) in (self.engine.game_map.secret_doors):
+                self.engine.game_map.secret_doors.discard((dest_x, dest_y))
+                self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_closed
                 self.engine.message_log.add_message(
                     "You discover a secret door!", color.white
                 )
                 return
             if (
                 options.auto_open_doors
-                and self.engine.game_map.tiles[dest_x, dest_y]
-                == tile_types.door_closed
+                and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed
             ):
-                OpenDoorAction(
-                    self.entity, dest_x, dest_y
-                ).perform()
+                OpenDoorAction(self.entity, dest_x, dest_y).perform()
                 return
 
         MovementAction(self.entity, self.dx, self.dy).perform()
@@ -489,18 +427,15 @@ class MovementRepeatedAction(MovementAction):
             nx, ny = px + d[0], py + d[1]
             if self._walkable(nx, ny):
                 count = sum(
-                    1 for dd in cardinal
-                    if self._walkable(
-                        nx + dd[0], ny + dd[1]
-                    )
+                    1 for dd in cardinal if self._walkable(nx + dd[0], ny + dd[1])
                 )
                 if count >= 3:
                     return None
 
         candidates = [
-            d for d in cardinal
-            if d != backward
-            and self._walkable(px + d[0], py + d[1])
+            d
+            for d in cardinal
+            if d != backward and self._walkable(px + d[0], py + d[1])
         ]
 
         if len(candidates) == 1:
@@ -519,10 +454,7 @@ class MovementRepeatedAction(MovementAction):
             # Try to follow a corridor turn.
             px, py = self.entity.x, self.entity.y
             cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-            neighbors = sum(
-                1 for d in cardinal
-                if self._walkable(px + d[0], py + d[1])
-            )
+            neighbors = sum(1 for d in cardinal if self._walkable(px + d[0], py + d[1]))
             if neighbors >= 3:
                 return None  # In open area, don't turn.
             turn = self._find_corridor_turn()
@@ -550,23 +482,15 @@ class CarefulMovementAction(MovementAction):
     def _count_neighbors(self, x, y):
         """Count walkable cardinal neighbors of a tile."""
         cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        return sum(
-            1 for d in cardinal
-            if self._walkable(x + d[0], y + d[1])
-        )
+        return sum(1 for d in cardinal if self._walkable(x + d[0], y + d[1]))
 
     def _on_interesting_tile(self) -> bool:
         """True if standing on a notable feature or item."""
-        tile = self.engine.game_map.tiles[
-            self.entity.x, self.entity.y
-        ]
+        tile = self.engine.game_map.tiles[self.entity.x, self.entity.y]
         if any(tile == t for t in tile_types.interesting_tiles):
             return True
         px, py = self.entity.x, self.entity.y
-        return any(
-            item.x == px and item.y == py
-            for item in self.engine.game_map.items
-        )
+        return any(item.x == px and item.y == py for item in self.engine.game_map.items)
 
     def _find_corridor_turn(self):
         """Return the unique continuation direction in a corridor.
@@ -585,18 +509,15 @@ class CarefulMovementAction(MovementAction):
             nx, ny = px + d[0], py + d[1]
             if self._walkable(nx, ny):
                 count = sum(
-                    1 for dd in cardinal
-                    if self._walkable(
-                        nx + dd[0], ny + dd[1]
-                    )
+                    1 for dd in cardinal if self._walkable(nx + dd[0], ny + dd[1])
                 )
                 if count >= 3:
                     return None
 
         candidates = [
-            d for d in cardinal
-            if d != backward
-            and self._walkable(px + d[0], py + d[1])
+            d
+            for d in cardinal
+            if d != backward and self._walkable(px + d[0], py + d[1])
         ]
 
         if len(candidates) == 1:
@@ -669,9 +590,7 @@ class TargetMovementAction(Action):
         if self.engine.game_map.any_monsters_visible():
             return False
         x, y = self.path.pop(0)
-        if self.engine.game_map.get_blocking_entity_at_location(
-            x, y
-        ):
+        if self.engine.game_map.get_blocking_entity_at_location(x, y):
             return False
         self.entity.move(x - self.entity.x, y - self.entity.y)
         return True  # keep going

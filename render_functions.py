@@ -21,6 +21,7 @@ def entity_brief(entity) -> str:
         s += f" (x{entity.stack_count})"
     return s
 
+
 def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
     tile = game_map.tiles[x, y]
     if tile == tile_types.down_stairs:
@@ -35,6 +36,7 @@ def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
         return "tall grass"
     return ""
 
+
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
@@ -42,7 +44,9 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     parts = []
 
     entity_names = ", ".join(
-        entity_brief(entity) for entity in game_map.entities if entity.x == x and entity.y == y
+        entity_brief(entity)
+        for entity in game_map.entities
+        if entity.x == x and entity.y == y
     )
     if entity_names:
         parts.append(entity_names)
@@ -55,12 +59,15 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
 
 
 def render_bar(
-        console: Console,
-        name,
-        current_value: int, maximum_value: int,
-        color_fg, color_bg,
-        x: int, y: int,
-        total_width: int
+    console: Console,
+    name,
+    current_value: int,
+    maximum_value: int,
+    color_fg,
+    color_bg,
+    x: int,
+    y: int,
+    total_width: int,
 ) -> None:
     bar_width = int(float(current_value) / maximum_value * total_width)
     bar_width = min(bar_width, total_width)
@@ -68,13 +75,15 @@ def render_bar(
     console.draw_rect(x=x, y=y, width=20, height=1, ch=1, bg=color_bg)
 
     if bar_width > 0:
-        console.draw_rect(
-            x=x, y=y, width=bar_width, height=1, ch=1, bg=color_fg
-        )
+        console.draw_rect(x=x, y=y, width=bar_width, height=1, ch=1, bg=color_fg)
 
     console.print(
-        x=x+1, y=y, string=f"{name}: {current_value}/{maximum_value}", fg=color.bar_text
+        x=x + 1,
+        y=y,
+        string=f"{name}: {current_value}/{maximum_value}",
+        fg=color.bar_text,
     )
+
 
 def render_dungeon_level(
     console: Console, dungeon_level: int, location: Tuple[int, int]
@@ -85,7 +94,6 @@ def render_dungeon_level(
     x, y = location
 
     console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
-
 
 
 def render_names_at_mouse_location(

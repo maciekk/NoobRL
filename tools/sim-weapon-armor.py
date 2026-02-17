@@ -4,13 +4,13 @@ import os.path
 import sys
 
 # Enable loading modules from parent directory.
-sys.path.insert(1, os.path.join(sys.path[0], '..'))
+sys.path.insert(1, os.path.join(sys.path[0], ".."))
 
 import dice
 
 
 def histogram(values):
-    BAR_CHAR = '='
+    BAR_CHAR = "="
     d = {}
     for v in values:
         if v in d:
@@ -25,13 +25,13 @@ def histogram(values):
 def stem_and_leaf_plot(values):
     d = {}
     for v in values:
-        stem = v//10
+        stem = v // 10
         if stem in d:
             d[stem] += str(v % 10)
         else:
             d[stem] = str(v % 10)
     for stem in sorted(d.keys()):
-        print("%s | %s" % (stem, ''.join(sorted(d[stem]))))
+        print("%s | %s" % (stem, "".join(sorted(d[stem]))))
 
 
 class Match:
@@ -54,7 +54,7 @@ class Match:
         if dmg > 0:
             dmg_str = "(-%d)" % (dmg,)
         else:
-            dmg_str = '    '
+            dmg_str = "    "
         print("HP: %2d  %s [%d->%d]" % (self.hp, dmg_str, w, a))
 
         if self.hp <= 0:
@@ -68,12 +68,12 @@ class Match:
         print()
         print("Damage history: ")
         histogram(self.history_dmg)
-        #print("HP history: ")
-        #stem_and_leaf_plot(self.history_hp)
+        # print("HP history: ")
+        # stem_and_leaf_plot(self.history_hp)
 
 
 def main() -> None:
-    m = Match(hp=100, armor='1d8', weapon='1d7')
+    m = Match(hp=100, armor="1d8", weapon="1d7")
     m.until_death()
 
 

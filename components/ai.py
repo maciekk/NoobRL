@@ -6,7 +6,15 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np  # type: ignore
 import tcod
 
-from actions import Action, BumpAction, MeleeAction, MovementAction, WaitAction, RangedAttackAction, OpenDoorAction
+from actions import (
+    Action,
+    BumpAction,
+    MeleeAction,
+    MovementAction,
+    WaitAction,
+    RangedAttackAction,
+    OpenDoorAction,
+)
 
 if TYPE_CHECKING:
     from entity import Actor
@@ -57,7 +65,12 @@ class ConfusedEnemy(BaseAI):
 
             # The actor will either try to move or attack in the chosen random direction.
             # Its possible the actor will just bump into the wall, wasting a turn.
-            return BumpAction(self.entity, direction_x, direction_y,).perform()
+            return BumpAction(
+                self.entity,
+                direction_x,
+                direction_y,
+            ).perform()
+
 
 class ExplodingCorpseAI(BaseAI):
     """AI for a dead Puffball corpse counting down to explosion."""
@@ -116,22 +129,31 @@ class HostileEnemy(BaseAI):
         dy = target.y - self.entity.y
         distance = max(abs(dx), abs(dy))  # Chebyshev distance.
 
-        if self.engine.game_map.visible[self.entity.x, self.entity.y] and not self.engine.player.is_invisible:
+        if (
+            self.engine.game_map.visible[self.entity.x, self.entity.y]
+            and not self.engine.player.is_invisible
+        ):
             # Give actor chance to notice player, if that has not happened yet.
             if not self.entity.noticed_player:
                 self.entity.noticed_player = True
                 if self.entity.name == "Dragon":
                     Dragon_message = "You have been spotted by a dragon!"
                     Dragon_message_color = color.dragon_roar
-                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+                    self.engine.message_log.add_message(
+                        Dragon_message, Dragon_message_color
+                    )
                 if self.entity.name == "Ender Dragon":
                     Dragon_message = "You have been spotted by an ender dragon!"
                     Dragon_message_color = color.dragon_roar_end
-                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+                    self.engine.message_log.add_message(
+                        Dragon_message, Dragon_message_color
+                    )
                 if self.entity.name == "Hydra":
                     Dragon_message = "You have been spotted by a hydra!"
                     Dragon_message_color = color.hydra_roar
-                    self.engine.message_log.add_message(Dragon_message, Dragon_message_color)
+                    self.engine.message_log.add_message(
+                        Dragon_message, Dragon_message_color
+                    )
 
             self.last_known_target = (target.x, target.y)
 
@@ -155,11 +177,14 @@ class HostileEnemy(BaseAI):
             # Wizards can open doors
             if self.entity.name == "Wizard":
                 import tile_types
+
                 if self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed:
                     return OpenDoorAction(self.entity, dest_x, dest_y).perform()
 
             return MovementAction(
-                self.entity, dest_x - self.entity.x, dest_y - self.entity.y,
+                self.entity,
+                dest_x - self.entity.x,
+                dest_y - self.entity.y,
             ).perform()
 
         return WaitAction(self.entity).perform()

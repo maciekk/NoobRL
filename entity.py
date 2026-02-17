@@ -56,6 +56,7 @@ AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,
 }
 
+
 class Entity:
     """
     A generic object to represent players, enemies, items, etc.
@@ -153,6 +154,7 @@ class Entity:
         # Convert from List[List[int]] to List[Tuple[int, int]].
         return [(index[0], index[1]) for index in path]
 
+
 class Actor(Entity):
     def __init__(
         self,
@@ -171,7 +173,6 @@ class Actor(Entity):
         attack_range: int = 1,
         ranged_attack: bool = False,
         death_explosion: dict = None,
-
     ):
         super().__init__(
             x=x,
@@ -233,20 +234,34 @@ class Actor(Entity):
 
 
 class Chest(Entity):
-    def __init__(self, *, x: int = 0, y: int = 0, color: Tuple[int, int, int] = (191, 128, 32), name: str = "chest"):
+    def __init__(
+        self,
+        *,
+        x: int = 0,
+        y: int = 0,
+        color: Tuple[int, int, int] = (191, 128, 32),
+        name: str = "chest",
+    ):
         super().__init__(
-            x=x, y=y, char="~", color=color, name=name,
-            blocks_movement=False, render_order=RenderOrder.ITEM,
+            x=x,
+            y=y,
+            char="~",
+            color=color,
+            name=name,
+            blocks_movement=False,
+            render_order=RenderOrder.ITEM,
         )
         self.opened = False
 
     def open(self, opener: Actor) -> None:
         import exceptions
+
         if self.opened:
             raise exceptions.Impossible("This chest is already open.")
 
         from dice import roll
         from procgen import get_entities_at_random, item_chances
+
         num_items = roll("1d3") + 1
         floor = self.gamemap.engine.game_world.current_floor
         chosen = get_entities_at_random(
@@ -312,24 +327,25 @@ class Item(Entity):
     def stackable(self) -> bool:
         return self.consumable is not None and self.equippable is None
 
+
 class ItemManager:
     def __init__(self, fname: string):
         self.items = {}
         self.load(fname)
 
     def load(self, fname: string):
-        with open(fname, 'r') as f:
+        with open(fname, "r") as f:
             data = f.read()
             for item in json.loads(data):
-                id = item.pop('id')
-                d = item.get('consumable', None)
+                id = item.pop("id")
+                d = item.get("consumable", None)
                 if d:
-                    consumable_class = CONSUMABLE_MAP[d.pop('name')]
-                    item['consumable'] = consumable_class(**d)
-                d = item.get('equippable', None)
+                    consumable_class = CONSUMABLE_MAP[d.pop("name")]
+                    item["consumable"] = consumable_class(**d)
+                d = item.get("equippable", None)
                 if d:
-                    equippable_class = EQUIPPABLE_MAP[d.pop('name')]
-                    item['equippable'] = equippable_class(**d)
+                    equippable_class = EQUIPPABLE_MAP[d.pop("name")]
+                    item["equippable"] = equippable_class(**d)
                 self.items[id] = Item(**item)
 
     def clone(self, name: Optional[string]) -> Optional[Item]:
@@ -339,6 +355,7 @@ class ItemManager:
             return None
         return copy.deepcopy(self.items[name])
 
+
 class MonsterManager:
     def __init__(self, fname: string, item_manager: ItemManager):
         self.monsters = {}
@@ -346,25 +363,25 @@ class MonsterManager:
         self.load(fname)
 
     def load(self, fname: string):
-        with open(fname, 'r') as f:
+        with open(fname, "r") as f:
             data = f.read()
             for item in json.loads(data):
-                id = item.pop('id')
-                item['ai_cls'] = AI_MAP[item.pop('ai_cls')]
-                d = item.get('equipment', None)
+                id = item.pop("id")
+                item["ai_cls"] = AI_MAP[item.pop("ai_cls")]
+                d = item.get("equipment", None)
                 if d is not None:
-                    d['armor'] = self.item_manager.clone(d.get('armor'))
-                    d['weapon'] = self.item_manager.clone(d.get('weapon'))
-                    item['equipment'] = components.equipment.Equipment(**d)
-                d = item.get('fighter', None)
+                    d["armor"] = self.item_manager.clone(d.get("armor"))
+                    d["weapon"] = self.item_manager.clone(d.get("weapon"))
+                    item["equipment"] = components.equipment.Equipment(**d)
+                d = item.get("fighter", None)
                 if d:
-                    item['fighter'] = components.fighter.Fighter(**d)
-                d = item.get('inventory', None)
+                    item["fighter"] = components.fighter.Fighter(**d)
+                d = item.get("inventory", None)
                 if d:
-                    item['inventory'] = components.inventory.Inventory(**d)
-                d = item.get('level', None)
+                    item["inventory"] = components.inventory.Inventory(**d)
+                d = item.get("level", None)
                 if d:
-                    item['level'] = components.level.Level(**d)
+                    item["level"] = components.level.Level(**d)
                 self.monsters[id] = Actor(**item)
 
     def clone(self, name: string) -> Actor:

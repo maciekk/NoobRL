@@ -39,7 +39,9 @@ class Inventory(BaseComponent):
                 return True
 
         if len(self.items) >= self.capacity:
-            self.engine.message_log.add_message(f"You have no inventory space left to take {item.name}.")
+            self.engine.message_log.add_message(
+                f"You have no inventory space left to take {item.name}."
+            )
             return False
 
         item.stack_count = count
@@ -76,11 +78,15 @@ class Inventory(BaseComponent):
         if not dropped.stackable:
             return
         for entity in list(self.gamemap.entities):
-            if (entity is not dropped
-                    and isinstance(entity, type(dropped))
-                    and entity.name == dropped.name
-                    and hasattr(entity, 'stackable') and entity.stackable
-                    and entity.x == dropped.x and entity.y == dropped.y):
+            if (
+                entity is not dropped
+                and isinstance(entity, type(dropped))
+                and entity.name == dropped.name
+                and hasattr(entity, "stackable")
+                and entity.stackable
+                and entity.x == dropped.x
+                and entity.y == dropped.y
+            ):
                 entity.stack_count += dropped.stack_count
                 self.gamemap.entities.discard(dropped)
                 return
