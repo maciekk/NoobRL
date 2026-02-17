@@ -93,7 +93,7 @@ Ideas & efforts under way.
 - [ ] armor set powers? P3
 
 ### Items (Potions, Scrolls, Powers, etc)
-- [ ] add: amulet & potion of detect monster `#next`
+- [x] add: amulet & potion of detect monster `#next`
 - [ ] add: Potion of Sleep `#next`
 - [ ] add: Potion of Blindness `#next`
 - [ ] add: Scroll of Identify (blocked: anonymized item names)

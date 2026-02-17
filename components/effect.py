@@ -82,3 +82,22 @@ class SpeedEffect(TimedEffect):
         self.engine.message_log.add_message(
             "You feel yourself slowing down.", (0x80, 0x80, 0x80)
         )
+
+
+class DetectMonsterEffect(TimedEffect):
+    def __init__(self, engine: Engine, duration: int):
+        super().__init__(engine)
+        self.max_turns = duration
+        self.name = "Detect Monster"
+
+    def activate(self):
+        super().activate()
+        self.parent.is_detecting_monsters = True
+
+    def expire(self):
+        super().expire()
+        self.parent.is_detecting_monsters = False
+        self.parent.effects.remove(self)
+        self.engine.message_log.add_message(
+            "Your monster sense fades.", (0x80, 0x80, 0x80)
+        )

@@ -41,6 +41,7 @@ CONSUMABLE_MAP = {
     "WishingWandConsumable": consumable.WishingWandConsumable,
     "InvisibilityConsumable": consumable.InvisibilityConsumable,
     "SpeedConsumable": consumable.SpeedConsumable,
+    "DetectMonsterConsumable": consumable.DetectMonsterConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,
@@ -51,6 +52,7 @@ EQUIPPABLE_MAP = {
     "ChainMail": equippable.ChainMail,
     "SteelArmor": equippable.SteelArmor,
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
+    "AmuletOfDetectMonster": equippable.AmuletOfDetectMonster,
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,
@@ -212,6 +214,7 @@ class Actor(Entity):
         self.ranged_attack = ranged_attack
         self.energy = 0
         self.is_hasted = False
+        self.is_detecting_monsters = False
         self.death_explosion = death_explosion
 
     @property

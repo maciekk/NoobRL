@@ -26,6 +26,9 @@ class Equippable(BaseComponent):
     def on_equip(self) -> None:
         pass
 
+    def on_unequip(self) -> None:
+        pass
+
 
 class Dagger(Equippable):
     def __init__(self) -> None:
@@ -70,3 +73,26 @@ class AmuletOfClairvoyance(Equippable):
         from components.consumable import apply_clairvoyance
 
         apply_clairvoyance(self.engine)
+
+
+class AmuletOfDetectMonster(Equippable):
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.AMULET)
+
+    def on_equip(self) -> None:
+        # self.parent = Item, Item.parent = Inventory, Inventory.parent = Actor
+        actor = self.parent.parent.parent
+        actor.is_detecting_monsters = True
+        self.engine.message_log.add_message(
+            "You sense the presence of monsters!",
+            (0xC0, 0xC0, 0xFF),
+        )
+
+    def on_unequip(self) -> None:
+        # self.parent = Item, Item.parent = Inventory, Inventory.parent = Actor
+        actor = self.parent.parent.parent
+        actor.is_detecting_monsters = False
+        self.engine.message_log.add_message(
+            "Your monster sense fades.",
+            (0x80, 0x80, 0x80),
+        )

@@ -122,7 +122,17 @@ class GameMap:
                 item_counts[pos] = item_counts.get(pos, 0) + 1
 
         for entity in entities_sorted_for_rendering:
-            if self.visible[entity.x, entity.y]:
+            # Render if visible, or if detecting monsters and entity is a non-player Actor
+            should_render = self.visible[entity.x, entity.y]
+            if (
+                not should_render
+                and self.engine.player.is_detecting_monsters
+                and isinstance(entity, Actor)
+                and entity is not self.engine.player
+            ):
+                should_render = True
+
+            if should_render:
                 fg = entity.color
                 if entity is self.engine.player and entity.is_invisible:
                     fg = (100, 100, 100)

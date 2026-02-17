@@ -93,6 +93,9 @@ class Equipment(BaseComponent):
         if add_message:
             self.unequip_message(current_item.name)
 
+        if current_item and current_item.equippable:
+            current_item.equippable.on_unequip()
+
         setattr(self, slot, None)
 
     def toggle_equip(self, equippable_item: Item, add_message: bool = True) -> None:

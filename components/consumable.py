@@ -6,7 +6,12 @@ import numpy as np
 import actions
 import color
 import components.ai
-from components.effect import InvisibilityEffect, RageEffect, SpeedEffect
+from components.effect import (
+    InvisibilityEffect,
+    RageEffect,
+    SpeedEffect,
+    DetectMonsterEffect,
+)
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
@@ -313,3 +318,23 @@ class LightningDamageConsumable(Consumable):
             self.consume()
         else:
             raise Impossible("No enemy is close enough to strike.")
+
+
+class DetectMonsterConsumable(Consumable):
+    def __init__(self, duration: int):
+        self.duration = duration
+
+    def get_description(self) -> list[str]:
+        return [f"Reveals all monsters for {self.duration} turns"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        eff = DetectMonsterEffect(engine=self.engine, duration=self.duration)
+        consumer.effects.append(eff)
+        eff.parent = consumer
+        self.engine.message_log.add_message(
+            "You sense the presence of monsters!",
+            color.status_effect_applied,
+        )
+        eff.activate()
+        self.consume()

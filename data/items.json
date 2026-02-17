@@ -90,6 +90,16 @@
     }
   },
   {
+    "id": "p_detect_monster",
+    "name": "Potion of Detect Monster",
+    "char": "!",
+    "color": [255, 100, 100],
+    "consumable": {
+      "name": "DetectMonsterConsumable",
+      "duration": 10
+    }
+  },
+  {
     "id": "dagger",
     "name": "Dagger",
     "char": ")",
@@ -169,6 +179,15 @@
     "color": [127, 255, 255],
     "equippable": {
       "name": "AmuletOfClairvoyance"
+    }
+  },
+  {
+    "id": "amulet_detect_monster",
+    "name": "Amulet of Detect Monster",
+    "char": "\"",
+    "color": [255, 127, 127],
+    "equippable": {
+      "name": "AmuletOfDetectMonster"
     }
   }
 ]
