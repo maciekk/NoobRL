@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from typing import Iterable, Iterator, Optional, TYPE_CHECKING
 
-import numpy as np  # type: ignore
-from tcod.console import Console
+import numpy as np  # type: ignore[import]  # pylint: disable=import-error
+from tcod.console import Console  # pylint: disable=import-error
 
-from entity import Actor, Chest, Item
+from entity import Actor, Item
 import tile_types
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from entity import Entity
 
 
-class GameMap:
+class GameMap:  # pylint: disable=too-many-instance-attributes
     """Represents a single dungeon floor with tile data, entities, and visibility state."""
     def __init__(
         self, engine: Engine, width: int, height: int, entities: Iterable[Entity] = ()
@@ -147,12 +147,12 @@ class GameMap:
                 console.print(x=x, y=y, string="&", fg=(255, 255, 255))
 
 
-class GameWorld:
+class GameWorld:  # pylint: disable=too-few-public-methods
     """
     Holds the settings for the GameMap, and generates new maps when moving down the stairs.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         *,
         engine: Engine,
@@ -176,7 +176,8 @@ class GameWorld:
         self.current_floor = current_floor
 
     def generate_floor(self, direction: int = 1) -> None:
-        from procgen import generate_dungeon
+        """Generate a new dungeon floor and apply any persistent map effects."""
+        from procgen import generate_dungeon  # pylint: disable=import-outside-toplevel
 
         self.current_floor += direction
 
@@ -190,10 +191,10 @@ class GameWorld:
             ascending=direction < 0,
         )
 
-        from components.equippable import AmuletOfClairvoyance
+        from components.equippable import AmuletOfClairvoyance  # pylint: disable=import-outside-toplevel
 
         amulet = self.engine.player.equipment.amulet
         if amulet and isinstance(amulet.equippable, AmuletOfClairvoyance):
-            from components.consumable import apply_clairvoyance
+            from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
 
             apply_clairvoyance(self.engine)

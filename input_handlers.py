@@ -1,4 +1,5 @@
 """Keyboard and mouse input handling via a state machine of handler classes."""
+# pylint: disable=too-many-lines,fixme
 
 from __future__ import annotations
 
@@ -7,8 +8,8 @@ import time
 
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
-import tcod
-from tcod import libtcodpy
+import tcod  # pylint: disable=import-error
+from tcod import libtcodpy  # pylint: disable=import-error
 
 import actions
 from actions import (
@@ -16,7 +17,6 @@ from actions import (
     BumpAction,
     CarefulMovementAction,
     MovementRepeatedAction,
-    OpenAction,
     PickupAction,
     TargetMovementAction,
     ThrowAction,
@@ -24,10 +24,12 @@ from actions import (
 )
 import color
 import exceptions
+import tile_types
+from entity import Actor, Item
+from equipment_types import EquipmentType
 
 if TYPE_CHECKING:
     from engine import Engine
-    from entity import Actor, Item
 
 
 MOVE_KEYS = {
@@ -138,6 +140,7 @@ class PopupMessage(BaseEventHandler):
     """Displays a dimmed overlay with a centered message; any key dismisses it."""
 
     def __init__(self, parent_handler: BaseEventHandler, text: str):
+        super().__init__()
         self.parent = parent_handler
         self.text = text
 
@@ -156,7 +159,7 @@ class PopupMessage(BaseEventHandler):
             alignment=libtcodpy.CENTER,
         )
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+    def ev_keydown(self, _event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
         """Any key returns to the parent handler."""
         return self.parent
 
@@ -165,6 +168,7 @@ class EventHandler(BaseEventHandler):
     """Base handler for handlers that operate within the game engine."""
 
     def __init__(self, engine: Engine):
+        super().__init__()
         self.engine = engine
 
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
@@ -177,7 +181,7 @@ class EventHandler(BaseEventHandler):
             if not self.engine.player.is_alive:
                 # The player was killed sometime during or after the action.
                 return GameOverEventHandler(self.engine)
-            elif self.engine.player.level.requires_level_up:
+            if self.engine.player.level.requires_level_up:
                 self.engine.message_log.add_message("You leveled up!", stack=False)
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)  # Return to the main handler.
@@ -234,7 +238,7 @@ class AskUserEventHandler(EventHandler):
         return self.on_exit()
 
     def ev_mousebuttondown(
-        self, event: tcod.event.MouseButtonDown
+        self, _event: tcod.event.MouseButtonDown
     ) -> Optional[ActionOrHandler]:
         """By default, any mouse click exits this input handler."""
         return self.on_exit()
@@ -324,10 +328,10 @@ class ListSelectionHandler(AskUserEventHandler):
             if key in INVENTORY_CURSOR_UP_KEYS and num_items > 0:
                 self.cursor = (self.cursor - 1) % num_items
                 return None
-            elif key in INVENTORY_CURSOR_DOWN_KEYS and num_items > 0:
+            if key in INVENTORY_CURSOR_DOWN_KEYS and num_items > 0:
                 self.cursor = (self.cursor + 1) % num_items
                 return None
-            elif key in CONFIRM_KEYS and num_items > 0:
+            if key in CONFIRM_KEYS and num_items > 0:
                 self.cursor = max(0, min(self.cursor, num_items - 1))
                 return self.on_selection(self.cursor, items[self.cursor])
 
@@ -337,9 +341,8 @@ class ListSelectionHandler(AskUserEventHandler):
                 if self.use_cursor:
                     self.cursor = index
                 return self.on_selection(index, items[index])
-            else:
-                self.engine.message_log.add_message("Invalid entry.", color.invalid)
-                return None
+            self.engine.message_log.add_message("Invalid entry.", color.invalid)
+            return None
         return super().ev_keydown(event)
 
 
@@ -365,9 +368,6 @@ class DirectionalSelectionHandler(AskUserEventHandler):
     TITLE: str = "<missing title>"
     EMPTY_TEXT: str = "(Empty)"
 
-    def __init__(self, engine: Engine):
-        super().__init__(engine)
-
     def get_directional_items(self) -> list:
         """Return list of (dx, dy, description, target) tuples for directional choices."""
         raise NotImplementedError()
@@ -378,41 +378,32 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         """Handle user selection of a direction; return an Action or Handler."""
         raise NotImplementedError()
 
+    def _build_direction_strings(self, items: list) -> list:
+        """Build display strings for each directional choice."""
+        strings = []
+        for dx, dy, description, _ in items:
+            if (dx, dy) in DIRECTION_KEY_MAP:
+                dir_key, _ = DIRECTION_KEY_MAP[(dx, dy)]
+                strings.append(f"({dir_key}) {description}")
+            else:
+                strings.append(f"(?) {description}")
+        return strings
+
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
         items = self.get_directional_items()
         num_items = len(items)
         height = max(num_items + 2, 3)
-
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
+        x = 40 if self.engine.player.x <= 30 else 0
         y = 0
-
-        item_strings = []
-        for dx, dy, description, _ in items:
-            if (dx, dy) in DIRECTION_KEY_MAP:
-                dir_key, _ = DIRECTION_KEY_MAP[(dx, dy)]
-                item_strings.append(f"({dir_key}) {description}")
-            else:
-                # Fallback for (0,0) or unexpected offsets
-                item_strings.append(f"(?) {description}")
-
+        item_strings = self._build_direction_strings(items)
         max_item_width = max((len(s) for s in item_strings), default=0)
         width = max(len(self.TITLE) + 4, max_item_width + 2)
 
         console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
+            x=x, y=y, width=width, height=height, title=self.TITLE,
+            clear=True, fg=(255, 255, 255), bg=(0, 0, 0),
         )
 
         if item_strings:
@@ -444,7 +435,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
 
     TITLE = "Character Information"
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
         super().on_render(console)
 
         if self.engine.player.x <= 30:
@@ -536,125 +527,77 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         """Squared Euclidean distance (for sorting, no need for sqrt)."""
         return (tx - px) ** 2 + (ty - py) ** 2
 
-    def on_render(self, console: tcod.Console) -> None:
-        super().on_render(console)
-
-        game_map = self.engine.game_map
+    def _collect_surroundings(self, game_map, px: int, py: int) -> tuple:
+        """Gather visible monsters, corpses, items, and features sorted by distance."""
         visible = game_map.visible
-        px, py = self.engine.player.x, self.engine.player.y
         direction = self._direction
         dist2 = self._dist2
-
-        # Gather visible monsters, sorted by distance.
-        monsters = []
-        for actor in game_map.actors:
-            if actor is self.engine.player:
-                continue
-            if visible[actor.x, actor.y]:
-                monsters.append(
-                    (
-                        dist2(px, py, actor.x, actor.y),
-                        actor.name,
-                        direction(px, py, actor.x, actor.y),
-                    )
-                )
-        monsters.sort()
-
-        # Gather visible corpses, sorted by distance.
-        from entity import Actor
-
-        corpses = []
-        for entity in game_map.entities:
-            if (
-                isinstance(entity, Actor)
-                and not entity.is_alive
-                and visible[entity.x, entity.y]
-            ):
-                corpses.append(
-                    (
-                        dist2(px, py, entity.x, entity.y),
-                        entity.name,
-                        direction(px, py, entity.x, entity.y),
-                    )
-                )
-        corpses.sort()
-
-        # Gather visible items with directions, sorted by distance.
-        items_sorted: list[tuple[int, str, str]] = []
-        for item in game_map.items:
-            if visible[item.x, item.y]:
-                items_sorted.append(
-                    (
-                        dist2(px, py, item.x, item.y),
-                        item.name,
-                        direction(px, py, item.x, item.y),
-                    )
-                )
-        items_sorted.sort()
-
-        # Gather visible features (stairs), sorted by distance.
-        features: list[tuple[int, str]] = []
+        monsters = sorted(
+            (dist2(px, py, a.x, a.y), a.name, direction(px, py, a.x, a.y))
+            for a in game_map.actors
+            if a is not self.engine.player and visible[a.x, a.y]
+        )
+        corpses = sorted(
+            (dist2(px, py, e.x, e.y), e.name, direction(px, py, e.x, e.y))
+            for e in game_map.entities
+            if isinstance(e, Actor) and not e.is_alive and visible[e.x, e.y]
+        )
+        items_sorted = sorted(
+            (dist2(px, py, it.x, it.y), it.name, direction(px, py, it.x, it.y))
+            for it in game_map.items
+            if visible[it.x, it.y]
+        )
+        features: list = []
         sx, sy = game_map.downstairs_location
         if visible[sx, sy]:
-            features.append(
-                (dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}")
-            )
+            features.append((dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}"))
         ux, uy = game_map.upstairs_location
         if (ux, uy) != (0, 0) and visible[ux, uy]:
-            features.append(
-                (dist2(px, py, ux, uy), f"Stairs up {direction(px, py, ux, uy)}")
-            )
+            features.append((dist2(px, py, ux, uy), f"Stairs up {direction(px, py, ux, uy)}"))
         features.sort()
+        return monsters, corpses, items_sorted, features
 
-        # Build lines for display.
+    @staticmethod
+    def _build_display_lines(monsters, corpses, items_sorted, features) -> list:
+        """Build display strings from sorted entity and feature collections."""
         lines: list[str] = []
         if monsters:
             lines.append("Monsters:")
-            for _, name, d in monsters:
-                lines.append(f"  {name} {d}")
+            lines.extend(f"  {name} {d}" for _, name, d in monsters)
         if corpses:
             if lines:
                 lines.append("")
             lines.append("Corpses:")
-            for _, name, d in corpses:
-                lines.append(f"  {name} {d}")
+            lines.extend(f"  {name} {d}" for _, name, d in corpses)
         if items_sorted:
             if lines:
                 lines.append("")
             lines.append("Items:")
-            for _, name, d in items_sorted:
-                lines.append(f"  {name} {d}")
+            lines.extend(f"  {name} {d}" for _, name, d in items_sorted)
         if features:
             if lines:
                 lines.append("")
             lines.append("Features:")
-            for _, feat in features:
-                lines.append(f"  {feat}")
-
+            lines.extend(f"  {feat}" for _, feat in features)
         if not lines:
             lines.append("Nothing of interest.")
+        return lines
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
-
+    def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
+        super().on_render(console)
+        game_map = self.engine.game_map
+        px, py = self.engine.player.x, self.engine.player.y
+        monsters, corpses, items_sorted, features = self._collect_surroundings(game_map, px, py)
+        lines = self._build_display_lines(monsters, corpses, items_sorted, features)
+        x = 40 if self.engine.player.x <= 30 else 0
         y = 0
         height = len(lines) + 2
         max_line_width = max(len(s) for s in lines)
         width = max(len(self.TITLE) + 4, max_line_width + 2)
-
         console.draw_frame(
-            x=x,
-            y=y,
-            width=width,
-            height=height,
-            title=self.TITLE,
-            clear=True,
-            fg=(255, 255, 255),
-            bg=(0, 0, 0),
+            x=x, y=y, width=width, height=height, title=self.TITLE,
+            clear=True, fg=(255, 255, 255), bg=(0, 0, 0),
         )
-
         for i, line in enumerate(lines):
             console.print(x=x + 1, y=y + 1 + i, string=line)
 
@@ -722,11 +665,9 @@ class LevelUpEventHandler(AskUserEventHandler):
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(
-        self, event: tcod.event.MouseButtonDown
+        self, _event: tcod.event.MouseButtonDown
     ) -> Optional[ActionOrHandler]:
-        """
-        Don't allow the player to click to exit the menu, like normal.
-        """
+        """Don't allow the player to click to exit the menu, like normal."""
         return None
 
 
@@ -816,6 +757,40 @@ class QuaffHandler(ListSelectionHandler):
         return item.consumable.get_action(self.engine.player)
 
 
+def _item_type_and_stat_lines(item: "Item") -> list:  # pylint: disable=too-many-branches
+    """Build type label, description, and stat lines common to all item detail views."""
+    lines: list = []
+    if item.equippable:
+        eq_type = item.equippable.equipment_type
+        if eq_type == EquipmentType.WEAPON:
+            lines.append(("Weapon", color.white))
+        elif eq_type == EquipmentType.AMULET:
+            lines.append(("Amulet", color.white))
+        elif eq_type == EquipmentType.THROWN:
+            if item.stackable and item.stack_count > 1:
+                lines.append((f"Thrown weapon (x{item.stack_count})", color.white))
+            else:
+                lines.append(("Thrown weapon", color.white))
+        else:
+            lines.append(("Armor", color.white))
+    elif item.consumable:
+        if item.stackable and item.stack_count > 1:
+            lines.append((f"Consumable (x{item.stack_count})", color.white))
+        else:
+            lines.append(("Consumable", color.white))
+    else:
+        lines.append(("Item", color.white))
+    if item.consumable:
+        for desc_line in item.consumable.get_description():
+            lines.append((desc_line, color.white))
+    if item.equippable:
+        if item.equippable.power_bonus:
+            lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
+        if item.equippable.defense_bonus:
+            lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+    return lines
+
+
 class ItemDetailHandler(AskUserEventHandler):
     """Displays item stats and offers equip/use/throw/drop actions."""
 
@@ -835,49 +810,15 @@ class ItemDetailHandler(AskUserEventHandler):
         # Item name with symbol.
         lines.append((f"{item.char} {item.name}", item.color))
 
-        # Type line.
-        if item.equippable:
-            from equipment_types import EquipmentType
+        # Type, description, and stats.
+        lines.extend(_item_type_and_stat_lines(item))
 
-            if item.equippable.equipment_type == EquipmentType.WEAPON:
-                lines.append(("Weapon", color.white))
-            elif item.equippable.equipment_type == EquipmentType.AMULET:
-                lines.append(("Amulet", color.white))
-            elif item.equippable.equipment_type == EquipmentType.THROWN:
-                if item.stackable and item.stack_count > 1:
-                    lines.append((f"Thrown weapon (x{item.stack_count})", color.white))
-                else:
-                    lines.append(("Thrown weapon", color.white))
+        # Equipped status for non-thrown equippables.
+        if item.equippable and item.equippable.equipment_type != EquipmentType.THROWN:
+            if player.equipment.item_is_equipped(item):
+                lines.append(("Currently equipped", color.safe))
             else:
-                lines.append(("Armor", color.white))
-        elif item.consumable:
-            if item.stackable and item.stack_count > 1:
-                lines.append((f"Consumable (x{item.stack_count})", color.white))
-            else:
-                lines.append(("Consumable", color.white))
-        else:
-            lines.append(("Item", color.white))
-
-        # Description for consumable items.
-        if item.consumable:
-            for desc_line in item.consumable.get_description():
-                lines.append((desc_line, color.white))
-
-        # Stats for equippable items.
-        if item.equippable:
-            if item.equippable.power_bonus:
-                lines.append(
-                    (f"Attack bonus: +{item.equippable.power_bonus}", color.white)
-                )
-            if item.equippable.defense_bonus:
-                lines.append(
-                    (f"Defense bonus: +{item.equippable.defense_bonus}", color.white)
-                )
-            if item.equippable.equipment_type != EquipmentType.THROWN:
-                if player.equipment.item_is_equipped(item):
-                    lines.append(("Currently equipped", color.safe))
-                else:
-                    lines.append(("Not equipped", color.white))
+                lines.append(("Not equipped", color.white))
 
         # Separator.
         lines.append(("", color.white))
@@ -918,38 +859,37 @@ class ItemDetailHandler(AskUserEventHandler):
         for i, (text, fg) in enumerate(lines):
             console.print(x + 1, y + 1 + i, text, fg=fg)
 
+    def _get_equip_action(
+        self, player: "Actor", item: "Item"
+    ) -> Optional[ActionOrHandler]:
+        """Return equip/unequip action, or None for thrown weapons."""
+        if item.equippable.equipment_type == EquipmentType.THROWN:
+            return None
+        return actions.EquipAction(player, item)
+
+    def _get_drop_action(
+        self, player: "Actor", item: "Item"
+    ) -> Optional[ActionOrHandler]:
+        """Return drop-quantity handler for stacks, or drop action for singles."""
+        if item.stackable and item.stack_count > 1:
+            return DropQuantityHandler(self.engine, item)
+        return actions.DropItem(player, item)
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         key = event.sym
         item = self.item
         player = self.engine.player
 
         if key == tcod.event.KeySym.e and item.equippable:
-            from equipment_types import EquipmentType
-
-            if item.equippable.equipment_type == EquipmentType.THROWN:
-                return None  # Can't equip thrown weapons
-            return actions.EquipAction(player, item)
-        elif key == tcod.event.KeySym.a and item.consumable:
+            return self._get_equip_action(player, item)
+        if key == tcod.event.KeySym.a and item.consumable:
             return item.consumable.get_action(player)
-        elif key == tcod.event.KeySym.t:
+        if key == tcod.event.KeySym.t:
             return ThrowTargetHandler(self.engine, item)
-        elif key == tcod.event.KeySym.d:
-            if item.stackable and item.stack_count > 1:
-                return DropQuantityHandler(self.engine, item)
-            return actions.DropItem(player, item)
-        elif key == tcod.event.KeySym.ESCAPE:
+        if key == tcod.event.KeySym.d:
+            return self._get_drop_action(player, item)
+        if key == tcod.event.KeySym.ESCAPE:
             return InventoryActivateHandler(self.engine, cursor=self.inventory_cursor)
-
-        # Ignore other keys — don't exit on random keypresses.
-        if key in {
-            tcod.event.KeySym.LSHIFT,
-            tcod.event.KeySym.RSHIFT,
-            tcod.event.KeySym.LCTRL,
-            tcod.event.KeySym.RCTRL,
-            tcod.event.KeySym.LALT,
-            tcod.event.KeySym.RALT,
-        }:
-            return None
         return None
 
 
@@ -1005,15 +945,14 @@ class DropQuantityHandler(AskUserEventHandler):
             return actions.DropItem(self.engine.player, self.item, count=count)
         if key == tcod.event.KeySym.BACKSPACE:
             self.text = self.text[:-1]
-            return None
-        # Handle digit keys directly (0-9 have ASCII values 48-57).
-        try:
-            c = chr(key)
-            if c.isdigit():
-                self.text += c
-                return None
-        except (ValueError, OverflowError):
-            pass
+        else:
+            # Handle digit keys directly (0-9 have ASCII values 48-57).
+            try:
+                c = chr(key)
+                if c.isdigit():
+                    self.text += c
+            except (ValueError, OverflowError):
+                pass
         return None
 
 
@@ -1041,56 +980,40 @@ class WishItemHandler(ListSelectionHandler):
         return item[1]
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
-        item_id, item_name = item
+        item_id, _ = item
         return actions.WishAction(self.engine.player, self.wand_item, item_id)
+
+
+_DOOR_DIRECTIONS: dict[tuple[int, int], str] = {
+    (0, -1): "north",
+    (0, 1): "south",
+    (-1, 0): "west",
+    (1, 0): "east",
+    (0, 0): "here",
+    (-1, -1): "northwest",
+    (1, -1): "northeast",
+    (-1, 1): "southwest",
+    (1, 1): "southeast",
+}
 
 
 def find_openable_targets(engine: Engine) -> list:
     """Find openable targets (chests, closed doors) in 3x3 area; return (dx, dy, desc, action)."""
-    import tile_types
-
     targets = []
     px, py = engine.player.x, engine.player.y
 
-    # Check 3x3 area around player
     for dx in range(-1, 2):
         for dy in range(-1, 2):
             x, y = px + dx, py + dy
             if not engine.game_map.in_bounds(x, y):
                 continue
 
-            # Check for closed door
             if engine.game_map.tiles[x, y] == tile_types.door_closed:
-                direction = ""
-                if dx == 0 and dy == -1:
-                    direction = "north"
-                elif dx == 0 and dy == 1:
-                    direction = "south"
-                elif dx == -1 and dy == 0:
-                    direction = "west"
-                elif dx == 1 and dy == 0:
-                    direction = "east"
-                elif dx == 0 and dy == 0:
-                    direction = "here"
-                elif dx == -1 and dy == -1:
-                    direction = "northwest"
-                elif dx == 1 and dy == -1:
-                    direction = "northeast"
-                elif dx == -1 and dy == 1:
-                    direction = "southwest"
-                else:
-                    direction = "southeast"
-
+                direction = _DOOR_DIRECTIONS.get((dx, dy), "")
                 targets.append(
-                    (
-                        dx,
-                        dy,
-                        f"Door ({direction})",
-                        actions.OpenDoorAction(engine.player, x, y),
-                    )
+                    (dx, dy, f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y))
                 )
 
-            # Check for openable entities (chests)
             for entity in engine.game_map.entities:
                 if entity.x == x and entity.y == y and hasattr(entity, "open"):
                     direction = "here" if (dx == 0 and dy == 0) else "nearby"
@@ -1121,55 +1044,26 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
         """Execute the open action or method for the selected target."""
         if isinstance(target, Action):
             return target
-        else:
-            # It's an entity with open() method
-            target.open(self.engine.player)
-            return MainGameEventHandler(self.engine)
+        # It's an entity with open() method
+        target.open(self.engine.player)
+        return MainGameEventHandler(self.engine)
 
 
 def find_closeable_doors(engine: Engine) -> list:
     """Find open doors in 3x3 area; return (dx, dy, description, action) tuples."""
-    import tile_types
-
     targets = []
     px, py = engine.player.x, engine.player.y
 
-    # Check 3x3 area around player
     for dx in range(-1, 2):
         for dy in range(-1, 2):
             x, y = px + dx, py + dy
             if not engine.game_map.in_bounds(x, y):
                 continue
 
-            # Check for open door
             if engine.game_map.tiles[x, y] == tile_types.door_open:
-                direction = ""
-                if dx == 0 and dy == -1:
-                    direction = "north"
-                elif dx == 0 and dy == 1:
-                    direction = "south"
-                elif dx == -1 and dy == 0:
-                    direction = "west"
-                elif dx == 1 and dy == 0:
-                    direction = "east"
-                elif dx == 0 and dy == 0:
-                    direction = "here"
-                elif dx == -1 and dy == -1:
-                    direction = "northwest"
-                elif dx == 1 and dy == -1:
-                    direction = "northeast"
-                elif dx == -1 and dy == 1:
-                    direction = "southwest"
-                else:
-                    direction = "southeast"
-
+                direction = _DOOR_DIRECTIONS.get((dx, dy), "")
                 targets.append(
-                    (
-                        dx,
-                        dy,
-                        f"Door ({direction})",
-                        actions.CloseDoorAction(engine.player, x, y),
-                    )
+                    (dx, dy, f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y))
                 )
 
     return targets
@@ -1231,7 +1125,7 @@ class SelectIndexHandler(AskUserEventHandler):
             y = max(0, min(y, self.engine.game_map.height - 1))
             self.engine.mouse_location = x, y
             return None
-        elif key in CONFIRM_KEYS:
+        if key in CONFIRM_KEYS:
             return self.on_index_selected(*self.engine.mouse_location)
         return super().ev_keydown(event)
 
@@ -1276,8 +1170,7 @@ class LookHandler(SelectIndexHandler):
             if items_here:
                 if len(items_here) == 1:
                     return FloorItemDetailHandler(self.engine, items_here[0], x, y)
-                else:
-                    return FloorItemListHandler(self.engine, items_here, x, y)
+                return FloorItemListHandler(self.engine, items_here, x, y)
 
         return MainGameEventHandler(self.engine)
 
@@ -1397,44 +1290,8 @@ class FloorItemDetailHandler(AskUserEventHandler):
         # Item name with symbol.
         lines.append((f"{item.char} {item.name}", item.color))
 
-        # Type line.
-        if item.equippable:
-            from equipment_types import EquipmentType
-
-            if item.equippable.equipment_type == EquipmentType.WEAPON:
-                lines.append(("Weapon", color.white))
-            elif item.equippable.equipment_type == EquipmentType.AMULET:
-                lines.append(("Amulet", color.white))
-            elif item.equippable.equipment_type == EquipmentType.THROWN:
-                if item.stackable and item.stack_count > 1:
-                    lines.append((f"Thrown weapon (x{item.stack_count})", color.white))
-                else:
-                    lines.append(("Thrown weapon", color.white))
-            else:
-                lines.append(("Armor", color.white))
-        elif item.consumable:
-            if item.stackable and item.stack_count > 1:
-                lines.append((f"Consumable (x{item.stack_count})", color.white))
-            else:
-                lines.append(("Consumable", color.white))
-        else:
-            lines.append(("Item", color.white))
-
-        # Description for consumable items.
-        if item.consumable:
-            for desc_line in item.consumable.get_description():
-                lines.append((desc_line, color.white))
-
-        # Stats for equippable items.
-        if item.equippable:
-            if item.equippable.power_bonus:
-                lines.append(
-                    (f"Attack bonus: +{item.equippable.power_bonus}", color.white)
-                )
-            if item.equippable.defense_bonus:
-                lines.append(
-                    (f"Defense bonus: +{item.equippable.defense_bonus}", color.white)
-                )
+        # Type, description, and stats.
+        lines.extend(_item_type_and_stat_lines(item))
 
         lines.append(("", color.white))
         lines.append(("(Esc) Back", color.white))
@@ -1480,6 +1337,8 @@ class FloorItemDetailHandler(AskUserEventHandler):
 
 
 class WalkChoiceHandler(SelectIndexHandler):
+    """Lets the player click or cursor-select a destination tile to walk to."""
+
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         game_map = self.engine.game_map
 
@@ -1526,7 +1385,10 @@ class SingleRangedAttackHandler(SelectIndexHandler):
 
 
 class AreaRangedAttackHandler(SelectIndexHandler):
-    """Handles targeting an area within a given radius. Any entity within the area will be affected."""
+    """Handles targeting an area within a given radius.
+
+    Any entity within the area will be affected.
+    """
 
     def __init__(
         self,
@@ -1560,10 +1422,12 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
 
 class MainGameEventHandler(EventHandler):
-    def __init__(self, engine: Engine):
-        super().__init__(engine)
+    """Primary gameplay handler that maps keypresses to game actions."""
 
-    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+    def ev_keydown(  # pylint: disable=too-many-return-statements,too-many-branches,too-many-statements
+        self, event: tcod.event.KeyDown
+    ) -> Optional[ActionOrHandler]:
+        """Dispatch keypresses to movement, item, and menu actions."""
         action: Optional[Action] = None
 
         key = event.sym
@@ -1628,9 +1492,9 @@ class MainGameEventHandler(EventHandler):
                     "There is nothing here to open.", color.impossible
                 )
                 return None
-            elif len(targets) == 1:
+            if len(targets) == 1:
                 # Only one target, open it directly
-                dx, dy, description, target = targets[0]
+                *_, target = targets[0]
                 if isinstance(target, Action):
                     action = target
                 else:
@@ -1652,13 +1516,12 @@ class MainGameEventHandler(EventHandler):
                     "There are no open doors nearby.", color.impossible
                 )
                 return None
-            elif len(targets) == 1:
+            if len(targets) == 1:
                 # Only one target, close it directly
-                dx, dy, description, action = targets[0]
+                *_, action = targets[0]
                 return action
-            else:
-                # Multiple targets, show selection menu
-                return CloseableSelectionHandler(self.engine, targets)
+            # Multiple targets, show selection menu
+            return CloseableSelectionHandler(self.engine, targets)
         elif is_shifted(event, tcod.event.KeySym.v):
             return ViewSurroundingsHandler(self.engine)
         elif key == tcod.event.KeySym.v:
@@ -1676,13 +1539,15 @@ class MainGameEventHandler(EventHandler):
 
 
 class GameOverEventHandler(EventHandler):
+    """Handles input on the game-over screen (shows kill stats, return to menu)."""
+
     def on_quit(self) -> None:
         """Handle exiting out of a finished game."""
         if os.path.exists("savegame.sav"):
             os.remove("savegame.sav")  # Deletes the active save file.
         raise exceptions.QuitWithoutSaving()  # Avoid saving a finished game.
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
         super().on_render(console)
 
         kills = self.engine.kill_counts
@@ -1731,10 +1596,11 @@ class GameOverEventHandler(EventHandler):
         self.on_quit()
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
+        """Return to main menu on Enter, or quit on Escape."""
         if event.sym in CONFIRM_KEYS:
             if os.path.exists("savegame.sav"):
                 os.remove("savegame.sav")
-            import setup_game
+            import setup_game  # pylint: disable=import-outside-toplevel
 
             return setup_game.MainMenu()
         if event.sym == tcod.event.KeySym.ESCAPE:
@@ -1781,6 +1647,7 @@ class HistoryViewer(EventHandler):
         log_console.blit(console, 3, 3)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[MainGameEventHandler]:
+        """Scroll message log; any other key returns to the main game."""
         # Fancy conditional movement to make it feel right.
         if event.sym in CURSOR_Y_KEYS:
             adjust = CURSOR_Y_KEYS[event.sym]
@@ -1951,4 +1818,4 @@ class ThrowTargetHandler(SelectIndexHandler):
 
 
 # Import at end, to avoid circular dependency.
-from debug import DebugHandler
+from debug import DebugHandler  # pylint: disable=wrong-import-position

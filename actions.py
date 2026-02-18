@@ -728,8 +728,9 @@ class ThrowAction(Action):
         if not thrown_item.stackable:
             return
         for entity in list(game_map.entities):
-            if (entity is not thrown_item
-                    and hasattr(entity, "stackable")
+            if entity is thrown_item:
+                continue
+            if (hasattr(entity, "stackable")
                     and entity.stackable
                     and entity.name == thrown_item.name
                     and entity.x == final_x
