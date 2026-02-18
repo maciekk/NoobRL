@@ -136,6 +136,12 @@ _EFFECT_DEFS = [
             "sfx/771164__steprock__treasure-chest-open.mp3",
         ],
     ),
+    (
+        "breaks",
+        [
+            "sfx/41348__datasoundsample__glass-shatter.wav",
+        ],
+    ),
 ]
 
 # Populated by init(); None means audio is unavailable.
