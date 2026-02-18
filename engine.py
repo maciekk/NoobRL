@@ -50,8 +50,8 @@ class Engine:
 
     def update_fov(self) -> None:
         """Recompute the visible area based on the players point of view."""
-        if self.player.is_asleep:
-            # Asleep player sees nothing
+        if self.player.is_asleep or self.player.is_blind:
+            # Asleep or blind player sees nothing
             self.game_map.visible[:] = False
         else:
             self.game_map.visible[:] = compute_fov(

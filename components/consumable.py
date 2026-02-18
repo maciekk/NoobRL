@@ -14,6 +14,7 @@ from components.effect import (
     SpeedEffect,
     DetectMonsterEffect,
     SleepEffect,
+    BlindnessEffect,
 )
 import components.inventory
 from components.base_component import BaseComponent
@@ -414,3 +415,25 @@ class BombConsumable(Consumable):
                 "The bomb explodes, but no one is caught in the blast!",
                 color.white,
             )
+
+
+class BlindnessConsumable(Consumable):
+    """Blinds the consumer for a set duration."""
+
+    def __init__(self, duration: int):
+        self.duration = duration
+
+    def get_description(self) -> list[str]:
+        return [f"Blinds for {self.duration} turns"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        eff = BlindnessEffect(engine=self.engine, duration=self.duration)
+        consumer.effects.append(eff)
+        eff.parent = consumer
+        self.engine.message_log.add_message(
+            "You are blinded!",
+            color.status_effect_applied,
+        )
+        eff.activate()
+        self.consume()

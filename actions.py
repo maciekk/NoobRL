@@ -695,6 +695,19 @@ class ThrowAction(Action):
             eff.activate()
             return
 
+        # Handle blindness potions
+        if consumable.__class__.__name__ == "BlindnessConsumable":
+            from components.effect import BlindnessEffect
+            self.engine.message_log.add_message(
+                f"The {target.name} is blinded!",
+                color.status_effect_applied,
+            )
+            eff = BlindnessEffect(engine=self.engine, duration=consumable.duration)
+            target.effects.append(eff)
+            eff.parent = target
+            eff.activate()
+            return
+
         # For other consumables, just log that the effect was applied
         self.engine.message_log.add_message(
             f"The {target.name} is affected by the {item.name}!",

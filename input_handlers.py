@@ -1302,9 +1302,9 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append((f"Attack: {actor.fighter.power}", color.white))
         lines.append((f"Defense: {actor.fighter.defense}", color.white))
         lines.append((f"XP: {actor.level.xp_given}", color.white))
-        if actor.is_asleep:
-            lines.append(("Asleep", color.safe))
-        elif actor.noticed_player:
+        for eff in actor.effects:
+            lines.append((f"{eff.name} ({eff.turns_left}t)", color.risky))
+        if actor.noticed_player:
             ai = actor.ai
             if hasattr(ai, "last_known_target") and ai.last_known_target:
                 lines.append(("Hunting", color.dangerous))

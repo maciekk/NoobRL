@@ -137,3 +137,29 @@ class SleepEffect(TimedEffect):
             self.engine.message_log.add_message(
                 f"The {self.parent.name} wakes up!", (0xFF, 0xFF, 0xFF)
             )
+
+
+class BlindnessEffect(TimedEffect):
+    """Blinds the actor, preventing them from seeing."""
+
+    def __init__(self, engine: Engine, duration: int):
+        super().__init__(engine)
+        self.max_turns = duration
+        self.name = "Blindness"
+
+    def activate(self):
+        super().activate()
+        self.parent.is_blind = True
+
+    def expire(self):
+        super().expire()
+        self.parent.is_blind = False
+        self.parent.effects.remove(self)
+        if self.parent is self.engine.player:
+            self.engine.message_log.add_message(
+                "You can see again!", (0xFF, 0xFF, 0xFF)
+            )
+        else:
+            self.engine.message_log.add_message(
+                f"The {self.parent.name} can see again!", (0xFF, 0xFF, 0xFF)
+            )

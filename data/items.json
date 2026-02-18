@@ -219,5 +219,15 @@
       "radius": 1
     },
     "stack_count": 3
+  },
+  {
+    "id": "p_blindness",
+    "name": "Potion of Blindness",
+    "char": "!",
+    "color": [0, 0, 0],
+    "consumable": {
+      "name": "BlindnessConsumable",
+      "duration": 10
+    }
   }
 ]

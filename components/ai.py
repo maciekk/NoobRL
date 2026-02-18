@@ -153,8 +153,13 @@ class HostileEnemy(BaseAI):
             pass
 
     def perform(self) -> None:
-        # Asleep entities don't act
+        # Asleep or blind entities don't act
         if self.entity.is_asleep:
+            return
+
+        if self.entity.is_blind:
+            # Blind entities wander randomly
+            self._wander_randomly()
             return
 
         target = self.engine.player
