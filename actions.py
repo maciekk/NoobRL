@@ -618,6 +618,78 @@ class ThrowAction(Action):
                 return max(1, item.equippable.power_bonus // 2)
         return 1
 
+    def _apply_consumable_effect(self, item: Item, target: Actor) -> None:
+        """Apply a thrown consumable's effect to a target actor."""
+        consumable = item.consumable
+
+        # Handle healing potions
+        if consumable.__class__.__name__ == "HealingConsumable":
+            amount_recovered = target.fighter.heal(consumable.amount)
+            if amount_recovered > 0:
+                self.engine.message_log.add_message(
+                    f"The {target.name} recovers {amount_recovered} HP!",
+                    color.health_recovered,
+                )
+            return
+
+        # Handle sleep potions
+        if consumable.__class__.__name__ == "SleepConsumable":
+            from components.effect import SleepEffect
+            self.engine.message_log.add_message(
+                f"The {target.name} falls asleep!",
+                color.status_effect_applied,
+            )
+            eff = SleepEffect(engine=self.engine, duration=consumable.number_of_turns)
+            target.effects.append(eff)
+            eff.parent = target
+            eff.activate()
+            return
+
+        # Handle speed potions
+        if consumable.__class__.__name__ == "SpeedConsumable":
+            from components.effect import SpeedEffect
+            self.engine.message_log.add_message(
+                f"The {target.name} feels themselves moving faster!",
+                color.status_effect_applied,
+            )
+            eff = SpeedEffect(engine=self.engine, duration=consumable.duration)
+            target.effects.append(eff)
+            eff.parent = target
+            eff.activate()
+            return
+
+        # Handle invisibility potions
+        if consumable.__class__.__name__ == "InvisibilityConsumable":
+            from components.effect import InvisibilityEffect
+            self.engine.message_log.add_message(
+                f"The {target.name} fades from sight!",
+                color.status_effect_applied,
+            )
+            eff = InvisibilityEffect(engine=self.engine, duration=consumable.duration)
+            target.effects.append(eff)
+            eff.parent = target
+            eff.activate()
+            return
+
+        # Handle rage potions
+        if consumable.__class__.__name__ == "RageConsumable":
+            from components.effect import RageEffect
+            self.engine.message_log.add_message(
+                f"The {target.name} is filled with rage!",
+                color.damage_increased,
+            )
+            eff = RageEffect(engine=self.engine, dmg_mult=consumable.amount, duration=10)
+            target.effects.append(eff)
+            eff.parent = target
+            eff.activate()
+            return
+
+        # For other consumables, just log that the effect was applied
+        self.engine.message_log.add_message(
+            f"The {target.name} is affected by the {item.name}!",
+            color.status_effect_applied,
+        )
+
     def perform(self) -> None:
         game_map = self.engine.game_map
         sx, sy = self.entity.x, self.entity.y
@@ -666,14 +738,34 @@ class ThrowAction(Action):
 
         # Deal damage if we hit an actor.
         if hit_actor:
-            damage = self._compute_damage(thrown_item)
-            self.engine.message_log.add_message(
-                f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
-                color.player_atk,
-            )
-            hit_actor.fighter.hp -= damage
+            # If it's a consumable potion, apply the effect instead of just damage
+            if thrown_item.consumable:
+                self.engine.message_log.add_message(
+                    f"The {thrown_item.name} hits the {hit_actor.name} and breaks!",
+                    color.player_atk,
+                )
+                # Apply the consumable effect to the hit actor
+                self._apply_consumable_effect(thrown_item, hit_actor)
+                # Don't place the potion on the ground; it was consumed
+                return
+            else:
+                # Regular damage for non-consumable items
+                damage = self._compute_damage(thrown_item)
+                self.engine.message_log.add_message(
+                    f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
+                    color.player_atk,
+                )
+                hit_actor.fighter.take_damage(damage)
+        elif not game_map.tiles["walkable"][final_x, final_y]:
+            # Hit a wall - potion breaks with no effect
+            if thrown_item.consumable:
+                self.engine.message_log.add_message(
+                    f"The {thrown_item.name} breaks against the wall!",
+                    color.white,
+                )
+                return
 
-        # Place item on the floor at final position.
+        # Place item on the floor at final position (if not consumed or broken).
         thrown_item.place(final_x, final_y, game_map)
 
         # Merge with existing floor stack if applicable.

@@ -51,7 +51,7 @@ Ideas & efforts under way.
 
 ### Interesting Mechanics
 - [x] allow item throwing (e.g., dart, potion)
-    - [ ] thrown potions shatter, convey their benefit to any actor in that square `#next`
+    - [x] thrown potions shatter, convey their benefit to any actor in that square `#next`
 - [ ] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] item weights and maximum carry weight
