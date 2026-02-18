@@ -7,6 +7,7 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import color
 import tile_types
+from exceptions import Impossible
 from actions import (
     Action,
     BumpAction,
@@ -130,6 +131,14 @@ class HostileEnemy(BaseAI):
         self.path: List[Tuple[int, int]] = []
         self.last_known_target: Optional[Tuple[int, int]] = None
 
+    def _try_wizard_door(self, dest_x: int, dest_y: int) -> bool:
+        """Open a door if this is a Wizard and the destination is a closed door."""
+        if (self.entity.name == "Wizard"
+                and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed):
+            OpenDoorAction(self.entity, dest_x, dest_y).perform()
+            return True
+        return False
+
     def _wander_randomly(self) -> None:
         """Move in a random direction (Brownian motion). Just moves; doesn't attack."""
         direction_x, direction_y = random.choice(
@@ -146,7 +155,7 @@ class HostileEnemy(BaseAI):
         )
         try:
             MovementAction(self.entity, direction_x, direction_y).perform()
-        except Exception:
+        except Impossible:
             # Blocked by wall, entity, or out of bounds: simply don't move
             pass
 
@@ -174,7 +183,10 @@ class HostileEnemy(BaseAI):
                 self.entity.noticed_player = True
                 spotted_messages = {
                     "Dragon": ("You have been spotted by a dragon!", color.dragon_roar),
-                    "Ender Dragon": ("You have been spotted by an ender dragon!", color.dragon_roar_end),
+                    "Ender Dragon": (
+                        "You have been spotted by an ender dragon!",
+                        color.dragon_roar_end,
+                    ),
                     "Hydra": ("You have been spotted by a hydra!", color.hydra_roar),
                 }
                 if self.entity.name in spotted_messages:
@@ -201,13 +213,8 @@ class HostileEnemy(BaseAI):
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)
-
-            # Wizards can open doors
-            if self.entity.name == "Wizard":
-                if self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed:
-                    OpenDoorAction(self.entity, dest_x, dest_y).perform()
-                    return
-
+            if self._try_wizard_door(dest_x, dest_y):
+                return
             MovementAction(
                 self.entity,
                 dest_x - self.entity.x,

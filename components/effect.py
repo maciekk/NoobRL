@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
+    from engine import Engine
     from entity import Actor
 
 
@@ -14,28 +15,28 @@ class TimedEffect(BaseComponent):
     """Base class for temporary effects that tick down each turn and can expire."""
     parent: Actor
 
-    def __init__(self, engine: Engine):
+    def __init__(self, engine: "Engine"):  # pylint: disable=unused-argument
         self.max_turns = 0
         self.turns_left = 0
         self.name = "<unknown>"
 
     def activate(self) -> None:
+        """Start the effect by setting the remaining turns to the maximum."""
         self.turns_left = self.max_turns
 
-    def apply_turn(self):
+    def apply_turn(self) -> None:
         """Decrement duration and expire when time runs out."""
         self.turns_left -= 1
         if self.turns_left <= 0:
             self.expire()
 
-    def expire(self):
+    def expire(self) -> None:
         """Called when the effect's duration expires; can be overridden for cleanup."""
-        pass
 
 
 class RageEffect(TimedEffect):
     """Increases damage output for a limited duration."""
-    def __init__(self, engine: Engine, dmg_mult: float, duration: int):
+    def __init__(self, engine: "Engine", dmg_mult: float, duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.dmg_mult = dmg_mult
@@ -56,7 +57,7 @@ class RageEffect(TimedEffect):
 class InvisibilityEffect(TimedEffect):
     """Makes the actor invisible to enemies while active."""
 
-    def __init__(self, engine: Engine, duration: int):
+    def __init__(self, engine: "Engine", duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.name = "Invisible"
@@ -74,7 +75,7 @@ class InvisibilityEffect(TimedEffect):
 class SpeedEffect(TimedEffect):
     """Doubles the actor's movement and action speed."""
 
-    def __init__(self, engine: Engine, duration: int):
+    def __init__(self, engine: "Engine", duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.name = "Haste"
@@ -95,7 +96,7 @@ class SpeedEffect(TimedEffect):
 class DetectMonsterEffect(TimedEffect):
     """Reveals the location of all monsters on the map."""
 
-    def __init__(self, engine: Engine, duration: int):
+    def __init__(self, engine: "Engine", duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.name = "Detect Monster"
@@ -116,7 +117,7 @@ class DetectMonsterEffect(TimedEffect):
 class SleepEffect(TimedEffect):
     """Puts the actor to sleep for a duration; wakes up if attacked."""
 
-    def __init__(self, engine: Engine, duration: int):
+    def __init__(self, engine: "Engine", duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.name = "Sleep"
@@ -142,7 +143,7 @@ class SleepEffect(TimedEffect):
 class BlindnessEffect(TimedEffect):
     """Blinds the actor, preventing them from seeing."""
 
-    def __init__(self, engine: Engine, duration: int):
+    def __init__(self, engine: "Engine", duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.name = "Blindness"

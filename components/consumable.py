@@ -1,10 +1,11 @@
 """Component that defines consumable item abilities."""
+# pylint: disable=fixme
 
 from __future__ import annotations
 
 import random
 from typing import Optional, TYPE_CHECKING
-import numpy as np
+import numpy as np  # pylint: disable=import-error
 import actions
 import color
 import components.ai
@@ -53,13 +54,13 @@ class Consumable(BaseComponent):
                 inventory.items.remove(entity)
 
 
-class WishingWandConsumable(Consumable):
+class WishingWandConsumable(Consumable):  # pylint: disable=abstract-method
     """A wand that grants any single wish-able item."""
     def get_description(self) -> list[str]:
         return ["Grants a wish for any item"]
 
-    def get_action(self, consumer: Actor) -> WishItemHandler:
-        from input_handlers import WishItemHandler  # local to avoid circular import
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        from input_handlers import WishItemHandler  # pylint: disable=import-outside-toplevel
         self.engine.message_log.add_message("What do you wish for?", color.needs_target)
         return WishItemHandler(self.engine, self.parent)
 
@@ -73,8 +74,8 @@ class ConfusionConsumable(Consumable):
     def get_description(self) -> list[str]:
         return [f"Confuses target for {self.number_of_turns} turns"]
 
-    def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
-        from input_handlers import SingleRangedAttackHandler  # local to avoid circular import
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        from input_handlers import SingleRangedAttackHandler  # pylint: disable=import-outside-toplevel
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
@@ -237,8 +238,8 @@ class FireballDamageConsumable(Consumable):
     def get_description(self) -> list[str]:
         return [f"Deals {self.damage} damage in radius {self.radius}"]
 
-    def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
-        from input_handlers import AreaRangedAttackHandler  # local to avoid circular import
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        from input_handlers import AreaRangedAttackHandler  # pylint: disable=import-outside-toplevel
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
@@ -258,7 +259,8 @@ class FireballDamageConsumable(Consumable):
         for actor in self.engine.game_map.actors:
             if actor.distance(*target_xy) <= self.radius:
                 self.engine.message_log.add_message(
-                    f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage!"
+                    f"The {actor.name} is engulfed in a fiery explosion,"
+                    f" taking {self.damage} damage!"
                 )
                 actor.fighter.take_damage(self.damage)
                 targets_hit = True
@@ -387,7 +389,7 @@ class SleepConsumable(Consumable):
         self.consume()
 
 
-class BombConsumable(Consumable):
+class BombConsumable(Consumable):  # pylint: disable=abstract-method
     """Explodes in an area when thrown, dealing damage in a radius."""
 
     def __init__(self, damage: int, radius: int):
