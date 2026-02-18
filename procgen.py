@@ -166,7 +166,17 @@ def place_entities(
                     f"(floor {floor_number}, room at {room.x1},{room.y1})"
                 )
                 continue
-            entity.spawn(dungeon, x, y)
+            spawned = entity.spawn(dungeon, x, y)
+
+            # 40% chance for monsters to spawn asleep
+            if entity in monsters and random.random() < 0.40:
+                from entity import Actor
+                from components.effect import SleepEffect
+                if isinstance(spawned, Actor):
+                    eff = SleepEffect(engine=dungeon.engine, duration=999)
+                    spawned.effects.append(eff)
+                    eff.parent = spawned
+                    eff.activate()
 
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:

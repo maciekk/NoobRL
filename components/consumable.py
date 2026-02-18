@@ -13,6 +13,7 @@ from components.effect import (
     RageEffect,
     SpeedEffect,
     DetectMonsterEffect,
+    SleepEffect,
 )
 import components.inventory
 from components.base_component import BaseComponent
@@ -360,5 +361,45 @@ class DetectMonsterConsumable(Consumable):
             "You sense the presence of monsters!",
             color.status_effect_applied,
         )
+        eff.activate()
+        self.consume()
+
+
+class SleepConsumable(Consumable):
+    """Puts a target to sleep for a set number of turns."""
+
+    def __init__(self, number_of_turns: int):
+        self.number_of_turns = number_of_turns
+
+    def get_description(self) -> list[str]:
+        return [f"Puts target to sleep for {self.number_of_turns} turns"]
+
+    def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
+        self.engine.message_log.add_message(
+            "Select a target to put to sleep.", color.needs_target
+        )
+        return SingleRangedAttackHandler(
+            self.engine,
+            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
+        )
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        target = action.target_actor
+
+        if not self.engine.game_map.visible[action.target_xy]:
+            raise Impossible("You cannot target an area that you cannot see.")
+        if not target:
+            raise Impossible("You must select an enemy to target.")
+        if target is consumer:
+            raise Impossible("You cannot put yourself to sleep!")
+
+        self.engine.message_log.add_message(
+            f"The {target.name} falls asleep!",
+            color.status_effect_applied,
+        )
+        eff = SleepEffect(engine=self.engine, duration=self.number_of_turns)
+        target.effects.append(eff)
+        eff.parent = target
         eff.activate()
         self.consume()

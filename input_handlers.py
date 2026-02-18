@@ -1302,7 +1302,9 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append((f"Attack: {actor.fighter.power}", color.white))
         lines.append((f"Defense: {actor.fighter.defense}", color.white))
         lines.append((f"XP: {actor.level.xp_given}", color.white))
-        if actor.noticed_player:
+        if actor.is_asleep:
+            lines.append(("Asleep", color.safe))
+        elif actor.noticed_player:
             ai = actor.ai
             if hasattr(ai, "last_known_target") and ai.last_known_target:
                 lines.append(("Hunting", color.dangerous))
@@ -1568,6 +1570,19 @@ class MainGameEventHandler(EventHandler):
         modifier = event.mod
 
         player = self.engine.player
+
+        # Player cannot act while asleep
+        if player.is_asleep and key not in {
+            tcod.event.KeySym.ESCAPE,
+            tcod.event.KeySym.LSHIFT,
+            tcod.event.KeySym.RSHIFT,
+            tcod.event.KeySym.LCTRL,
+            tcod.event.KeySym.RCTRL,
+            tcod.event.KeySym.LALT,
+            tcod.event.KeySym.RALT,
+        }:
+            self.engine.message_log.add_message("You cannot act while asleep!")
+            return None
 
         if is_shifted(event, tcod.event.KeySym.PERIOD):
             return actions.TakeStairsAction(player)

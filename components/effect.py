@@ -111,3 +111,29 @@ class DetectMonsterEffect(TimedEffect):
         self.engine.message_log.add_message(
             "Your monster sense fades.", (0x80, 0x80, 0x80)
         )
+
+
+class SleepEffect(TimedEffect):
+    """Puts the actor to sleep for a duration; wakes up if attacked."""
+
+    def __init__(self, engine: Engine, duration: int):
+        super().__init__(engine)
+        self.max_turns = duration
+        self.name = "Sleep"
+
+    def activate(self):
+        super().activate()
+        self.parent.is_asleep = True
+
+    def expire(self):
+        super().expire()
+        self.parent.is_asleep = False
+        self.parent.effects.remove(self)
+        if self.parent is self.engine.player:
+            self.engine.message_log.add_message(
+                "You wake up!", (0xFF, 0xFF, 0xFF)
+            )
+        else:
+            self.engine.message_log.add_message(
+                f"The {self.parent.name} wakes up!", (0xFF, 0xFF, 0xFF)
+            )

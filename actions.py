@@ -328,7 +328,7 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} for {damage} hit points" f"{crit_text}.",
                 attack_color,
             )
-            target.fighter.hp -= damage
+            target.fighter.take_damage(damage)
         else:
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.",
@@ -357,7 +357,7 @@ class RangedAttackAction(ActionWithDirection):
                 f"{attack_desc} for {damage} hit points." f"{crit_text}",
                 attack_color,
             )
-            target.fighter.hp -= damage
+            target.fighter.take_damage(damage)
         else:
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.",

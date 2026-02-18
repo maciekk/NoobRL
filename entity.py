@@ -43,6 +43,7 @@ CONSUMABLE_MAP = {
     "InvisibilityConsumable": consumable.InvisibilityConsumable,
     "SpeedConsumable": consumable.SpeedConsumable,
     "DetectMonsterConsumable": consumable.DetectMonsterConsumable,
+    "SleepConsumable": consumable.SleepConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,
@@ -214,6 +215,7 @@ class Actor(Entity):
 
         self.noticed_player = False
         self.is_invisible = False
+        self.is_asleep = False
         self.base_speed = base_speed
         self.attack_range = attack_range
         self.ranged_attack = ranged_attack

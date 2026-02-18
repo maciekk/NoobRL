@@ -43,6 +43,10 @@ class ConfusedEnemy(BaseAI):
         self.turns_remaining = turns_remaining
 
     def perform(self) -> None:
+        # Asleep entities don't act even if confused
+        if self.entity.is_asleep:
+            return
+
         # Revert the AI back to the original state if the effect has run its course.
         if self.turns_remaining <= 0:
             self.engine.message_log.add_message(
@@ -149,6 +153,10 @@ class HostileEnemy(BaseAI):
             pass
 
     def perform(self) -> None:
+        # Asleep entities don't act
+        if self.entity.is_asleep:
+            return
+
         target = self.engine.player
         dx = target.x - self.entity.x
         dy = target.y - self.entity.y

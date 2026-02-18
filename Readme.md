@@ -73,7 +73,7 @@ Ideas & efforts under way.
 ### Monsters
 - [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs
 - [ ] monsters should have different visibility ranges, some shorter than player's
-- [ ] allow monsters to be asleep, fall asleep
+- [x] allow monsters to be asleep, fall asleep
 - [x] monsters not asleep should have Brownian motion
 - [ ] certain monsters should patrol the corridors (more guard-like races)
 - [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
@@ -98,7 +98,7 @@ Ideas & efforts under way.
 
 ### Items (Potions, Scrolls, Powers, etc)
 - [x] add: amulet & potion of detect monster `#next`
-- [ ] add: Potion of Sleep `#next`
+- [x] add: Potion of Sleep `#next`
 - [ ] add: Potion of Blindness `#next`
 - [ ] add: Scroll of Identify (blocked: anonymized item names)
 - [ ] add: Potion of Berserk - 50% more damage for 10 turns

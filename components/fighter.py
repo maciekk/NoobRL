@@ -131,4 +131,17 @@ class Fighter(BaseComponent):
 
     def take_damage(self, amount: int) -> None:
         """Reduce HP by the given amount (triggers death at 0 HP)."""
+        # Wake up if asleep
+        if self.parent.is_asleep:
+            self.parent.is_asleep = False
+            # Remove sleep effect
+            sleep_effects = [eff for eff in self.parent.effects if hasattr(eff, 'name') and eff.name == "Sleep"]
+            for eff in sleep_effects:
+                self.parent.effects.remove(eff)
+            # Print wake-up message
+            if self.parent is self.engine.player:
+                self.engine.message_log.add_message("You wake up from the attack!", color.white)
+            else:
+                self.engine.message_log.add_message(f"The {self.parent.name} wakes up!", color.white)
+
         self.hp -= amount

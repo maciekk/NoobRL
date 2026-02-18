@@ -197,5 +197,15 @@
     "equippable": {
       "name": "AmuletOfDetectMonster"
     }
+  },
+  {
+    "id": "p_sleep",
+    "name": "Potion of Sleep",
+    "char": "!",
+    "color": [100, 150, 200],
+    "consumable": {
+      "name": "SleepConsumable",
+      "number_of_turns": 5
+    }
   }
 ]
