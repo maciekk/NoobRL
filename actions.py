@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import math
 import random
 from typing import Optional, Tuple, TYPE_CHECKING
@@ -9,6 +10,14 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import tcod
 
 import color
+from components.effect import (
+    BlindnessEffect,
+    InvisibilityEffect,
+    RageEffect,
+    SleepEffect,
+    SpeedEffect,
+)
+from equipment_types import EquipmentType
 import exceptions
 import options
 import tile_types
@@ -609,16 +618,16 @@ class ThrowAction(Action):
         self.target_xy = target_xy
 
     def _compute_damage(self, item: Item) -> int:
-        from equipment_types import EquipmentType
-
         if item.equippable:
             if item.equippable.equipment_type == EquipmentType.THROWN:
                 return item.equippable.power_bonus
-            elif item.equippable.equipment_type == EquipmentType.WEAPON:
+            if item.equippable.equipment_type == EquipmentType.WEAPON:
                 return max(1, item.equippable.power_bonus // 2)
         return 1
 
-    def _apply_consumable_effect(self, item: Item, target: Actor = None, x: int = None, y: int = None) -> None:
+    def _apply_consumable_effect(
+        self, item: Item, target: Actor = None, x: int = None, y: int = None
+    ) -> None:
         """Apply a thrown consumable's effect to a target actor or at a location."""
         consumable = item.consumable
 
@@ -645,7 +654,6 @@ class ThrowAction(Action):
 
         # Handle sleep potions
         if consumable.__class__.__name__ == "SleepConsumable":
-            from components.effect import SleepEffect
             self.engine.message_log.add_message(
                 f"The {target.name} falls asleep!",
                 color.status_effect_applied,
@@ -658,7 +666,6 @@ class ThrowAction(Action):
 
         # Handle speed potions
         if consumable.__class__.__name__ == "SpeedConsumable":
-            from components.effect import SpeedEffect
             self.engine.message_log.add_message(
                 f"The {target.name} feels themselves moving faster!",
                 color.status_effect_applied,
@@ -671,7 +678,6 @@ class ThrowAction(Action):
 
         # Handle invisibility potions
         if consumable.__class__.__name__ == "InvisibilityConsumable":
-            from components.effect import InvisibilityEffect
             self.engine.message_log.add_message(
                 f"The {target.name} fades from sight!",
                 color.status_effect_applied,
@@ -684,7 +690,6 @@ class ThrowAction(Action):
 
         # Handle rage potions
         if consumable.__class__.__name__ == "RageConsumable":
-            from components.effect import RageEffect
             self.engine.message_log.add_message(
                 f"The {target.name} is filled with rage!",
                 color.damage_increased,
@@ -697,7 +702,6 @@ class ThrowAction(Action):
 
         # Handle blindness potions
         if consumable.__class__.__name__ == "BlindnessConsumable":
-            from components.effect import BlindnessEffect
             self.engine.message_log.add_message(
                 f"The {target.name} is blinded!",
                 color.status_effect_applied,
@@ -744,11 +748,9 @@ class ThrowAction(Action):
             final_x, final_y = lx, ly
 
         # Remove one item from inventory.
-        import copy as _copy
-
         if self.item.stackable and self.item.stack_count > 1:
             self.item.stack_count -= 1
-            thrown_item = _copy.deepcopy(self.item)
+            thrown_item = copy.deepcopy(self.item)
             thrown_item.stack_count = 1
         else:
             if self.item in self.entity.inventory.items:
@@ -774,14 +776,13 @@ class ThrowAction(Action):
                 self._apply_consumable_effect(thrown_item, hit_actor)
                 # Don't place the potion on the ground; it was consumed
                 return
-            else:
-                # Regular damage for non-consumable items
-                damage = self._compute_damage(thrown_item)
-                self.engine.message_log.add_message(
-                    f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
-                    color.player_atk,
-                )
-                hit_actor.fighter.take_damage(damage)
+            # Regular damage for non-consumable items
+            damage = self._compute_damage(thrown_item)
+            self.engine.message_log.add_message(
+                f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
+                color.player_atk,
+            )
+            hit_actor.fighter.take_damage(damage)
         elif not game_map.tiles["walkable"][final_x, final_y]:
             # Hit a wall
             if thrown_item.consumable:
@@ -794,13 +795,12 @@ class ThrowAction(Action):
                     # Explode at the final position (last walkable tile before wall)
                     self._apply_consumable_effect(thrown_item, None, final_x, final_y)
                     return
-                else:
-                    # Regular potions just break with no effect
-                    self.engine.message_log.add_message(
-                        f"The {thrown_item.name} breaks against the wall!",
-                        color.white,
-                    )
-                    return
+                # Regular potions just break with no effect
+                self.engine.message_log.add_message(
+                    f"The {thrown_item.name} breaks against the wall!",
+                    color.white,
+                )
+                return
 
         # Bombs always explode at their final position
         if thrown_item.consumable and thrown_item.consumable.__class__.__name__ == "BombConsumable":
@@ -813,14 +813,13 @@ class ThrowAction(Action):
         # Merge with existing floor stack if applicable.
         if thrown_item.stackable:
             for entity in list(game_map.entities):
-                if (
+                same_stack = (
                     entity is not thrown_item
                     and hasattr(entity, "stackable")
                     and entity.stackable
                     and entity.name == thrown_item.name
-                    and entity.x == final_x
-                    and entity.y == final_y
-                ):
+                )
+                if same_stack and entity.x == final_x and entity.y == final_y:
                     entity.stack_count += thrown_item.stack_count
                     game_map.entities.discard(thrown_item)
                     break

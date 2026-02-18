@@ -129,7 +129,7 @@ class HealingConsumable(Consumable):
             )
             self.consume()
         else:
-            raise Impossible(f"Your health is already full.")
+            raise Impossible("Your health is already full.")
 
 
 class RageConsumable(Consumable):
@@ -139,7 +139,7 @@ class RageConsumable(Consumable):
         self.amount = amount
 
     def get_description(self) -> list[str]:
-        return [f"Increases damage by +1 for 10 turns"]
+        return ["Increases damage by +1 for 10 turns"]
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
@@ -147,7 +147,7 @@ class RageConsumable(Consumable):
         consumer.effects.append(eff)
         eff.parent = consumer
         self.engine.message_log.add_message(
-            f"You are filled in with rage! (Damage increased by +1)",
+            "You are filled in with rage! (Damage increased by +1)",
             color.damage_increased,
         )
         eff.activate()
@@ -207,9 +207,10 @@ class BlinkConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         max_range = 5  # TODO: parametrize this (JSON, etc)
 
-        # TODO: make this more robust; e.g., ask GameMap to give you all possible free locations within max_range.
+        # TODO: make this more robust; e.g., ask GameMap to give you all possible
+        # free locations within max_range.
         max_tries = 10
-        for i in range(max_tries):
+        for _ in range(max_tries):
             dx, dy = random.randint(-max_range, max_range), random.randint(
                 -max_range, max_range
             )
@@ -274,7 +275,6 @@ def apply_clairvoyance(engine) -> None:
     game_map = engine.game_map
     walkable = game_map.tiles["walkable"]
     reveal = walkable.copy()
-    h, w = walkable.shape
     for dy in range(-1, 2):
         for dx in range(-1, 2):
             if dx == 0 and dy == 0:
@@ -336,7 +336,8 @@ class LightningDamageConsumable(Consumable):
 
         if target:
             self.engine.message_log.add_message(
-                f"A lightning bolt strikes the {target.name} with a loud thunder, for {self.damage} damage!"
+                f"A lightning bolt strikes the {target.name}"
+                f" with a loud thunder, for {self.damage} damage!"
             )
             target.fighter.take_damage(self.damage)
             self.consume()
@@ -404,7 +405,8 @@ class BombConsumable(Consumable):
         for actor in game_map.actors:
             if actor.distance(x, y) <= self.radius:
                 engine.message_log.add_message(
-                    f"The {actor.name} is caught in the blast, suffering {self.damage} damage!",
+                    f"The {actor.name} is caught in the blast,"
+                    f" suffering {self.damage} damage!",
                     color.player_atk,
                 )
                 actor.fighter.take_damage(self.damage)
