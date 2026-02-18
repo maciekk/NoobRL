@@ -130,6 +130,12 @@ _EFFECT_DEFS = [
             "sfx/explosion2.wav",
         ],
     ),
+    (
+        "open the chest",
+        [
+            "sfx/771164__steprock__treasure-chest-open.mp3",
+        ],
+    ),
 ]
 
 # Populated by init(); None means audio is unavailable.
