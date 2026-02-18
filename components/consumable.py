@@ -19,15 +19,10 @@ from components.effect import (
 import components.inventory
 from components.base_component import BaseComponent
 from exceptions import Impossible
-from input_handlers import (
-    ActionOrHandler,
-    AreaRangedAttackHandler,
-    SingleRangedAttackHandler,
-    WishItemHandler,
-)
 
 if TYPE_CHECKING:
     from entity import Actor, Item
+    from input_handlers import ActionOrHandler
 
 
 class Consumable(BaseComponent):
@@ -64,6 +59,7 @@ class WishingWandConsumable(Consumable):
         return ["Grants a wish for any item"]
 
     def get_action(self, consumer: Actor) -> WishItemHandler:
+        from input_handlers import WishItemHandler  # local to avoid circular import
         self.engine.message_log.add_message("What do you wish for?", color.needs_target)
         return WishItemHandler(self.engine, self.parent)
 
@@ -78,6 +74,7 @@ class ConfusionConsumable(Consumable):
         return [f"Confuses target for {self.number_of_turns} turns"]
 
     def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
+        from input_handlers import SingleRangedAttackHandler  # local to avoid circular import
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
@@ -241,6 +238,7 @@ class FireballDamageConsumable(Consumable):
         return [f"Deals {self.damage} damage in radius {self.radius}"]
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler:
+        from input_handlers import AreaRangedAttackHandler  # local to avoid circular import
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
