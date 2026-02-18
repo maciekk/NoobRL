@@ -124,6 +124,12 @@ _EFFECT_DEFS = [
             "sfx/explosion1.wav",
         ],
     ),
+    (
+        "caught in the blast",
+        [
+            "sfx/explosion2.wav",
+        ],
+    ),
 ]
 
 # Populated by init(); None means audio is unavailable.

@@ -84,7 +84,7 @@ Ideas & efforts under way.
 
 ### Weapons & Armour
 - [x] add darts at level 1, common
-- [ ] add bombs/grenades - thrown weapon, but gets consumed on use `#next`
+- [x] add bombs/grenades - thrown weapon, but gets consumed on use
 - [ ] add bows & arrows
 - [ ] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.

@@ -618,9 +618,20 @@ class ThrowAction(Action):
                 return max(1, item.equippable.power_bonus // 2)
         return 1
 
-    def _apply_consumable_effect(self, item: Item, target: Actor) -> None:
-        """Apply a thrown consumable's effect to a target actor."""
+    def _apply_consumable_effect(self, item: Item, target: Actor = None, x: int = None, y: int = None) -> None:
+        """Apply a thrown consumable's effect to a target actor or at a location."""
         consumable = item.consumable
+
+        # Handle bombs - explode at location (target is where it hit, but we might want to override)
+        if consumable.__class__.__name__ == "BombConsumable":
+            # Use provided x, y if given, otherwise use target location
+            if x is None or y is None:
+                if target:
+                    x, y = target.x, target.y
+                else:
+                    raise ValueError("Bomb needs a location to explode at")
+            consumable.explode(x, y, self.engine.game_map, self.engine)
+            return
 
         # Handle healing potions
         if consumable.__class__.__name__ == "HealingConsumable":
@@ -740,10 +751,12 @@ class ThrowAction(Action):
         if hit_actor:
             # If it's a consumable potion, apply the effect instead of just damage
             if thrown_item.consumable:
-                self.engine.message_log.add_message(
-                    f"The {thrown_item.name} hits the {hit_actor.name} and breaks!",
-                    color.player_atk,
-                )
+                # Bombs handle their own messaging
+                if thrown_item.consumable.__class__.__name__ != "BombConsumable":
+                    self.engine.message_log.add_message(
+                        f"The {thrown_item.name} hits the {hit_actor.name} and breaks!",
+                        color.player_atk,
+                    )
                 # Apply the consumable effect to the hit actor
                 self._apply_consumable_effect(thrown_item, hit_actor)
                 # Don't place the potion on the ground; it was consumed
@@ -757,13 +770,29 @@ class ThrowAction(Action):
                 )
                 hit_actor.fighter.take_damage(damage)
         elif not game_map.tiles["walkable"][final_x, final_y]:
-            # Hit a wall - potion breaks with no effect
+            # Hit a wall
             if thrown_item.consumable:
-                self.engine.message_log.add_message(
-                    f"The {thrown_item.name} breaks against the wall!",
-                    color.white,
-                )
-                return
+                # Handle bombs specially - they explode at impact
+                if thrown_item.consumable.__class__.__name__ == "BombConsumable":
+                    self.engine.message_log.add_message(
+                        f"The {thrown_item.name} hits the wall and explodes!",
+                        color.white,
+                    )
+                    # Explode at the final position (last walkable tile before wall)
+                    self._apply_consumable_effect(thrown_item, None, final_x, final_y)
+                    return
+                else:
+                    # Regular potions just break with no effect
+                    self.engine.message_log.add_message(
+                        f"The {thrown_item.name} breaks against the wall!",
+                        color.white,
+                    )
+                    return
+
+        # Bombs always explode at their final position
+        if thrown_item.consumable and thrown_item.consumable.__class__.__name__ == "BombConsumable":
+            self._apply_consumable_effect(thrown_item, None, final_x, final_y)
+            return
 
         # Place item on the floor at final position (if not consumed or broken).
         thrown_item.place(final_x, final_y, game_map)

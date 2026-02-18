@@ -207,5 +207,17 @@
       "name": "SleepConsumable",
       "number_of_turns": 5
     }
+  },
+  {
+    "id": "bomb",
+    "name": "Bomb",
+    "char": "o",
+    "color": [50, 50, 50],
+    "consumable": {
+      "name": "BombConsumable",
+      "damage": 5,
+      "radius": 1
+    },
+    "stack_count": 3
   }
 ]

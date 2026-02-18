@@ -385,3 +385,32 @@ class SleepConsumable(Consumable):
         eff.parent = consumer
         eff.activate()
         self.consume()
+
+
+class BombConsumable(Consumable):
+    """Explodes in an area when thrown, dealing damage in a radius."""
+
+    def __init__(self, damage: int, radius: int):
+        self.damage = damage
+        self.radius = radius
+
+    def get_description(self) -> list[str]:
+        return [f"Explodes for {self.damage} damage in radius {self.radius}"]
+
+    def explode(self, x: int, y: int, game_map, engine) -> None:
+        """Explode at the given location, damaging all actors in radius."""
+        targets_hit = False
+        for actor in game_map.actors:
+            if actor.distance(x, y) <= self.radius:
+                engine.message_log.add_message(
+                    f"The {actor.name} is caught in the blast, suffering {self.damage} damage!",
+                    color.player_atk,
+                )
+                actor.fighter.take_damage(self.damage)
+                targets_hit = True
+
+        if not targets_hit:
+            engine.message_log.add_message(
+                "The bomb explodes, but no one is caught in the blast!",
+                color.white,
+            )
