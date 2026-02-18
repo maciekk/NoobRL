@@ -1571,8 +1571,8 @@ class MainGameEventHandler(EventHandler):
 
         player = self.engine.player
 
-        # Player cannot act while asleep
-        if player.is_asleep and key not in {
+        # Player cannot act while asleep, except wait (to advance time for sleep to expire)
+        if player.is_asleep and key not in WAIT_KEYS | {
             tcod.event.KeySym.ESCAPE,
             tcod.event.KeySym.LSHIFT,
             tcod.event.KeySym.RSHIFT,
