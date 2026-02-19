@@ -21,6 +21,26 @@
     }
   },
   {
+    "id": "kobold",
+    "name": "Kobold",
+    "char": "k",
+    "color": [0, 139, 139],
+    "ai_cls": "PatrollingEnemy",
+    "base_speed": 200,
+    "equipment": {},
+    "fighter": {
+      "hp": 5,
+      "base_defense": 0,
+      "base_power": 2
+    },
+    "inventory": {
+      "capacity": 0
+    },
+    "level": {
+      "xp_given": 25
+    }
+  },
+  {
     "id": "orc",
     "name": "Orc",
     "char": "o",

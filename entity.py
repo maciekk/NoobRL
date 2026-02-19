@@ -61,6 +61,7 @@ EQUIPPABLE_MAP = {
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,
+    "PatrollingEnemy": components.ai.PatrollingEnemy,
 }
 
 

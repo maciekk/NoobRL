@@ -5,6 +5,8 @@ from __future__ import annotations
 import random
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
+import numpy as np
+
 import color
 import tile_types
 from exceptions import Impossible
@@ -25,6 +27,25 @@ class BaseAI(Action):
     """Base class for AI behaviors that act as actions on entities."""
     def perform(self) -> None:
         raise NotImplementedError()
+
+    def _wander_randomly(self) -> None:
+        """Move in a random direction (Brownian motion). Just moves; doesn't attack."""
+        direction_x, direction_y = random.choice(
+            [
+                (-1, -1),  # Northwest
+                (0, -1),   # North
+                (1, -1),   # Northeast
+                (-1, 0),   # West
+                (1, 0),    # East
+                (-1, 1),   # Southwest
+                (0, 1),    # South
+                (1, 1),    # Southeast
+            ]
+        )
+        try:
+            MovementAction(self.entity, direction_x, direction_y).perform()
+        except Impossible:
+            pass
 
 
 class ConfusedEnemy(BaseAI):
@@ -139,26 +160,6 @@ class HostileEnemy(BaseAI):
             return True
         return False
 
-    def _wander_randomly(self) -> None:
-        """Move in a random direction (Brownian motion). Just moves; doesn't attack."""
-        direction_x, direction_y = random.choice(
-            [
-                (-1, -1),  # Northwest
-                (0, -1),   # North
-                (1, -1),   # Northeast
-                (-1, 0),   # West
-                (1, 0),    # East
-                (-1, 1),   # Southwest
-                (0, 1),    # South
-                (1, 1),    # Southeast
-            ]
-        )
-        try:
-            MovementAction(self.entity, direction_x, direction_y).perform()
-        except Impossible:
-            # Blocked by wall, entity, or out of bounds: simply don't move
-            pass
-
     def perform(self) -> None:
         # Asleep or blind entities don't act
         if self.entity.is_asleep:
@@ -223,4 +224,99 @@ class HostileEnemy(BaseAI):
             return
 
         # No path and not aware of player: wander randomly
+        self._wander_randomly()
+
+
+class PatrollingEnemy(BaseAI):
+    """AI that patrols between random dungeon locations.
+
+    Picks a random walkable tile, paths to it, wanders for WANDER_TURNS turns,
+    then picks a new destination. Attacks the player on sight.
+    """
+
+    WANDER_TURNS = 10
+
+    def __init__(self, entity: Actor):
+        super().__init__(entity)
+        self.path: List[Tuple[int, int]] = []
+        self.patrol_target: Optional[Tuple[int, int]] = None
+        self.wander_turns: int = 0
+
+    def _pick_patrol_target(self) -> Optional[Tuple[int, int]]:
+        """Pick a random walkable tile on the current map."""
+        coords = np.argwhere(self.engine.game_map.tiles["walkable"])
+        if len(coords) == 0:
+            return None
+        x, y = coords[random.randrange(len(coords))]
+        return int(x), int(y)
+
+    def perform(self) -> None:
+        if self.entity.is_asleep:
+            return
+
+        if self.entity.is_blind:
+            self._wander_randomly()
+            return
+
+        target = self.engine.player
+        dx = target.x - self.entity.x
+        dy = target.y - self.entity.y
+        distance = max(abs(dx), abs(dy))
+
+        # Chase and attack if player is visible
+        if (
+            self.engine.game_map.visible[self.entity.x, self.entity.y]
+            and not self.engine.player.is_invisible
+        ):
+            if distance <= self.entity.attack_range:
+                if self.entity.ranged_attack:
+                    RangedAttackAction(self.entity, dx, dy).perform()
+                    return
+                MeleeAction(self.entity, dx, dy).perform()
+                return
+
+            self.path = self.entity.get_path_to(target.x, target.y)
+            if self.path:
+                dest_x, dest_y = self.path.pop(0)
+                MovementAction(
+                    self.entity,
+                    dest_x - self.entity.x,
+                    dest_y - self.entity.y,
+                ).perform()
+            return
+
+        # Arrived at patrol target: wander for a while
+        if self.wander_turns > 0:
+            self.wander_turns -= 1
+            self._wander_randomly()
+            return
+
+        # Pick a new patrol target if we don't have one
+        if self.patrol_target is None:
+            self.patrol_target = self._pick_patrol_target()
+            self.path = []
+
+        if self.patrol_target is not None:
+            tx, ty = self.patrol_target
+            if (self.entity.x, self.entity.y) == (tx, ty):
+                self.patrol_target = None
+                self.wander_turns = self.WANDER_TURNS
+                self._wander_randomly()
+                return
+
+            if not self.path:
+                self.path = self.entity.get_path_to(tx, ty)
+
+            if self.path:
+                dest_x, dest_y = self.path.pop(0)
+                MovementAction(
+                    self.entity,
+                    dest_x - self.entity.x,
+                    dest_y - self.entity.y,
+                ).perform()
+                return
+
+            # Can't reach target; pick a new one next turn
+            self.patrol_target = None
+
         self._wander_randomly()
