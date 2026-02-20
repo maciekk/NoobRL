@@ -291,7 +291,7 @@ class Chest(Entity):
             if template is None:
                 continue
             item = template.spawn(self.gamemap, self.x, self.y)
-            names.append(item.name)
+            names.append(item.display_name)
 
         self.char = "_"
         self.opened = True
@@ -319,6 +319,7 @@ class Item(Entity):
         consumable: Optional[Consumable] = None,
         equippable: Optional[Equippable] = None,
         stack_count: int = 1,
+        item_id: str = "",
     ):
         super().__init__(
             x=x,
@@ -340,6 +341,22 @@ class Item(Entity):
             self.equippable.parent = self
 
         self.stack_count = stack_count
+        self.item_id = item_id
+
+    @property
+    def display_name(self) -> str:
+        """Return the fake scroll name if unidentified, otherwise the true name."""
+        if not self.item_id:
+            return self.name
+        gamemap = self.gamemap
+        if gamemap is None:
+            return self.name
+        engine = gamemap.engine
+        if self.item_id not in engine.scroll_aliases:
+            return self.name
+        if self.item_id in engine.identified_items:
+            return self.name
+        return f"scroll of {engine.scroll_aliases[self.item_id]}"
 
     @property
     def stackable(self) -> bool:
@@ -362,6 +379,7 @@ class ItemManager:
             data = f.read()
             for item in json.loads(data):
                 id = item.pop("id")
+                item["item_id"] = id
                 d = item.get("consumable", None)
                 if d:
                     consumable_class = CONSUMABLE_MAP[d.pop("name")]

@@ -41,6 +41,7 @@ def new_game() -> Engine:
     max_rooms = 30
 
     engine = Engine()
+    engine.initialize_scroll_aliases()
 
     engine.game_world = GameWorld(
         engine=engine,

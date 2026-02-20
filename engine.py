@@ -35,6 +35,21 @@ class Engine:
         self.turn = 1
         self.kill_counts: dict[str, int] = {}
         self._bonus_actions = 0
+        self.scroll_aliases: dict[str, str] = {}
+        self.identified_items: set[str] = set()
+
+    def initialize_scroll_aliases(self) -> None:
+        """Assign a random fake name to each scroll type for this game run."""
+        import random
+        with open("data/scroll_names.txt") as f:
+            names = [line.strip() for line in f if line.strip()]
+        scroll_ids = [
+            item_id for item_id, item in self.item_manager.items.items()
+            if item.char == "?"
+        ]
+        random.shuffle(names)
+        for i, item_id in enumerate(scroll_ids):
+            self.scroll_aliases[item_id] = names[i % len(names)]
 
     def handle_enemy_turns(self) -> None:
         """Process AI actions for all non-player actors."""

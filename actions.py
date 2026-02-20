@@ -124,7 +124,7 @@ class PickupAction(Action):
                 f" (x{pickup_count})" if item.stackable and pickup_count > 1 else ""
             )
             self.engine.message_log.add_message(
-                f"You picked up the {item.name}{count_text}!"
+                f"You picked up the {item.display_name}{count_text}!"
             )
 
 
@@ -695,7 +695,7 @@ class ThrowAction(Action):
         else:
             # For other consumables, just log that the effect was applied
             self.engine.message_log.add_message(
-                f"The {target.name} is affected by the {item.name}!",
+                f"The {target.name} is affected by the {item.display_name}!",
                 color.status_effect_applied,
             )
 
@@ -755,21 +755,21 @@ class ThrowAction(Action):
             thrown_item = self.item
 
         self.engine.message_log.add_message(
-            f"You throw the {thrown_item.name}!", color.white
+            f"You throw the {thrown_item.display_name}!", color.white
         )
 
         if hit_actor:
             if thrown_item.consumable:
                 if thrown_item.consumable.__class__.__name__ != "BombConsumable":
                     self.engine.message_log.add_message(
-                        f"The {thrown_item.name} hits the {hit_actor.name} and breaks!",
+                        f"The {thrown_item.display_name} hits the {hit_actor.name} and breaks!",
                         color.player_atk,
                     )
                 self._apply_consumable_effect(thrown_item, hit_actor)
                 return
             damage = self._compute_damage(thrown_item)
             self.engine.message_log.add_message(
-                f"The {thrown_item.name} hits the {hit_actor.name} for {damage} damage!",
+                f"The {thrown_item.display_name} hits the {hit_actor.name} for {damage} damage!",
                 color.player_atk,
             )
             hit_actor.fighter.take_damage(damage)
@@ -777,13 +777,13 @@ class ThrowAction(Action):
             if thrown_item.consumable:
                 if thrown_item.consumable.__class__.__name__ == "BombConsumable":
                     self.engine.message_log.add_message(
-                        f"The {thrown_item.name} hits the wall and explodes!",
+                        f"The {thrown_item.display_name} hits the wall and explodes!",
                         color.white,
                     )
                     self._apply_consumable_effect(thrown_item, None, final_x, final_y)
                     return
                 self.engine.message_log.add_message(
-                    f"The {thrown_item.name} breaks against the wall!",
+                    f"The {thrown_item.display_name} breaks against the wall!",
                     color.white,
                 )
                 return

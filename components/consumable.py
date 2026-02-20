@@ -47,6 +47,15 @@ class Consumable(BaseComponent):
     def consume(self) -> None:
         """Decrement stack count; remove when it reaches 0."""
         entity = self.parent
+        if entity.item_id and entity.char == "?" and entity.gamemap:
+            engine = entity.gamemap.engine
+            if (entity.item_id in engine.scroll_aliases
+                    and entity.item_id not in engine.identified_items):
+                engine.identified_items.add(entity.item_id)
+                engine.message_log.add_message(
+                    f"You have identified the {entity.name}!",
+                    color.status_effect_applied,
+                )
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):
             entity.stack_count -= 1

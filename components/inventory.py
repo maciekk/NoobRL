@@ -43,7 +43,7 @@ class Inventory(BaseComponent):
 
         if len(self.items) >= self.capacity:
             self.engine.message_log.add_message(
-                f"You have no inventory space left to take {item.name}."
+                f"You have no inventory space left to take {item.display_name}."
             )
             return False
 
@@ -74,7 +74,7 @@ class Inventory(BaseComponent):
         count_text = ""
         if item.stackable and dropped_count > 1:
             count_text = f" (x{dropped_count})"
-        self.engine.message_log.add_message(f"You dropped the {item.name}{count_text}.")
+        self.engine.message_log.add_message(f"You dropped the {item.display_name}{count_text}.")
 
     def _merge_floor_stack(self, dropped: Item) -> None:
         """If a same-name stackable item already sits at this location, merge."""

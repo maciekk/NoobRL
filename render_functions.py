@@ -14,11 +14,14 @@ if TYPE_CHECKING:
 
 def entity_brief(entity) -> str:
     """Provides a brief summary of entity."""
-    s = f"{entity.name}"
-    if isinstance(entity, Actor):
-        s += f"[{entity.fighter.hp}/{entity.fighter.max_hp}]"
-    elif isinstance(entity, Item) and entity.stackable and entity.stack_count > 1:
-        s += f" (x{entity.stack_count})"
+    if isinstance(entity, Item):
+        s = entity.display_name
+        if entity.stackable and entity.stack_count > 1:
+            s += f" (x{entity.stack_count})"
+    else:
+        s = f"{entity.name}"
+        if isinstance(entity, Actor):
+            s += f"[{entity.fighter.hp}/{entity.fighter.max_hp}]"
     return s
 
 

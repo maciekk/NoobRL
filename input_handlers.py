@@ -696,7 +696,7 @@ class InventoryEventHandler(ListSelectionHandler):
 
     def get_display_string(self, index: int, item) -> str:
         """Return display string with stack count and equipped status."""
-        s = item.name
+        s = item.display_name
         if item.stackable and item.stack_count > 1:
             s += f" (x{item.stack_count})"
         if self.engine.player.equipment.item_is_equipped(item):
@@ -747,7 +747,7 @@ class QuaffHandler(ListSelectionHandler):
 
     def get_display_string(self, index: int, item) -> str:
         """Return display string with stack count for potions."""
-        s = item.name
+        s = item.display_name
         if item.stackable and item.stack_count > 1:
             s += f" (x{item.stack_count})"
         return s
@@ -781,8 +781,11 @@ def _item_type_and_stat_lines(item: "Item") -> list:  # pylint: disable=too-many
     else:
         lines.append(("Item", color.white))
     if item.consumable:
-        for desc_line in item.consumable.get_description():
-            lines.append((desc_line, color.white))
+        if item.display_name != item.name:
+            lines.append(("???", color.white))
+        else:
+            for desc_line in item.consumable.get_description():
+                lines.append((desc_line, color.white))
     if item.equippable:
         if item.equippable.power_bonus:
             lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
@@ -808,7 +811,7 @@ class ItemDetailHandler(AskUserEventHandler):
         lines: list[tuple[str, tuple[int, int, int]]] = []
 
         # Item name with symbol.
-        lines.append((f"{item.char} {item.name}", item.color))
+        lines.append((f"{item.char} {item.display_name}", item.color))
 
         # Type, description, and stats.
         lines.extend(_item_type_and_stat_lines(item))
@@ -842,7 +845,7 @@ class ItemDetailHandler(AskUserEventHandler):
 
         y = 0
         max_line_width = max(len(text) for text, _ in lines)
-        width = max(len(item.name) + 6, max_line_width + 2)
+        width = max(len(item.display_name) + 6, max_line_width + 2)
         height = len(lines) + 2
 
         console.draw_frame(
@@ -850,7 +853,7 @@ class ItemDetailHandler(AskUserEventHandler):
             y=y,
             width=width,
             height=height,
-            title=item.name,
+            title=item.display_name,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
@@ -909,7 +912,7 @@ class DropQuantityHandler(AskUserEventHandler):
         else:
             x = 0
 
-        prompt = f"Drop how many {self.item.name}? (1-{self.item.stack_count})"
+        prompt = f"Drop how many {self.item.display_name}? (1-{self.item.stack_count})"
         max_digits = len(str(self.item.stack_count))
         # frame border (2) + prompt + space + max digits + cursor + padding
         width = len(prompt) + max_digits + 4
@@ -1263,7 +1266,7 @@ class FloorItemListHandler(ListSelectionHandler):
         return self.items_list
 
     def get_display_string(self, index: int, item) -> str:
-        return item.name
+        return item.display_name
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
         return FloorItemDetailHandler(self.engine, item, self.look_x, self.look_y)
@@ -1288,7 +1291,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
         lines: list[tuple[str, tuple[int, int, int]]] = []
 
         # Item name with symbol.
-        lines.append((f"{item.char} {item.name}", item.color))
+        lines.append((f"{item.char} {item.display_name}", item.color))
 
         # Type, description, and stats.
         lines.extend(_item_type_and_stat_lines(item))
@@ -1303,7 +1306,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
 
         y = 0
         max_line_width = max(len(text) for text, _ in lines)
-        width = max(len(item.name) + 6, max_line_width + 2)
+        width = max(len(item.display_name) + 6, max_line_width + 2)
         height = len(lines) + 2
 
         console.draw_frame(
@@ -1311,7 +1314,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
             y=y,
             width=width,
             height=height,
-            title=item.name,
+            title=item.display_name,
             clear=True,
             fg=(255, 255, 255),
             bg=(0, 0, 0),
