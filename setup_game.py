@@ -42,6 +42,7 @@ def new_game() -> Engine:
 
     engine = Engine()
     engine.initialize_scroll_aliases()
+    engine.initialize_potion_aliases()
 
     engine.game_world = GameWorld(
         engine=engine,

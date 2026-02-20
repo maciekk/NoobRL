@@ -811,7 +811,7 @@ class ItemDetailHandler(AskUserEventHandler):
         lines: list[tuple[str, tuple[int, int, int]]] = []
 
         # Item name with symbol.
-        lines.append((f"{item.char} {item.display_name}", item.color))
+        lines.append((f"{item.char} {item.display_name}", item.display_color))
 
         # Type, description, and stats.
         lines.extend(_item_type_and_stat_lines(item))
@@ -1291,7 +1291,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
         lines: list[tuple[str, tuple[int, int, int]]] = []
 
         # Item name with symbol.
-        lines.append((f"{item.char} {item.display_name}", item.color))
+        lines.append((f"{item.char} {item.display_name}", item.display_color))
 
         # Type, description, and stats.
         lines.extend(_item_type_and_stat_lines(item))

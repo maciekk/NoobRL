@@ -1,233 +1,291 @@
 [
-  {
-    "id": "s_confusion",
-    "name": "scroll of Confusion",
-    "char": "?",
-    "color": [207, 63, 255],
-    "consumable": {
-      "name": "ConfusionConsumable",
-      "number_of_turns": 10
-    }
-  },
-  {
-    "id": "s_fireball",
-    "name": "scroll of Fireball",
-    "char": "?",
-    "color": [255, 0, 0],
-    "consumable": {
-      "name": "FireballDamageConsumable",
-      "damage": 12,
-      "radius": 3
-    }
-  },
-  {
-    "id": "s_blink",
-    "name": "scroll of Blink",
-    "char": "?",
-    "color": [128, 0, 255],
-    "consumable": {
-      "name": "BlinkConsumable"
-    }
-  },
-  {
-    "id": "s_lightning",
-    "name": "scroll of Lightning",
-    "char": "?",
-    "color": [32, 64, 255],
-    "consumable": {
-      "name": "LightningDamageConsumable",
-      "damage": 20,
-      "maximum_range": 5
-    }
-  },
-  {
-    "id": "p_heal",
-    "name": "Health Potion",
-    "char": "!",
-    "color": [127, 0, 255],
-    "consumable": {
-      "name": "HealingConsumable",
-      "amount": 20
-    }
-  },
-   {
-    "id": "p_damage",
-    "name": "Damage Potion",
-    "char": "!",
-    "color": [255, 0, 0],
-    "consumable": {
-      "name": "RageConsumable",
-      "amount": 2
-    }
-  },
-  {
-    "id": "p_clairvoyance",
-    "name": "Potion of Clairvoyance",
-    "char": "!",
-    "color": [255, 255, 0],
-    "consumable": {
-      "name": "ClairvoyanceConsumable"
-    }
-  },
-  {
-    "id": "p_invisibility",
-    "name": "Potion of Invisibility",
-    "char": "!",
-    "color": [128, 128, 192],
-    "consumable": {
-      "name": "InvisibilityConsumable",
-      "duration": 10
-    }
-  },
-  {
-    "id": "p_speed",
-    "name": "Potion of Speed",
-    "char": "!",
-    "color": [255, 165, 0],
-    "consumable": {
-      "name": "SpeedConsumable",
-      "duration": 10
-    }
-  },
-  {
-    "id": "p_detect_monster",
-    "name": "Potion of Detect Monster",
-    "char": "!",
-    "color": [255, 100, 100],
-    "consumable": {
-      "name": "DetectMonsterConsumable",
-      "duration": 10
-    }
-  },
-  {
-    "id": "dart",
-    "name": "Dart",
-    "char": ")",
-    "color": [192, 192, 192],
-    "equippable": { "name": "Dart" },
-    "stack_count": 3
-  },
-  {
-    "id": "dagger",
-    "name": "Dagger",
-    "char": ")",
-    "color": [0, 191, 255],
-    "equippable": {
-      "name": "Dagger"
-    }
-  },
-  {
-    "id": "sword",
-    "name": "Sword",
-    "char": ")",
-    "color": [0, 191, 255],
-    "equippable": {
-      "name": "Sword"
-    }
-  },
-  {
-    "id": "long_sword",
-    "name": "Long Sword",
-    "char": ")",
-    "color": [0, 191, 255],
-    "equippable": {
-      "name": "LongSword"
-    }
-  },
-  {
-    "id": "odachi",
-    "name": "Odachi",
-    "char": ")",
-    "color": [0, 191, 255],
-    "equippable": {
-      "name": "Odachi"
-    }
-  },
-  {
-    "id": "leather_armor",
-    "name": "Leather Armor",
-    "char": "[",
-    "color": [139, 69, 19],
-    "equippable": {
-      "name": "LeatherArmor"
-    }
-  },
-  {
-    "id": "chain_mail",
-    "name": "Chain Mail",
-    "char": "[",
-    "color": [139, 69, 19],
-    "equippable": {
-      "name": "ChainMail"
-    }
-  },
-  {
-    "id": "steel_armor",
-    "name": "Steel Armor",
-    "char": "[",
-    "color": [156, 156, 156],
-    "equippable": {
-      "name": "SteelArmor"
-    }
-  },
-  {
-    "id": "wand_wishing",
-    "name": "Wand of Wishing",
-    "char": "/",
-    "color": [255, 215, 0],
-    "stack_count": 3,
-    "consumable": {
-      "name": "WishingWandConsumable"
-    }
-  },
-  {
-    "id": "amulet_clairvoyance",
-    "name": "Amulet of Clairvoyance",
-    "char": "\"",
-    "color": [127, 255, 255],
-    "equippable": {
-      "name": "AmuletOfClairvoyance"
-    }
-  },
-  {
-    "id": "amulet_detect_monster",
-    "name": "Amulet of Detect Monster",
-    "char": "\"",
-    "color": [255, 127, 127],
-    "equippable": {
-      "name": "AmuletOfDetectMonster"
-    }
-  },
-  {
-    "id": "p_sleep",
-    "name": "Potion of Sleep",
-    "char": "!",
-    "color": [100, 150, 200],
-    "consumable": {
-      "name": "SleepConsumable",
-      "number_of_turns": 5
-    }
-  },
-  {
-    "id": "bomb",
-    "name": "Bomb",
-    "char": "o",
-    "color": [50, 50, 50],
-    "consumable": {
-      "name": "BombConsumable",
-      "damage": 5,
-      "radius": 1
+    {
+        "id": "s_confusion",
+        "name": "scroll of Confusion",
+        "char": "?",
+        "color": [
+            207,
+            63,
+            255
+        ],
+        "consumable": {
+            "name": "ConfusionConsumable",
+            "number_of_turns": 10
+        }
     },
-    "stack_count": 3
-  },
-  {
-    "id": "p_blindness",
-    "name": "Potion of Blindness",
-    "char": "!",
-    "color": [0, 0, 0],
-    "consumable": {
-      "name": "BlindnessConsumable",
-      "duration": 10
+    {
+        "id": "s_fireball",
+        "name": "scroll of Fireball",
+        "char": "?",
+        "color": [
+            255,
+            0,
+            0
+        ],
+        "consumable": {
+            "name": "FireballDamageConsumable",
+            "damage": 12,
+            "radius": 3
+        }
+    },
+    {
+        "id": "s_blink",
+        "name": "scroll of Blink",
+        "char": "?",
+        "color": [
+            128,
+            0,
+            255
+        ],
+        "consumable": {
+            "name": "BlinkConsumable"
+        }
+    },
+    {
+        "id": "s_lightning",
+        "name": "scroll of Lightning",
+        "char": "?",
+        "color": [
+            32,
+            64,
+            255
+        ],
+        "consumable": {
+            "name": "LightningDamageConsumable",
+            "damage": 20,
+            "maximum_range": 5
+        }
+    },
+    {
+        "id": "p_heal",
+        "name": "Health Potion",
+        "char": "!",
+        "consumable": {
+            "name": "HealingConsumable",
+            "amount": 20
+        }
+    },
+    {
+        "id": "p_damage",
+        "name": "Damage Potion",
+        "char": "!",
+        "consumable": {
+            "name": "RageConsumable",
+            "amount": 2
+        }
+    },
+    {
+        "id": "p_clairvoyance",
+        "name": "Potion of Clairvoyance",
+        "char": "!",
+        "consumable": {
+            "name": "ClairvoyanceConsumable"
+        }
+    },
+    {
+        "id": "p_invisibility",
+        "name": "Potion of Invisibility",
+        "char": "!",
+        "consumable": {
+            "name": "InvisibilityConsumable",
+            "duration": 10
+        }
+    },
+    {
+        "id": "p_speed",
+        "name": "Potion of Speed",
+        "char": "!",
+        "consumable": {
+            "name": "SpeedConsumable",
+            "duration": 10
+        }
+    },
+    {
+        "id": "p_detect_monster",
+        "name": "Potion of Detect Monster",
+        "char": "!",
+        "consumable": {
+            "name": "DetectMonsterConsumable",
+            "duration": 10
+        }
+    },
+    {
+        "id": "dart",
+        "name": "Dart",
+        "char": ")",
+        "color": [
+            192,
+            192,
+            192
+        ],
+        "equippable": {
+            "name": "Dart"
+        },
+        "stack_count": 3
+    },
+    {
+        "id": "dagger",
+        "name": "Dagger",
+        "char": ")",
+        "color": [
+            0,
+            191,
+            255
+        ],
+        "equippable": {
+            "name": "Dagger"
+        }
+    },
+    {
+        "id": "sword",
+        "name": "Sword",
+        "char": ")",
+        "color": [
+            0,
+            191,
+            255
+        ],
+        "equippable": {
+            "name": "Sword"
+        }
+    },
+    {
+        "id": "long_sword",
+        "name": "Long Sword",
+        "char": ")",
+        "color": [
+            0,
+            191,
+            255
+        ],
+        "equippable": {
+            "name": "LongSword"
+        }
+    },
+    {
+        "id": "odachi",
+        "name": "Odachi",
+        "char": ")",
+        "color": [
+            0,
+            191,
+            255
+        ],
+        "equippable": {
+            "name": "Odachi"
+        }
+    },
+    {
+        "id": "leather_armor",
+        "name": "Leather Armor",
+        "char": "[",
+        "color": [
+            139,
+            69,
+            19
+        ],
+        "equippable": {
+            "name": "LeatherArmor"
+        }
+    },
+    {
+        "id": "chain_mail",
+        "name": "Chain Mail",
+        "char": "[",
+        "color": [
+            139,
+            69,
+            19
+        ],
+        "equippable": {
+            "name": "ChainMail"
+        }
+    },
+    {
+        "id": "steel_armor",
+        "name": "Steel Armor",
+        "char": "[",
+        "color": [
+            156,
+            156,
+            156
+        ],
+        "equippable": {
+            "name": "SteelArmor"
+        }
+    },
+    {
+        "id": "wand_wishing",
+        "name": "Wand of Wishing",
+        "char": "/",
+        "color": [
+            255,
+            215,
+            0
+        ],
+        "stack_count": 3,
+        "consumable": {
+            "name": "WishingWandConsumable"
+        }
+    },
+    {
+        "id": "amulet_clairvoyance",
+        "name": "Amulet of Clairvoyance",
+        "char": "\"",
+        "color": [
+            127,
+            255,
+            255
+        ],
+        "equippable": {
+            "name": "AmuletOfClairvoyance"
+        }
+    },
+    {
+        "id": "amulet_detect_monster",
+        "name": "Amulet of Detect Monster",
+        "char": "\"",
+        "color": [
+            255,
+            127,
+            127
+        ],
+        "equippable": {
+            "name": "AmuletOfDetectMonster"
+        }
+    },
+    {
+        "id": "p_sleep",
+        "name": "Potion of Sleep",
+        "char": "!",
+        "consumable": {
+            "name": "SleepConsumable",
+            "number_of_turns": 5
+        }
+    },
+    {
+        "id": "bomb",
+        "name": "Bomb",
+        "char": "o",
+        "color": [
+            50,
+            50,
+            50
+        ],
+        "consumable": {
+            "name": "BombConsumable",
+            "damage": 5,
+            "radius": 1
+        },
+        "stack_count": 3
+    },
+    {
+        "id": "p_blindness",
+        "name": "Potion of Blindness",
+        "char": "!",
+        "consumable": {
+            "name": "BlindnessConsumable",
+            "duration": 10
+        }
     }
-  }
 ]

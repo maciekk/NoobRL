@@ -47,9 +47,10 @@ class Consumable(BaseComponent):
     def consume(self) -> None:
         """Decrement stack count; remove when it reaches 0."""
         entity = self.parent
-        if entity.item_id and entity.char == "?" and entity.gamemap:
+        if entity.item_id and entity.gamemap:
             engine = entity.gamemap.engine
-            if (entity.item_id in engine.scroll_aliases
+            aliases = engine.scroll_aliases if entity.char == "?" else engine.potion_aliases
+            if (entity.item_id in aliases
                     and entity.item_id not in engine.identified_items):
                 engine.identified_items.add(entity.item_id)
                 engine.message_log.add_message(
@@ -127,12 +128,19 @@ class HealingConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
+        unidentified = self.parent.display_name != self.parent.name
         amount_recovered = consumer.fighter.heal(self.amount)
 
         if amount_recovered > 0:
             self.engine.message_log.add_message(
                 f"You consume the {self.parent.name}, and recover {amount_recovered} HP!",
                 color.health_recovered,
+            )
+            self.consume()
+        elif unidentified:
+            self.engine.message_log.add_message(
+                f"You drink the {self.parent.display_name}. Nothing seems to happen.",
+                color.white,
             )
             self.consume()
         else:

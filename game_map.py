@@ -136,7 +136,7 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
                 should_render = True
 
             if should_render:
-                fg = entity.color
+                fg = entity.display_color if isinstance(entity, Item) else entity.color
                 if entity is self.engine.player and entity.is_invisible:
                     fg = (100, 100, 100)
                 console.print(x=entity.x, y=entity.y, string=entity.char, fg=fg)

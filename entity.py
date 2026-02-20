@@ -345,18 +345,39 @@ class Item(Entity):
 
     @property
     def display_name(self) -> str:
-        """Return the fake scroll name if unidentified, otherwise the true name."""
+        """Return the anonymized name if unidentified, otherwise the true name."""
         if not self.item_id:
             return self.name
         gamemap = self.gamemap
         if gamemap is None:
             return self.name
         engine = gamemap.engine
-        if self.item_id not in engine.scroll_aliases:
-            return self.name
         if self.item_id in engine.identified_items:
             return self.name
-        return f"scroll of {engine.scroll_aliases[self.item_id]}"
+        if self.item_id in engine.scroll_aliases:
+            return f"scroll of {engine.scroll_aliases[self.item_id]}"
+        if self.item_id in engine.potion_aliases:
+            return f"{engine.potion_aliases[self.item_id]} potion"
+        return self.name
+
+    @property
+    def display_color(self) -> Tuple[int, int, int]:
+        """Return the alias color for potions (always), otherwise the true color."""
+        if self.item_id:
+            gamemap = self.gamemap
+            if gamemap is not None:
+                engine = gamemap.engine
+                if self.item_id in engine.potion_alias_colors:
+                    return engine.potion_alias_colors[self.item_id]
+                alias = engine.potion_aliases.get(self.item_id, "")
+                if "iridescent" in alias:
+                    import random
+                    rng = random.Random(engine.turn * 997 + sum(ord(c) for c in self.item_id))
+                    while True:
+                        r, g, b = rng.randint(0, 255), rng.randint(0, 255), rng.randint(0, 255)
+                        if max(r, g, b) > 128:
+                            return (r, g, b)
+        return self.color
 
     @property
     def stackable(self) -> bool:

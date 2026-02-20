@@ -36,6 +36,8 @@ class Engine:
         self.kill_counts: dict[str, int] = {}
         self._bonus_actions = 0
         self.scroll_aliases: dict[str, str] = {}
+        self.potion_aliases: dict[str, str] = {}
+        self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
 
     def initialize_scroll_aliases(self) -> None:
@@ -50,6 +52,34 @@ class Engine:
         random.shuffle(names)
         for i, item_id in enumerate(scroll_ids):
             self.scroll_aliases[item_id] = names[i % len(names)]
+
+    def initialize_potion_aliases(self) -> None:
+        """Assign a random appearance to each potion type for this game run."""
+        import random
+        with open("data/potion_looks.txt") as f:
+            looks = [line.strip() for line in f if line.strip()]
+        with open("data/potion_colors.txt") as f:
+            color_entries = []
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = [p.strip() for p in line.split(",")]
+                name = parts[0]
+                rgb = (int(parts[1]), int(parts[2]), int(parts[3]))
+                color_entries.append((name, rgb))
+        potion_ids = [
+            item_id for item_id, item in self.item_manager.items.items()
+            if item.char == "!"
+        ]
+        random.shuffle(looks)
+        for i, item_id in enumerate(potion_ids):
+            look = looks[i % len(looks)]
+            if "$COLOR" in look:
+                color_name, color_rgb = random.choice(color_entries)
+                look = look.replace("$COLOR", color_name)
+                self.potion_alias_colors[item_id] = color_rgb
+            self.potion_aliases[item_id] = look
 
     def handle_enemy_turns(self) -> None:
         """Process AI actions for all non-player actors."""

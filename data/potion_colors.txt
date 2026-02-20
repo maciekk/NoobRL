@@ -1,0 +1,6 @@
+vermillion, 220, 38, 38
+cerulean, 37, 99, 235
+citrine, 234, 179, 8
+rosé, 244, 114, 182
+indigo, 99, 102, 241
+chartreuse, 132, 204, 22
