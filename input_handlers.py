@@ -987,6 +987,29 @@ class WishItemHandler(ListSelectionHandler):
         return actions.WishAction(self.engine.player, self.wand_item, item_id)
 
 
+class IdentifyItemHandler(ListSelectionHandler):
+    """Lets the player select an unidentified inventory item to identify."""
+
+    TITLE = "Identify which item?"
+    use_cursor = True
+
+    def __init__(self, engine: Engine, scroll_item: Item):
+        super().__init__(engine)
+        self.scroll_item = scroll_item
+
+    def get_items(self) -> list:
+        return [
+            item for item in self.engine.player.inventory.items
+            if item.display_name != item.name
+        ]
+
+    def get_display_string(self, index: int, item) -> str:
+        return item.display_name
+
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        return actions.IdentifyAction(self.engine.player, self.scroll_item, item)
+
+
 _DOOR_DIRECTIONS: dict[tuple[int, int], str] = {
     (0, -1): "north",
     (0, 1): "south",

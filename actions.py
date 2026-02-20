@@ -60,6 +60,23 @@ class Action:
         raise NotImplementedError()
 
 
+class IdentifyAction(Action):
+    """Use a scroll of identification to identify an item."""
+
+    def __init__(self, entity: Actor, scroll_item: Item, target_item: Item):
+        super().__init__(entity)
+        self.scroll_item = scroll_item
+        self.target_item = target_item
+
+    def perform(self) -> None:
+        self.engine.identified_items.add(self.target_item.item_id)
+        self.engine.message_log.add_message(
+            f"You identify it as the {self.target_item.name}!",
+            color.status_effect_applied,
+        )
+        self.scroll_item.consumable.consume()
+
+
 class WishAction(Action):
     """Use a wishing wand to wish for an item."""
 

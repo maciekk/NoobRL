@@ -64,6 +64,26 @@ class Consumable(BaseComponent):
                 inventory.items.remove(entity)
 
 
+class IdentificationConsumable(Consumable):  # pylint: disable=abstract-method
+    """Lets the player identify one unidentified item in their inventory."""
+
+    def get_description(self) -> list[str]:
+        return ["Identifies one item in your inventory"]
+
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        from input_handlers import IdentifyItemHandler  # pylint: disable=import-outside-toplevel
+        unidentified = [
+            item for item in consumer.inventory.items
+            if item.display_name != item.name
+        ]
+        if not unidentified:
+            raise Impossible("You have no unidentified items.")
+        self.engine.message_log.add_message(
+            "Select an item to identify.", color.needs_target
+        )
+        return IdentifyItemHandler(self.engine, self.parent)
+
+
 class WishingWandConsumable(Consumable):  # pylint: disable=abstract-method
     """A wand that grants any single wish-able item."""
     def get_description(self) -> list[str]:

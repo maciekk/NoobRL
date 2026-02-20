@@ -1,0 +1,11 @@
+clear
+milky
+iridescent
+fizzy $COLOR
+bubbling $COLOR
+sparkling $COLOR
+cromulent $COLOR
+heavy $COLOR
+viscous $COLOR
+vibrant $COLOR
+opaque $COLOR

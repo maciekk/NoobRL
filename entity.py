@@ -46,6 +46,7 @@ CONSUMABLE_MAP = {
     "SleepConsumable": consumable.SleepConsumable,
     "BombConsumable": consumable.BombConsumable,
     "BlindnessConsumable": consumable.BlindnessConsumable,
+    "IdentificationConsumable": consumable.IdentificationConsumable,
 }
 EQUIPPABLE_MAP = {
     "Dagger": equippable.Dagger,

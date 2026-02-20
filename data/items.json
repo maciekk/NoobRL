@@ -57,6 +57,19 @@
         }
     },
     {
+        "id": "s_identify",
+        "name": "scroll of Identification",
+        "char": "?",
+        "color": [
+            255,
+            255,
+            255
+        ],
+        "consumable": {
+            "name": "IdentificationConsumable"
+        }
+    },
+    {
         "id": "p_heal",
         "name": "Health Potion",
         "char": "!",
