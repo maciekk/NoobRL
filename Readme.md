@@ -41,6 +41,9 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] pressing Esc in game should NOT immediately exit game; do Y/N dialog box
+- [ ] scrolls should have no colours, or randomly selected (not from data/items.json)
+- [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
 - [ ] opening an already open chest throws exception
 - [x] corpses in doorways should prevent closing the door (tactical interest)
 - [x] wished-for items should appear in player inventory, not on floor `#next`
