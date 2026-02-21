@@ -41,9 +41,11 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] need a 'poof' sfx when spawning an item with wishing wand or debug console
+- [ ] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see) `#next`
+- [ ] have multiple sound effects for sword clash/hit
+- [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
 - [x] pressing Esc in game should NOT immediately exit game; do Y/N dialog box
-- [ ] scrolls should have no colours, or randomly selected (not from data/items.json)
+- [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
 - [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
 - [x] opening an already open chest throws exception
 - [x] corpses in doorways should prevent closing the door (tactical interest)
@@ -61,9 +63,9 @@ Ideas & efforts under way.
 - [ ] item weights and maximum carry weight
 - [ ] track how many of a monster SEEN in a run? (if don't kill everything you see)
 - [ ] incremental monster knowledge (scales w/# killed)
-- [ ] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
+- [x] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
 - [ ] maybe later add max stack size for consumables
-- [ ] wands should have charges, be non-stackable
+- [ ] wands should have charges, be non-stackable `#next`
 - [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
 
@@ -75,13 +77,13 @@ Ideas & efforts under way.
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 
 ### Monsters
-- [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs
-- [ ] monsters should have different visibility ranges, some shorter than player's
+- [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs `#next`
+- [x] monsters should have different visibility ranges, some shorter than player's
 - [x] allow monsters to be asleep, fall asleep
 - [x] monsters not asleep should have Brownian motion
-- [ ] certain monsters should patrol the corridors (more guard-like races)
+- [x] certain monsters should patrol the corridors (more guard-like races)
 - [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
-- [ ] add: Kobold (fast, but low HP, minimal damage... although groups dangerous?)
+- [x] add: Kobold (fast, but low HP, minimal damage... although groups dangerous?)
 - [ ] enemy special powers (Ex: speed, strength, invisibility, etc...)
 - [ ] enemies should sometimes drop loot when killed (is corpse part of drop?)
 - [ ] find something useful to do with monster corpses (food? crafting?)
@@ -103,24 +105,25 @@ Ideas & efforts under way.
 ### Items (Potions, Scrolls, Powers, etc)
 - [x] add: amulet & potion of detect monster `#next`
 - [x] add: Potion of Sleep `#next`
-- [ ] add: Potion of Blindness `#next`
-- [ ] add: Scroll of Identify (blocked: anonymized item names)
+- [x] add: Potion of Blindness `#next`
+- [x] add: Scroll of Identify (blocked: anonymized item names)
 - [ ] add: Potion of Berserk - 50% more damage for 10 turns
-- [ ] add: Teleport scroll (user-controlled target, must be in explored space)
+- [ ] add: Teleport scroll (user-controlled target, must be in explored space) `#next`
+- [ ] add: Wand of Digging `#next`
 - [ ] add rings
 - [ ] add more wands
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
-- [ ] rethink colours and glyphs used for consumables
+- [x] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
-- [ ] wand of wishing should even be able to spawn monsters
+- [x] wand of wishing should even be able to spawn monsters
 - [ ] have various light sources, with various light radii
 
 ### UI
 - [x] tileset should be specified in options.py (currently hard-coded in main.py) `#next`
 - [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) `#next`
 - [ ] use different, appropriate sfx for wizard attack
-- [ ] for variety, each text trigger maps to a SET of sfx, not just one
+- [x] for variety, each text trigger maps to a SET of sfx, not just one
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
