@@ -12,6 +12,7 @@ import tcod  # pylint: disable=import-error
 from tcod import libtcodpy  # pylint: disable=import-error
 
 import actions
+import sounds
 from actions import (
     Action,
     BumpAction,
@@ -1591,7 +1592,8 @@ class MainGameEventHandler(EventHandler):
             wand = self.engine.item_manager.clone("wand_wishing")
             if wand:
                 wand.parent = self.engine.player.inventory
-                self.engine.player.inventory.add(wand)
+                if self.engine.player.inventory.add(wand):
+                    sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
                 self.engine.message_log.add_message(
                     "A Wand of Wishing appears in your pack!"
                 )

@@ -10,6 +10,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import tcod
 
 import color
+import sounds
 from components.effect import (
     BlindnessEffect,
     InvisibilityEffect,
@@ -104,6 +105,7 @@ class WishAction(Action):
                 f"You wished for a {item.name}!",
                 color.status_effect_applied,
             )
+        sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
         self.wand_item.consumable.consume()
 
 
