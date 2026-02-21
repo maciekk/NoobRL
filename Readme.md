@@ -42,7 +42,8 @@ Ideas & efforts under way.
 
 ### FIXES
 - [ ] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see) `#next`
-- [ ] have multiple sound effects for sword clash/hit
+- [ ] have dedicated Read command, like Quaff
+- [x] have multiple sound effects for sword clash/hit
 - [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
 - [x] pressing Esc in game should NOT immediately exit game; do Y/N dialog box
 - [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`

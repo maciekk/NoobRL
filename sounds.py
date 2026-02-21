@@ -20,6 +20,10 @@ _EFFECT_DEFS = [
         [
             "sfx/mixkit-sword-cutting-flesh-2788.wav",
             "sfx/mixkit-metal-hit-woosh-1485.wav",
+            #"sfx/sword-whoosh-clang.mp3",
+            "sfx/foil-clang.wav",
+            #"sfx/sword-clang.wav",
+            "sfx/sword-clash-nice.wav",
         ],
     ),
     (
