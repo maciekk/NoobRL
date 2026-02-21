@@ -269,6 +269,11 @@ class AskUserEventHandler(EventHandler):
         return MainGameEventHandler(self.engine)
 
 
+_MOTION_KEYS = frozenset("hj")
+_INVENTORY_KEYS = [c for c in "abcdefghijklmnopqrstuvwxyz" if c not in _MOTION_KEYS]
+_INVENTORY_KEY_TO_INDEX = {c: i for i, c in enumerate(_INVENTORY_KEYS)}
+
+
 class ListSelectionHandler(AskUserEventHandler):
     """Base class for item selection menus with (a) Label style letter-based selection.
 
@@ -312,8 +317,8 @@ class ListSelectionHandler(AskUserEventHandler):
 
         item_strings = []
         for i, item in enumerate(items):
-            item_key = chr(ord("a") + i)
-            item_strings.append(f"({item_key}) {self.get_display_string(i, item)}")
+            item_key = _INVENTORY_KEYS[i]
+            item_strings.append(f"{item_key}. {self.get_display_string(i, item)}")
 
         max_item_width = max((len(s) for s in item_strings), default=0)
         width = max(len(self.TITLE) + 4, max_item_width + 2)
@@ -356,8 +361,9 @@ class ListSelectionHandler(AskUserEventHandler):
                 self.cursor = max(0, min(self.cursor, num_items - 1))
                 return self.on_selection(self.cursor, items[self.cursor])
 
-        index = key - tcod.event.KeySym.a
-        if 0 <= index <= 25:
+        char = chr(key) if tcod.event.KeySym.a <= key <= tcod.event.KeySym.z else None
+        if char and char in _INVENTORY_KEY_TO_INDEX:
+            index = _INVENTORY_KEY_TO_INDEX[char]
             if index < num_items:
                 if self.use_cursor:
                     self.cursor = index
@@ -704,6 +710,22 @@ INVENTORY_CURSOR_DOWN_KEYS = {
     tcod.event.KeySym.KP_2,
 }
 
+_SECTION_NAMES = {0: "Weapons", 1: "Armour", 2: "Potions", 3: "Scrolls", 4: "Other"}
+
+
+def _item_category(item: "Item") -> int:
+    """Return sort key for inventory section ordering."""
+    if item.equippable:
+        if item.equippable.equipment_type == EquipmentType.WEAPON:
+            return 0
+        if item.equippable.equipment_type == EquipmentType.ARMOR:
+            return 1
+    if item.char == "!":
+        return 2
+    if item.char == "?":
+        return 3
+    return 4
+
 
 class InventoryEventHandler(ListSelectionHandler):
     """Base for inventory selection menus (subclasses handle specific actions)."""
@@ -712,17 +734,84 @@ class InventoryEventHandler(ListSelectionHandler):
     use_cursor = True
 
     def get_items(self) -> list:
-        """Return the player's inventory items."""
-        return self.engine.player.inventory.items
+        """Return the player's inventory items sorted by category."""
+        return sorted(self.engine.player.inventory.items, key=_item_category)
 
     def get_display_string(self, index: int, item) -> str:
-        """Return display string with stack count and equipped status."""
-        s = item.display_name
+        """Return item name without count/equipped suffix."""
+        return item.display_name
+
+    def _get_display_suffix(self, item) -> str:
+        """Return the bracketed [count]/[E] suffix, or empty string."""
+        s = ""
         if item.stackable and item.stack_count > 1:
-            s += f" (x{item.stack_count})"
+            s += f" [x{item.stack_count}]"
         if self.engine.player.equipment.item_is_equipped(item):
-            s += " (E)"
+            s += " [E]"
         return s
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render inventory menu with section headers between item categories."""
+        self.engine.render(console)
+
+        items = self.get_items()
+        num_items = len(items)
+
+        if self.use_cursor and num_items > 0:
+            self.cursor = max(0, min(self.cursor, num_items - 1))
+
+        # Build rows: ("header", name) or ("item", idx, item)
+        rows = []
+        prev_cat = None
+        for idx, item in enumerate(items):
+            cat = _item_category(item)
+            if cat != prev_cat:
+                rows.append(("header", _SECTION_NAMES[cat]))
+                prev_cat = cat
+            rows.append(("item", idx, item))
+
+        # Build display data for all rows
+        row_data = []  # (display_string, suffix_string) per row
+        for row in rows:
+            if row[0] == "header":
+                row_data.append((f"-- {row[1]} --", ""))
+            else:
+                _, idx, item = row
+                item_key = _INVENTORY_KEYS[idx]
+                base = f"{item_key}. {self.get_display_string(idx, item)}"
+                suffix = self._get_display_suffix(item)
+                row_data.append((base, suffix))
+
+        height = max(len(rows) + 2, 3)
+        max_str_width = max((len(b) + len(s) for b, s in row_data), default=0)
+        width = max(len(self.TITLE) + 4, max_str_width + 2)
+
+        x = 40 if self.engine.player.x <= 30 else 0
+        y = 0
+
+        console.draw_frame(
+            x=x, y=y, width=width, height=height,
+            title=self.TITLE, clear=True,
+            fg=(255, 255, 255), bg=(0, 0, 0),
+        )
+
+        if not items:
+            console.print(x + 1, y + 1, self.EMPTY_TEXT)
+            return
+
+        CYAN = (0, 255, 255)
+        for row_y, ((base, suffix), row) in enumerate(zip(row_data, rows), start=y + 1):
+            if row[0] == "header":
+                console.print(x + 1, row_y, base, fg=color.impossible)
+            else:
+                _, idx, _ = row
+                highlighted = self.use_cursor and idx == self.cursor
+                fg_main = color.black if highlighted else color.white
+                bg = color.white if highlighted else color.black
+                console.print(x + 1, row_y, base, fg=fg_main, bg=bg)
+                if suffix:
+                    fg_suffix = color.black if highlighted else CYAN
+                    console.print(x + 1 + len(base), row_y, suffix, fg=fg_suffix, bg=bg)
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
         """Dispatch selection to subclass handler."""
@@ -770,7 +859,7 @@ class QuaffHandler(ListSelectionHandler):
         """Return display string with stack count for potions."""
         s = item.display_name
         if item.stackable and item.stack_count > 1:
-            s += f" (x{item.stack_count})"
+            s += f" [x{item.stack_count}]"
         return s
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
