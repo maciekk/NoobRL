@@ -221,6 +221,27 @@ class EventHandler(BaseEventHandler):
         self.engine.render(console)
 
 
+class QuitConfirmHandler(EventHandler):
+    """Yes/no dialog confirming the player wants to quit."""
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+        console.rgb["fg"] //= 4
+        console.rgb["bg"] //= 4
+
+        msg = "Really quit? (y/n)"
+        width = len(msg) + 4
+        x = (console.width - width) // 2
+        y = console.height // 2 - 2
+        console.draw_frame(x, y, width, 3, clear=True, fg=color.white, bg=color.black)
+        console.print(x + 2, y + 1, msg, fg=color.white, bg=color.black)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        if event.sym == tcod.event.KeySym.y:
+            raise SystemExit()
+        return MainGameEventHandler(self.engine)
+
+
 class AskUserEventHandler(EventHandler):
     """Base for modal dialogs and menus; dismissible by Escape or click."""
 
@@ -1501,7 +1522,7 @@ class MainGameEventHandler(EventHandler):
         elif key in WAIT_KEYS:
             action = WaitAction(player)
         elif key == tcod.event.KeySym.ESCAPE:
-            raise SystemExit()
+            return QuitConfirmHandler(self.engine)
         elif key == tcod.event.KeySym.SEMICOLON:
             return HistoryViewer(self.engine)
         elif is_shifted(event, tcod.event.KeySym.SLASH):
