@@ -270,25 +270,18 @@ class Chest(Entity):
             render_order=RenderOrder.ITEM,
         )
         self.opened = False
+        self.stored_item_ids: List[str] = []
 
     def open(self, opener: Actor) -> None:
-        """Open the chest and spawn random items."""
+        """Open the chest and spawn its pre-determined items."""
         import exceptions
 
         if self.opened:
             raise exceptions.Impossible("This chest is already open.")
 
-        from dice import roll
-        from procgen import get_entities_at_random, item_chances
-
-        num_items = roll("1d3") + 1
-        floor = self.gamemap.engine.game_world.current_floor
-        chosen = get_entities_at_random(
-            self.gamemap.engine, item_chances, num_items, floor
-        )
-
         names = []
-        for template in chosen:
+        for item_id in self.stored_item_ids:
+            template = self.gamemap.engine.item_manager.items.get(item_id)
             if template is None:
                 continue
             item = template.spawn(self.gamemap, self.x, self.y)
@@ -298,9 +291,8 @@ class Chest(Entity):
         self.opened = True
 
         if names:
-            listing = ", ".join(names)
             self.gamemap.engine.message_log.add_message(
-                f"You open the chest and find: {listing}!"
+                f"You open the chest and find: {', '.join(names)}!"
             )
         else:
             self.gamemap.engine.message_log.add_message(

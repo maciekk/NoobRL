@@ -1,3 +1,4 @@
+import random
 import re
 from collections import deque
 from typing import List, Optional, Tuple
@@ -12,6 +13,38 @@ from input_handlers import (
     MainGameEventHandler,
     SelectIndexHandler,
 )
+
+CHEST_OF_WONDER_ID = "__chest_of_wonder__"
+
+_POTIONS = [
+    "p_heal", "p_damage", "p_clairvoyance", "p_invisibility",
+    "p_speed", "p_detect_monster", "p_sleep", "p_blindness",
+]
+_SCROLLS = ["s_confusion", "s_fireball", "s_blink", "s_lightning", "s_identify"]
+_WANDS = ["wand_wishing"]
+_WEAPONS = ["dagger", "sword", "long_sword", "odachi"]
+_ARMOR = ["leather_armor", "chain_mail", "steel_armor"]
+
+
+def spawn_chest_of_wonder(game_map: GameMap) -> None:
+    from entity import Chest
+
+    player = game_map.engine.player
+    x, y = player.x, player.y
+
+    item_ids = (
+        random.choices(_POTIONS, k=5)
+        + random.choices(_SCROLLS, k=5)
+        + random.choices(_WANDS, k=3)
+        + random.choices(_WEAPONS, k=1)
+        + random.choices(_ARMOR, k=1)
+    )
+
+    chest = Chest(name="Chest of Wonder")
+    chest.stored_item_ids = item_ids
+    chest.spawn(game_map, x, y)
+
+    game_map.engine.message_log.add_message("A Chest of Wonder appears!")
 
 
 def parse_query(buffer: str) -> Tuple[str, int]:
@@ -115,6 +148,8 @@ def find_matches(engine: Engine, query: str) -> List[Tuple[str, str]]:
     for entity_id, monster in engine.monster_manager.monsters.items():
         if q in entity_id.lower() or q in monster.name.lower():
             matches.append((entity_id, monster.name))
+    if q in "chest of wonder":
+        matches.append((CHEST_OF_WONDER_ID, "Chest of Wonder"))
     return sorted(matches, key=lambda x: x[1])
 
 
@@ -160,6 +195,9 @@ class DebugHandler(AskUserEventHandler):
                 return MainGameEventHandler(self.engine)
             elif len(matches) == 1:
                 entity_id, name = matches[0]
+                if entity_id == CHEST_OF_WONDER_ID:
+                    spawn_chest_of_wonder(self.engine.game_map)
+                    return MainGameEventHandler(self.engine)
                 if entity_id in self.engine.monster_manager.monsters:
                     return DebugPlaceMonsterHandler(self.engine, entity_id, name, count)
                 label = f"{count}x {name}" if count > 1 else name
@@ -208,6 +246,9 @@ class DebugSelectHandler(ListSelectionHandler):
 
     def on_selection(self, index: int, item):
         entity_id, name = item
+        if entity_id == CHEST_OF_WONDER_ID:
+            spawn_chest_of_wonder(self.engine.game_map)
+            return MainGameEventHandler(self.engine)
         if entity_id in self.engine.monster_manager.monsters:
             return DebugPlaceMonsterHandler(self.engine, entity_id, name, self.count)
         label = f"{self.count}x {name}" if self.count > 1 else name

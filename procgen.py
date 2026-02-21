@@ -181,11 +181,18 @@ def place_entities(
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
         from entity import Chest
+        from dice import roll
 
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
-            Chest().spawn(dungeon, x, y)
+            num_items = roll("1d3") + 1
+            floor = dungeon.engine.game_world.current_floor
+            chosen = get_entities_at_random(dungeon.engine, item_chances, num_items, floor)
+            item_ids = [t.item_id for t in chosen if t is not None and hasattr(t, "item_id")]
+            chest = Chest()
+            chest.stored_item_ids = item_ids
+            chest.spawn(dungeon, x, y)
 
 
 def tunnel_between(
