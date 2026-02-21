@@ -5,6 +5,7 @@
     "char": "@",
     "color": [255, 255, 255],
     "ai_cls": "HostileEnemy",
+    "sight_range": 8,
     "equipment": {
       "weapon": "dagger"
     },
@@ -88,6 +89,7 @@
     "color": [255, 0, 0],
     "ai_cls": "HostileEnemy",
     "base_speed": 50,
+    "sight_range": 8,
     "equipment": {
     },
     "fighter": {
@@ -109,6 +111,7 @@
     "color": [210, 87, 255],
     "ai_cls": "HostileEnemy",
     "base_speed": 50,
+    "sight_range": 8,
     "equipment": {
     },
     "fighter": {
@@ -150,6 +153,7 @@
     "color": [255, 0, 255],
     "ai_cls": "HostileEnemy",
     "attack_range": 3,
+    "sight_range": 8,
     "ranged_attack": true,
     "equipment": {
     },
@@ -193,6 +197,7 @@
     "char": "P",
     "color": [255, 100, 30],
     "ai_cls": "HostileEnemy",
+    "sight_range": 4,
     "death_explosion": {"delay": 5, "radius": 3, "damage": 12},
     "fighter": {"hp": 6, "base_defense": 0, "base_power": 2},
     "equipment": {},

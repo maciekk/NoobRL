@@ -185,6 +185,7 @@ class Actor(Entity):
         attack_range: int = 1,
         ranged_attack: bool = False,
         death_explosion: dict = None,
+        sight_range: int = 6,
     ):
         super().__init__(
             x=x,
@@ -228,6 +229,7 @@ class Actor(Entity):
         self.is_hasted = False
         self.is_detecting_monsters = False
         self.death_explosion = death_explosion
+        self.sight_range = sight_range
 
     @property
     def speed(self) -> int:

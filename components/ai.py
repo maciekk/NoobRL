@@ -178,6 +178,7 @@ class HostileEnemy(BaseAI):
         if (
             self.engine.game_map.visible[self.entity.x, self.entity.y]
             and not self.engine.player.is_invisible
+            and distance <= self.entity.sight_range
         ):
             # Give actor chance to notice player, if that has not happened yet.
             if not self.entity.noticed_player:
@@ -267,6 +268,7 @@ class PatrollingEnemy(BaseAI):
         if (
             self.engine.game_map.visible[self.entity.x, self.entity.y]
             and not self.engine.player.is_invisible
+            and distance <= self.entity.sight_range
         ):
             if distance <= self.entity.attack_range:
                 if self.entity.ranged_attack:
