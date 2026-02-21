@@ -270,8 +270,11 @@ class AskUserEventHandler(EventHandler):
         return MainGameEventHandler(self.engine)
 
 
-_MOTION_KEYS = frozenset("hj")
-_INVENTORY_KEYS = [c for c in "abcdefghijklmnopqrstuvwxyz" if c not in _MOTION_KEYS]
+_MOTION_KEYS = frozenset("jk")
+_INVENTORY_KEYS = (
+    [c for c in "abcdefghijklmnopqrstuvwxyz" if c not in _MOTION_KEYS]
+    + [c for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if c.lower() not in _MOTION_KEYS]
+)
 _INVENTORY_KEY_TO_INDEX = {c: i for i, c in enumerate(_INVENTORY_KEYS)}
 
 
@@ -318,7 +321,7 @@ class ListSelectionHandler(AskUserEventHandler):
 
         item_strings = []
         for i, item in enumerate(items):
-            item_key = _INVENTORY_KEYS[i]
+            item_key = _INVENTORY_KEYS[i] if i < len(_INVENTORY_KEYS) else "?"
             item_strings.append(f"{item_key}. {self.get_display_string(i, item)}")
 
         max_item_width = max((len(s) for s in item_strings), default=0)
@@ -362,15 +365,16 @@ class ListSelectionHandler(AskUserEventHandler):
                 self.cursor = max(0, min(self.cursor, num_items - 1))
                 return self.on_selection(self.cursor, items[self.cursor])
 
-        char = chr(key) if tcod.event.KeySym.a <= key <= tcod.event.KeySym.z else None
-        if char and char in _INVENTORY_KEY_TO_INDEX:
-            index = _INVENTORY_KEY_TO_INDEX[char]
-            if index < num_items:
-                if self.use_cursor:
-                    self.cursor = index
-                return self.on_selection(index, items[index])
-            self.engine.message_log.add_message("Invalid entry.", color.invalid)
-            return None
+        if tcod.event.KeySym.a <= key <= tcod.event.KeySym.z:
+            char = chr(key).upper() if has_shift(event.mod) else chr(key)
+            if char in _INVENTORY_KEY_TO_INDEX:
+                index = _INVENTORY_KEY_TO_INDEX[char]
+                if index < num_items:
+                    if self.use_cursor:
+                        self.cursor = index
+                    return self.on_selection(index, items[index])
+                self.engine.message_log.add_message("Invalid entry.", color.invalid)
+                return None
         return super().ev_keydown(event)
 
 
@@ -778,7 +782,7 @@ class InventoryEventHandler(ListSelectionHandler):
                 row_data.append((f"-- {row[1]} --", ""))
             else:
                 _, idx, item = row
-                item_key = _INVENTORY_KEYS[idx]
+                item_key = _INVENTORY_KEYS[idx] if idx < len(_INVENTORY_KEYS) else "?"
                 base = f"{item_key}. {self.get_display_string(idx, item)}"
                 suffix = self._get_display_suffix(item)
                 row_data.append((base, suffix))
@@ -1173,7 +1177,7 @@ def find_openable_targets(engine: Engine) -> list:
                 )
 
             for entity in engine.game_map.entities:
-                if entity.x == x and entity.y == y and hasattr(entity, "open"):
+                if entity.x == x and entity.y == y and hasattr(entity, "open") and not getattr(entity, "opened", False):
                     direction = "here" if (dx == 0 and dy == 0) else "nearby"
                     targets.append(
                         (dx, dy, f"{entity.name.capitalize()} ({direction})", entity)
@@ -1203,7 +1207,10 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
         if isinstance(target, Action):
             return target
         # It's an entity with open() method
-        target.open(self.engine.player)
+        try:
+            target.open(self.engine.player)
+        except exceptions.Impossible as exc:
+            self.engine.message_log.add_message(exc.args[0], color.impossible)
         return MainGameEventHandler(self.engine)
 
 
