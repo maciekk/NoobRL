@@ -1134,6 +1134,27 @@ _DOOR_DIRECTIONS: dict[tuple[int, int], str] = {
 }
 
 
+def find_pickup_squares(engine: Engine) -> list:
+    """Find the 8 adjacent squares that have items. Returns (dx, dy, desc, items) tuples."""
+    targets = []
+    px, py = engine.player.x, engine.player.y
+    for dx in range(-1, 2):
+        for dy in range(-1, 2):
+            if dx == 0 and dy == 0:
+                continue
+            x, y = px + dx, py + dy
+            if not engine.game_map.in_bounds(x, y):
+                continue
+            items = [item for item in engine.game_map.items if item.x == x and item.y == y]
+            if items:
+                if len(items) == 1:
+                    desc = items[0].display_name
+                else:
+                    desc = f"{len(items)} items"
+                targets.append((dx, dy, desc, items))
+    return targets
+
+
 def find_openable_targets(engine: Engine) -> list:
     """Find openable targets (chests, closed doors) in 3x3 area; return (dx, dy, desc, action)."""
     targets = []
@@ -1184,6 +1205,24 @@ class OpenableSelectionHandler(DirectionalSelectionHandler):
         # It's an entity with open() method
         target.open(self.engine.player)
         return MainGameEventHandler(self.engine)
+
+
+class PickupDirectionHandler(DirectionalSelectionHandler):
+    """Lets the player pick a direction to pick up items from an adjacent tile."""
+
+    TITLE = "Pick up from where?"
+    EMPTY_TEXT = "(No items nearby)"
+
+    def __init__(self, engine: Engine, targets: list):
+        super().__init__(engine)
+        self.targets = targets
+
+    def get_directional_items(self) -> list:
+        return self.targets
+
+    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+        px, py = self.engine.player.x, self.engine.player.y
+        return actions.PickupAction(self.engine.player, px + dx, py + dy)
 
 
 def find_closeable_doors(engine: Engine) -> list:
@@ -1619,7 +1658,23 @@ class MainGameEventHandler(EventHandler):
         elif is_shifted(event, tcod.event.KeySym.SLASH):
             return ViewKeybinds(self.engine)
         elif key == tcod.event.KeySym.g:
-            action = PickupAction(player)
+            player_items = [
+                item for item in self.engine.game_map.items
+                if item.x == player.x and item.y == player.y
+            ]
+            if player_items:
+                action = PickupAction(player)
+            else:
+                surrounding = find_pickup_squares(self.engine)
+                if not surrounding:
+                    self.engine.message_log.add_message(
+                        "There is nothing here to pick up.", color.impossible
+                    )
+                elif len(surrounding) == 1:
+                    dx, dy, _, _ = surrounding[0]
+                    action = PickupAction(player, player.x + dx, player.y + dy)
+                else:
+                    return PickupDirectionHandler(self.engine, surrounding)
         elif key == tcod.event.KeySym.i:
             return InventoryActivateHandler(self.engine)
         elif key == tcod.event.KeySym.o:

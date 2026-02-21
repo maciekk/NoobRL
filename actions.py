@@ -110,11 +110,16 @@ class WishAction(Action):
 
 
 class PickupAction(Action):
-    """Pickup an item and add it to the inventory."""
+    """Pickup an item and add it to the inventory, optionally from a specific tile."""
+
+    def __init__(self, entity: Actor, target_x: Optional[int] = None, target_y: Optional[int] = None) -> None:
+        super().__init__(entity)
+        self.target_x = target_x
+        self.target_y = target_y
 
     def perform(self) -> None:
-        actor_location_x = self.entity.x
-        actor_location_y = self.entity.y
+        actor_location_x = self.target_x if self.target_x is not None else self.entity.x
+        actor_location_y = self.target_y if self.target_y is not None else self.entity.y
         inventory = self.entity.inventory
 
         items_here = [
