@@ -722,7 +722,7 @@ _SECTION_NAMES = {0: "Weapons", 1: "Armour", 2: "Potions", 3: "Scrolls", 4: "Oth
 def _item_category(item: "Item") -> int:
     """Return sort key for inventory section ordering."""
     if item.equippable:
-        if item.equippable.equipment_type == EquipmentType.WEAPON:
+        if item.equippable.equipment_type in (EquipmentType.WEAPON, EquipmentType.THROWN):
             return 0
         if item.equippable.equipment_type == EquipmentType.ARMOR:
             return 1

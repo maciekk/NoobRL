@@ -41,7 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] show darts in Weapon seciton of inventory
+- [x] show darts in Weapon seciton of inventory
 - [x] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see)
 - [x] have dedicated Read command, like Quaff
 - [ ] need a sfx when thrown items hit or drop to ground
