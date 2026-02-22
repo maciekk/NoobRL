@@ -41,6 +41,8 @@ def main() -> None:
     ) as context:
         # order="F" means [x, y] access to NumPy arrays (vs [y, x])
         root_console = tcod.console.Console(n_cols, n_rows, order="F")
+        input_handlers._context = context
+        input_handlers._root_console = root_console
         try:
             while True:
                 root_console.clear()

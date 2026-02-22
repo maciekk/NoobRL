@@ -75,7 +75,11 @@ CONFIRM_KEYS = {
     tcod.event.KeySym.KP_ENTER,
 }
 
-MIN_FRAME_INTERVAL = 0.01
+MIN_FRAME_INTERVAL = 0.025
+
+# Set by main.py so handle_action can render between repeated steps.
+_context: Optional["tcod.context.Context"] = None
+_root_console: Optional["tcod.console.Console"] = None
 
 
 # Modifier key helpers
@@ -205,6 +209,10 @@ class EventHandler(BaseEventHandler):
             if not should_repeat:
                 break
 
+            if _context is not None and _root_console is not None:
+                _root_console.clear()
+                self.engine.render(_root_console)
+                _context.present(_root_console, keep_aspect=True, integer_scaling=False)
             time.sleep(MIN_FRAME_INTERVAL)
 
         return True
