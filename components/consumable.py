@@ -84,12 +84,29 @@ class IdentificationConsumable(Consumable):  # pylint: disable=abstract-method
         return IdentifyItemHandler(self.engine, self.parent)
 
 
-class WishingWandConsumable(Consumable):  # pylint: disable=abstract-method
+class WandConsumable(Consumable):
+    """Base class for wand items. Uses charges; spent wands stay in inventory."""
+
+    def _check_charges(self) -> None:
+        """Raise Impossible if wand has no charges remaining."""
+        if self.parent.stack_count <= 0:
+            raise Impossible("The wand is empty.")
+
+    def consume(self) -> None:
+        """Decrement charges but do NOT remove wand from inventory at 0."""
+        entity = self.parent
+        inventory = entity.parent
+        if isinstance(inventory, components.inventory.Inventory):
+            entity.stack_count -= 1
+
+
+class WishingWandConsumable(WandConsumable):  # pylint: disable=abstract-method
     """A wand that grants any single wish-able item."""
     def get_description(self) -> list[str]:
         return ["Grants a wish for any item"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        self._check_charges()
         from input_handlers import WishItemHandler  # pylint: disable=import-outside-toplevel
         self.engine.message_log.add_message("What do you wish for?", color.needs_target)
         return WishItemHandler(self.engine, self.parent)

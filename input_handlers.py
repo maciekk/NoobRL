@@ -179,7 +179,11 @@ class EventHandler(BaseEventHandler):
 
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle events and dispatch actions; check for death and level-up conditions."""
-        action_or_state = self.dispatch(event)
+        try:
+            action_or_state = self.dispatch(event)
+        except exceptions.Impossible as exc:
+            self.engine.message_log.add_message(exc.args[0], color.impossible)
+            return self
         if isinstance(action_or_state, BaseEventHandler):
             return action_or_state
         if self.handle_action(action_or_state):
@@ -771,7 +775,9 @@ class InventoryEventHandler(ListSelectionHandler):
     def _get_display_suffix(self, item) -> str:
         """Return the bracketed [count]/[E] suffix, or empty string."""
         s = ""
-        if item.stackable and item.stack_count > 1:
+        if item.char == "/":
+            s += f" [{item.stack_count}c]"
+        elif item.stackable and item.stack_count > 1:
             s += f" [x{item.stack_count}]"
         if self.engine.player.equipment.item_is_equipped(item):
             s += " [E]"

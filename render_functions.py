@@ -17,7 +17,9 @@ def entity_brief(entity) -> str:
     """Provides a brief summary of entity."""
     if isinstance(entity, Item):
         s = entity.display_name
-        if entity.stackable and entity.stack_count > 1:
+        if entity.char == "/":
+            s += f" ({entity.stack_count}c)"
+        elif entity.stackable and entity.stack_count > 1:
             s += f" (x{entity.stack_count})"
     else:
         s = f"{entity.name}"

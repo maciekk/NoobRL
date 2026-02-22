@@ -249,7 +249,7 @@
             215,
             0
         ],
-        "stack_count": 3,
+        "charges": 3,
         "consumable": {
             "name": "WishingWandConsumable"
         }

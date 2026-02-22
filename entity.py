@@ -380,6 +380,8 @@ class Item(Entity):
         """True if this item can be stacked in inventory."""
         from equipment_types import EquipmentType
 
+        if self.char == "/":           # Wands use charges, not stacks
+            return False
         if self.equippable is not None and self.equippable.equipment_type == EquipmentType.THROWN:
             return True
         return self.consumable is not None and self.equippable is None
@@ -397,6 +399,8 @@ class ItemManager:
             for item in json.loads(data):
                 id = item.pop("id")
                 item["item_id"] = id
+                if "charges" in item:
+                    item["stack_count"] = item.pop("charges")
                 d = item.get("consumable", None)
                 if d:
                     consumable_class = CONSUMABLE_MAP[d.pop("name")]
