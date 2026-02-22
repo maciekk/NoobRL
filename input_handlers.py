@@ -873,6 +873,29 @@ class QuaffHandler(ListSelectionHandler):
         return item.consumable.get_action(self.engine.player)
 
 
+class ReadHandler(ListSelectionHandler):
+    """Lets the player select a scroll to read from inventory."""
+
+    TITLE = "Read which scroll?"
+    EMPTY_TEXT = "(No scrolls)"
+    use_cursor = True
+
+    def get_items(self) -> list:
+        """Return only scroll items from inventory."""
+        return [item for item in self.engine.player.inventory.items if item.char == "?"]
+
+    def get_display_string(self, index: int, item) -> str:
+        """Return display string with stack count for scrolls."""
+        s = item.display_name
+        if item.stackable and item.stack_count > 1:
+            s += f" [x{item.stack_count}]"
+        return s
+
+    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+        """Get and return the consumable action for the selected scroll."""
+        return item.consumable.get_action(self.engine.player)
+
+
 def _item_type_and_stat_lines(item: "Item") -> list:  # pylint: disable=too-many-branches
     """Build type label, description, and stat lines common to all item detail views."""
     lines: list = []
@@ -1766,6 +1789,8 @@ class MainGameEventHandler(EventHandler):
             return WalkChoiceHandler(self.engine)
         elif key == tcod.event.KeySym.q:
             return QuaffHandler(self.engine)
+        elif key == tcod.event.KeySym.r:
+            return ReadHandler(self.engine)
         elif key == tcod.event.KeySym.t:
             return ThrowItemHandler(self.engine)
         elif is_shifted(event, tcod.event.KeySym.N2):
