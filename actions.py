@@ -723,14 +723,15 @@ class ThrowAction(Action):
                 color.status_effect_applied,
             )
 
-    def _trace_throw_path(self, game_map, sx: int, sy: int) -> Tuple[int, int, Optional[Actor]]:
-        """Walk the Bresenham line from (sx, sy) to target_xy; return landing tile + hit actor."""
+    def _trace_throw_path(self, game_map, sx: int, sy: int):
+        """Walk the Bresenham line from (sx, sy) to target_xy; return (path, landing tile, hit actor)."""
         tx, ty = self.target_xy
         line = tcod.los.bresenham((sx, sy), (tx, ty)).tolist()
         if line and (line[0][0], line[0][1]) == (sx, sy):
             line = line[1:]
         final_x, final_y = sx, sy
         hit_actor = None
+        path: list[tuple[int, int]] = []
         for i, (lx, ly) in enumerate(line):
             if i >= self.MAX_RANGE:
                 break
@@ -742,9 +743,11 @@ class ThrowAction(Action):
             if actor:
                 final_x, final_y = lx, ly
                 hit_actor = actor
+                path.append((lx, ly))
                 break
             final_x, final_y = lx, ly
-        return final_x, final_y, hit_actor
+            path.append((lx, ly))
+        return path, final_x, final_y, hit_actor
 
     def _place_thrown_item(self, thrown_item: Item, final_x: int, final_y: int, game_map) -> None:
         """Place thrown_item on the floor, merging with an existing stack if one is present."""
@@ -766,7 +769,13 @@ class ThrowAction(Action):
     def perform(self) -> None:
         game_map = self.engine.game_map
         sx, sy = self.entity.x, self.entity.y
-        final_x, final_y, hit_actor = self._trace_throw_path(game_map, sx, sy)
+        path, final_x, final_y, hit_actor = self._trace_throw_path(game_map, sx, sy)
+
+        import input_handlers as _ih
+        if _ih._context is not None and _ih._root_console is not None:
+            from render_functions import animate_projectile
+            frames = [(x, y, self.item.char, self.item.color) for x, y in path]
+            animate_projectile(self.engine, frames, _ih._root_console, _ih._context)
 
         # Remove one item from inventory.
         if self.item.stackable and self.item.stack_count > 1:

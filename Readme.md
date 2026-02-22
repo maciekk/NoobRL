@@ -131,7 +131,7 @@ Ideas & efforts under way.
 
 ### UI
 - [x] tileset should be specified in options.py (currently hard-coded in main.py) `#next`
-- [ ] support single turn animations (e.g., wand ray on zap, thrown items flying) `#next`
+- [x] support single turn animations (e.g., wand ray on zap, thrown items flying) `#next`
 - [ ] use different, appropriate sfx for wizard attack
 - [x] for variety, each text trigger maps to a SET of sfx, not just one
 

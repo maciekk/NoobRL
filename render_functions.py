@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from typing import Tuple, TYPE_CHECKING
 
 import color
@@ -109,3 +110,27 @@ def render_names_at_mouse_location(
     )
 
     console.print(x=x, y=y, string=names_at_mouse_location)
+
+
+def animate_projectile(
+    engine,
+    frames: list[tuple[int, int, str, tuple[int, int, int]]],
+    console,
+    context,
+    frame_delay: float = 0.05,
+) -> None:
+    """Play a frame-by-frame animation on screen.
+
+    Each frame is (x, y, char, fg_color). Only visible tiles are rendered;
+    off-FOV frames are silently skipped. Game state is not mutated.
+    """
+    for x, y, char, fg in frames:
+        if not engine.game_map.in_bounds(x, y):
+            continue
+        if not engine.game_map.visible[x, y]:
+            continue
+        console.clear()
+        engine.render(console)
+        console.print(x=x, y=y, string=char, fg=fg)
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(frame_delay)
