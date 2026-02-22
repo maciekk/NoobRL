@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import os
 import time
+from enum import auto, Enum
 
 from typing import Callable, Optional, Tuple, TYPE_CHECKING, Union
 
@@ -1326,46 +1327,69 @@ class SelectIndexHandler(AskUserEventHandler):
         raise NotImplementedError()
 
 
-class LookHandler(SelectIndexHandler):
-    """Lets the player look around using the keyboard."""
+class TabTargets(Enum):
+    """Controls which visible entities Tab cycles through in SelectEntityHandler."""
+    MONSTERS_ONLY = auto()
+    MONSTERS_AND_ITEMS = auto()
+
+
+class SelectEntityHandler(SelectIndexHandler):
+    """Map-targeting handler with Tab cycling through visible entities.
+
+    Used for 'v' look/view mode (MONSTERS_AND_ITEMS) and consumable
+    targeting (MONSTERS_ONLY).
+    """
 
     def __init__(
-        self, engine: Engine, look_x: Optional[int] = None, look_y: Optional[int] = None
+        self,
+        engine: Engine,
+        callback: Callable[[Tuple[int, int]], Optional[ActionOrHandler]],
+        tab_targets: TabTargets = TabTargets.MONSTERS_ONLY,
+        initial_xy: Optional[Tuple[int, int]] = None,
     ):
         super().__init__(engine)
-        if look_x is not None and look_y is not None:
-            engine.mouse_location = look_x, look_y
+        self.callback = callback
+        self.tab_targets = tab_targets
+        if initial_xy is not None:
+            engine.mouse_location = initial_xy
+
+    def _tab_entity_list(self) -> list:
+        game_map = self.engine.game_map
+        entities: list = [
+            a for a in game_map.actors
+            if a is not self.engine.player
+            and a.is_alive
+            and game_map.visible[a.x, a.y]
+        ]
+        if self.tab_targets == TabTargets.MONSTERS_AND_ITEMS:
+            entities.extend(
+                item for item in game_map.items if game_map.visible[item.x, item.y]
+            )
+        return entities
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        if event.sym == tcod.event.KeySym.TAB:
+            cx, cy = self.engine.mouse_location
+            entities = self._tab_entity_list()
+            if entities:
+                entities.sort(key=lambda e: max(abs(e.x - cx), abs(e.y - cy)))
+                if entities[0].x == cx and entities[0].y == cy:
+                    entities = entities[1:] + entities[:1]
+                self.engine.mouse_location = entities[0].x, entities[0].y
+            return None
+        return super().ev_keydown(event)
 
     def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
-        """Inspect what's under the cursor, or return to main handler."""
-        game_map = self.engine.game_map
-
-        # Check for a visible monster (not the player).
-        if game_map.visible[x, y]:
-            actor = game_map.get_actor_at_location(x, y)
-            if actor and actor is not self.engine.player and actor.is_alive:
-                return MonsterDetailHandler(self.engine, actor, x, y)
-
-            # Check for visible items on this tile.
-            items_here = [
-                item for item in game_map.items if item.x == x and item.y == y
-            ]
-            if items_here:
-                if len(items_here) == 1:
-                    return FloorItemDetailHandler(self.engine, items_here[0], x, y)
-                return FloorItemListHandler(self.engine, items_here, x, y)
-
-        return MainGameEventHandler(self.engine)
+        return self.callback((x, y))
 
 
 class MonsterDetailHandler(AskUserEventHandler):
     """Shows detailed stats for a monster under the look cursor."""
 
-    def __init__(self, engine: Engine, actor: "Actor", look_x: int, look_y: int):
+    def __init__(self, engine: Engine, actor: "Actor", back_handler: SelectEntityHandler):
         super().__init__(engine)
         self.actor = actor
-        self.look_x = look_x
-        self.look_y = look_y
+        self.back_handler = back_handler
 
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
@@ -1429,7 +1453,7 @@ class MonsterDetailHandler(AskUserEventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:
-            return LookHandler(self.engine, self.look_x, self.look_y)
+            return self.back_handler
         if key in {
             tcod.event.KeySym.LSHIFT,
             tcod.event.KeySym.RSHIFT,
@@ -1447,11 +1471,10 @@ class FloorItemListHandler(ListSelectionHandler):
 
     TITLE = "Items on floor"
 
-    def __init__(self, engine: Engine, items: list, look_x: int, look_y: int):
+    def __init__(self, engine: Engine, items: list, back_handler: SelectEntityHandler):
         super().__init__(engine)
         self.items_list = items
-        self.look_x = look_x
-        self.look_y = look_y
+        self.back_handler = back_handler
 
     def get_items(self) -> list:
         return self.items_list
@@ -1460,20 +1483,19 @@ class FloorItemListHandler(ListSelectionHandler):
         return item.display_name
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
-        return FloorItemDetailHandler(self.engine, item, self.look_x, self.look_y)
+        return FloorItemDetailHandler(self.engine, item, self.back_handler)
 
     def on_exit(self) -> Optional[ActionOrHandler]:
-        return LookHandler(self.engine, self.look_x, self.look_y)
+        return self.back_handler
 
 
 class FloorItemDetailHandler(AskUserEventHandler):
     """Shows read-only item details for an item on the floor."""
 
-    def __init__(self, engine: Engine, item: Item, look_x: int, look_y: int):
+    def __init__(self, engine: Engine, item: Item, back_handler: SelectEntityHandler):
         super().__init__(engine)
         self.item = item
-        self.look_x = look_x
-        self.look_y = look_y
+        self.back_handler = back_handler
 
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
@@ -1517,7 +1539,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:
-            return LookHandler(self.engine, self.look_x, self.look_y)
+            return self.back_handler
         if key in {
             tcod.event.KeySym.LSHIFT,
             tcod.event.KeySym.RSHIFT,
@@ -1562,20 +1584,6 @@ class WalkChoiceHandler(SelectIndexHandler):
 
     def on_index_selected(self, x: int, y: int):
         return TargetMovementAction(self.engine.player, x, y)
-
-
-class SingleRangedAttackHandler(SelectIndexHandler):
-    """Handles targeting a single enemy. Only the enemy selected will be affected."""
-
-    def __init__(
-        self, engine: Engine, callback: Callable[[Tuple[int, int]], Optional[Action]]
-    ):
-        super().__init__(engine)
-
-        self.callback = callback
-
-    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
-        return self.callback((x, y))
 
 
 class AreaRangedAttackHandler(SelectIndexHandler):
@@ -1736,7 +1744,24 @@ class MainGameEventHandler(EventHandler):
         elif is_shifted(event, tcod.event.KeySym.v):
             return ViewSurroundingsHandler(self.engine)
         elif key == tcod.event.KeySym.v:
-            return LookHandler(self.engine)
+            def look_callback(xy: Tuple[int, int]) -> Optional[ActionOrHandler]:
+                x, y = xy
+                game_map = self.engine.game_map
+                back = SelectEntityHandler(
+                    self.engine, look_callback, TabTargets.MONSTERS_AND_ITEMS,
+                    initial_xy=(x, y),
+                )
+                if game_map.visible[x, y]:
+                    actor = game_map.get_actor_at_location(x, y)
+                    if actor and actor is not self.engine.player and actor.is_alive:
+                        return MonsterDetailHandler(self.engine, actor, back)
+                    items_here = [i for i in game_map.items if i.x == x and i.y == y]
+                    if items_here:
+                        if len(items_here) == 1:
+                            return FloorItemDetailHandler(self.engine, items_here[0], back)
+                        return FloorItemListHandler(self.engine, items_here, back)
+                return MainGameEventHandler(self.engine)
+            return SelectEntityHandler(self.engine, look_callback, TabTargets.MONSTERS_AND_ITEMS)
         elif key == tcod.event.KeySym.w:
             return WalkChoiceHandler(self.engine)
         elif key == tcod.event.KeySym.q:

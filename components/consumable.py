@@ -105,11 +105,11 @@ class ConfusionConsumable(Consumable):
         return [f"Confuses target for {self.number_of_turns} turns"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import SingleRangedAttackHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import SelectEntityHandler  # pylint: disable=import-outside-toplevel
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
-        return SingleRangedAttackHandler(
+        return SelectEntityHandler(
             self.engine,
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )

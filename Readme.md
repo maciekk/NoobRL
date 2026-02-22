@@ -41,8 +41,11 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- show darts in Weapon seciton of inventory
 - [x] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see)
 - [ ] have dedicated Read command, like Quaff
+- [ ] need a sfx when thrown items hit or drop to ground
+- [ ] don't show remaining turns of sleep in Monster Detail
 - [x] have multiple sound effects for sword clash/hit
 - [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
 - [x] pressing Esc in game should NOT immediately exit game; do Y/N dialog box
@@ -57,6 +60,7 @@ Ideas & efforts under way.
 - [x] grass patch: acts to stop visibility when outside; when inside, only see 8 squares around; may hide chests; render as green ';'
 
 ### Interesting Mechanics
+- [ ] auto-pickup items
 - [x] allow item throwing (e.g., dart, potion)
     - [x] thrown potions shatter, convey their benefit to any actor in that square `#next`
 - [ ] simulate noise and monster hearing
