@@ -112,6 +112,61 @@ def render_names_at_mouse_location(
     console.print(x=x, y=y, string=names_at_mouse_location)
 
 
+def _explosion_color(heat: float) -> tuple:
+    """Map heat [0.0, 1.0] to a color: dark-red (cold) → red → orange → yellow → white (hot)."""
+    stops = [
+        (0.00, (100,   0,   0)),
+        (0.25, (200,  40,   0)),
+        (0.50, (255, 140,   0)),
+        (0.75, (255, 255,   0)),
+        (1.00, (255, 255, 255)),
+    ]
+    heat = max(0.0, min(1.0, heat))
+    for i in range(len(stops) - 1):
+        h0, c0 = stops[i]
+        h1, c1 = stops[i + 1]
+        if h0 <= heat <= h1:
+            t = (heat - h0) / (h1 - h0)
+            return tuple(int(c0[j] + t * (c1[j] - c0[j])) for j in range(3))
+    return stops[-1][1]
+
+
+def animate_explosion(
+    engine,
+    x: int,
+    y: int,
+    radius: int,
+    console,
+    context,
+) -> None:
+    """Animate a 5-frame explosion centered at (x, y) with the given radius.
+
+    Each frame uses a different character and cools down. Within each frame,
+    tiles closer to the center are brighter and hotter. Game state is not mutated.
+    """
+    chars = ["*", "x", "+", "-", "."]
+    tiles = [
+        (tx, ty)
+        for tx in range(x - radius, x + radius + 1)
+        for ty in range(y - radius, y + radius + 1)
+        if (tx - x) ** 2 + (ty - y) ** 2 <= radius ** 2
+        and engine.game_map.in_bounds(tx, ty)
+        and engine.game_map.visible[tx, ty]
+    ]
+    if not tiles:
+        return
+    r = max(radius, 1)
+    for f, char in enumerate(chars):
+        console.clear()
+        engine.render(console)
+        for tx, ty in tiles:
+            d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
+            heat = 1.0 - (f / 4) * 0.7 - (d / r) * 0.3
+            console.print(x=tx, y=ty, string=char, fg=_explosion_color(heat))
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.08)
+
+
 def animate_projectile(
     engine,
     frames: list[tuple[int, int, str, tuple[int, int, int]]],

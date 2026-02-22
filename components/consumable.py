@@ -465,6 +465,11 @@ class BombConsumable(Consumable):  # pylint: disable=abstract-method
 
     def explode(self, x: int, y: int, game_map, engine) -> None:
         """Explode at the given location, damaging all actors in radius."""
+        import input_handlers as _ih
+        if _ih._context is not None and _ih._root_console is not None:
+            from render_functions import animate_explosion
+            animate_explosion(engine, x, y, self.radius, _ih._root_console, _ih._context)
+
         targets_hit = False
         for actor in game_map.actors:
             if actor.distance(x, y) <= self.radius:
