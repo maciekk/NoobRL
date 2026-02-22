@@ -168,8 +168,8 @@ def place_entities(
                 continue
             spawned = entity.spawn(dungeon, x, y)
 
-            # 40% chance for monsters to spawn asleep
-            if entity in monsters and random.random() < 0.40:
+            # 20% chance for monsters to spawn asleep
+            if entity in monsters and random.random() < 0.20:
                 from entity import Actor
                 from components.effect import SleepEffect
                 if isinstance(spawned, Actor):
