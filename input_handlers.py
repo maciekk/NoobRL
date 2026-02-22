@@ -1646,6 +1646,21 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+class TeleportTargetHandler(SelectIndexHandler):
+    """Handles selecting a destination tile for the Teleport scroll."""
+
+    def __init__(
+        self,
+        engine: Engine,
+        callback: Callable[[Tuple[int, int]], Optional[Action]],
+    ):
+        super().__init__(engine)
+        self.callback = callback
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        return self.callback((x, y))
+
+
 class MainGameEventHandler(EventHandler):
     """Primary gameplay handler that maps keypresses to game actions."""
 

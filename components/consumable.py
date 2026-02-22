@@ -265,6 +265,37 @@ class BlinkConsumable(Consumable):
         )
 
 
+class TeleportConsumable(Consumable):
+    """Teleports the consumer to a player-chosen visible location."""
+
+    def get_description(self) -> list[str]:
+        return ["Teleport to any visible location"]
+
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        from input_handlers import TeleportTargetHandler  # pylint: disable=import-outside-toplevel
+        self.engine.message_log.add_message(
+            "Select a destination.", color.needs_target
+        )
+        return TeleportTargetHandler(
+            self.engine,
+            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
+        )
+
+    def activate(self, action: actions.ItemAction) -> None:
+        target_xy = action.target_xy
+
+        if not self.engine.game_map.visible[target_xy]:
+            raise Impossible("You cannot teleport to a location you cannot see.")
+        if not self.engine.game_map.tiles["walkable"][target_xy]:
+            raise Impossible("You cannot teleport there.")
+        if self.engine.game_map.get_blocking_entity_at_location(*target_xy):
+            raise Impossible("Something is blocking that location.")
+
+        self.engine.player.x, self.engine.player.y = target_xy
+        self.engine.message_log.add_message("You teleport.")
+        self.consume()
+
+
 class FireballDamageConsumable(Consumable):
     """Deals area damage in a radius around a target location."""
 

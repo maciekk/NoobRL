@@ -42,6 +42,19 @@
         }
     },
     {
+        "id": "s_teleport",
+        "name": "scroll of Teleportation",
+        "char": "?",
+        "color": [
+            0,
+            200,
+            255
+        ],
+        "consumable": {
+            "name": "TeleportConsumable"
+        }
+    },
+    {
         "id": "s_lightning",
         "name": "scroll of Lightning",
         "char": "?",

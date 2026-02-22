@@ -35,6 +35,7 @@ CONSUMABLE_MAP = {
     "ConfusionConsumable": consumable.ConfusionConsumable,
     "HealingConsumable": consumable.HealingConsumable,
     "BlinkConsumable": consumable.BlinkConsumable,
+    "TeleportConsumable": consumable.TeleportConsumable,
     "FireballDamageConsumable": consumable.FireballDamageConsumable,
     "LightningDamageConsumable": consumable.LightningDamageConsumable,
     "RageConsumable": consumable.RageConsumable,

@@ -105,6 +105,13 @@ _EFFECT_DEFS = [
         ],
     ),
     (
+        "You teleport.",
+        [
+            "sfx/teleport-36569.wav",
+            "sfx/PM_FN_Spawns_Portals_Teleports_5.wav",
+        ],
+    ),
+    (
         "You are filled in with rage!",
         [
             "sfx/mixkit-angry-dragon-roar-echo-1727.wav",

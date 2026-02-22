@@ -113,7 +113,7 @@ Ideas & efforts under way.
 - [x] add: Potion of Blindness `#next`
 - [x] add: Scroll of Identify (blocked: anonymized item names)
 - [ ] add: Potion of Berserk - 50% more damage for 10 turns
-- [ ] add: Teleport scroll (user-controlled target, must be in explored space) `#next`
+- [x] add: Teleport scroll (user-controlled target, must be in explored space) `#next`
 - [ ] add: Wand of Digging `#next`
 - [ ] add rings
 - [ ] add more wands
