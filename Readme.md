@@ -41,7 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see) `#next`
+- [x] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see)
 - [ ] have dedicated Read command, like Quaff
 - [x] have multiple sound effects for sword clash/hit
 - [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
@@ -118,7 +118,8 @@ Ideas & efforts under way.
 - [x] rethink colours and glyphs used for consumables
 - [ ] digging tools, wands - modify the dungeon walls, but slow
 - [x] wand of wishing should even be able to spawn monsters
-- [ ] have various light sources, with various light radii
+- [ ] LoS will need to be independent from player sight distance (b/c some monsters will have better eyesight)
+- [ ] have various light sources, with various light radii; thus visibility of X is compound of 3 factors: LoS map + min(player sight_distance, light source range)
 
 ### UI
 - [x] tileset should be specified in options.py (currently hard-coded in main.py) `#next`

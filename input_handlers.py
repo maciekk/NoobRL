@@ -1380,10 +1380,21 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append((f"XP: {actor.level.xp_given}", color.white))
         for eff in actor.effects:
             lines.append((f"{eff.name} ({eff.turns_left}t)", color.risky))
-        if actor.noticed_player:
+        player = self.engine.player
+        distance = max(abs(actor.x - player.x), abs(actor.y - player.y))
+        can_see_player = (
+            not actor.is_asleep
+            and not actor.is_blind
+            and self.engine.game_map.visible[actor.x, actor.y]
+            and not player.is_invisible
+            and distance <= actor.sight_range
+        )
+        if can_see_player:
+            lines.append(("Sees you", color.dangerous))
+        elif actor.noticed_player:
             ai = actor.ai
             if hasattr(ai, "last_known_target") and ai.last_known_target:
-                lines.append(("Hunting", color.dangerous))
+                lines.append(("Hunting", color.risky))
             else:
                 lines.append(("Aware of you", color.risky))
         else:
