@@ -292,7 +292,6 @@ class FireballDamageConsumable(Consumable):
         if not self.engine.game_map.visible[target_xy]:
             raise Impossible("You cannot target an area that you cannot see.")
 
-        targets_hit = False
         for actor in self.engine.game_map.actors:
             if actor.distance(*target_xy) <= self.radius:
                 self.engine.message_log.add_message(
@@ -300,10 +299,7 @@ class FireballDamageConsumable(Consumable):
                     f" taking {self.damage} damage!"
                 )
                 actor.fighter.take_damage(self.damage)
-                targets_hit = True
 
-        if not targets_hit:
-            raise Impossible("There are no targets in the radius.")
         self.consume()
 
 
