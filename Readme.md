@@ -45,7 +45,7 @@ Ideas & efforts under way.
 - [x] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see)
 - [x] have dedicated Read command, like Quaff
 - [ ] need a sfx when thrown items hit or drop to ground
-- [ ] don't show remaining turns of sleep in Monster Detail
+- [x] don't show remaining turns of sleep in Monster Detail
 - [x] have multiple sound effects for sword clash/hit
 - [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
 - [x] pressing Esc in game should NOT immediately exit game; do Y/N dialog box

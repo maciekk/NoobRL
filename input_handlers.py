@@ -1426,7 +1426,7 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append((f"Defense: {actor.fighter.defense}", color.white))
         lines.append((f"XP: {actor.level.xp_given}", color.white))
         for eff in actor.effects:
-            lines.append((f"{eff.name} ({eff.turns_left}t)", color.risky))
+            lines.append((f"{eff.name}", color.risky))
         player = self.engine.player
         distance = max(abs(actor.x - player.x), abs(actor.y - player.y))
         can_see_player = (
