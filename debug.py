@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 
 import tcod
 
+import color
 import sounds
 from engine import Engine
 from game_map import GameMap
@@ -31,7 +32,39 @@ def spawn_chest_of_wonder(game_map: GameMap) -> None:
     from entity import Chest
 
     player = game_map.engine.player
-    x, y = player.x, player.y
+    px, py = player.x, player.y
+
+    # Try the 8 surrounding tiles; fall back to player's tile.
+    neighbors = [
+        (px + dx, py + dy)
+        for dx in (-1, 0, 1)
+        for dy in (-1, 0, 1)
+        if (dx, dy) != (0, 0)
+    ]
+    def _has_chest(gm, cx, cy):
+        return any(isinstance(e, Chest) and e.x == cx and e.y == cy for e in gm.entities)
+
+    random.shuffle(neighbors)
+    x, y = None, None
+    for nx, ny in neighbors:
+        if (
+            game_map.in_bounds(nx, ny)
+            and game_map.tiles["walkable"][nx, ny]
+            and game_map.get_blocking_entity_at_location(nx, ny) is None
+            and not _has_chest(game_map, nx, ny)
+        ):
+            x, y = nx, ny
+            break
+
+    if x is None:
+        # Fall back to player's tile if it has no chest.
+        if not _has_chest(game_map, px, py):
+            x, y = px, py
+        else:
+            game_map.engine.message_log.add_message(
+                "No room for the Chest of Wonder!", color.impossible
+            )
+            return
 
     item_ids = (
         random.choices(_POTIONS, k=5)

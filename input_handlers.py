@@ -427,18 +427,19 @@ class DirectionalSelectionHandler(AskUserEventHandler):
                 dir_key, _ = DIRECTION_KEY_MAP[(dx, dy)]
                 strings.append(f"({dir_key}) {description}")
             else:
-                strings.append(f"(?) {description}")
+                strings.append(f"(.) {description}")
+        if len(items) > 1:
+            strings.append("(A) All")
         return strings
 
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
         items = self.get_directional_items()
-        num_items = len(items)
-        height = max(num_items + 2, 3)
         x = 40 if self.engine.player.x <= 30 else 0
         y = 0
         item_strings = self._build_direction_strings(items)
+        height = max(len(item_strings) + 2, 3)
         max_item_width = max((len(s) for s in item_strings), default=0)
         width = max(len(self.TITLE) + 4, max_item_width + 2)
 
@@ -463,10 +464,22 @@ class DirectionalSelectionHandler(AskUserEventHandler):
             if (dx, dy) in DIRECTION_KEY_MAP:
                 _, key_sym = DIRECTION_KEY_MAP[(dx, dy)]
                 key_to_item[key_sym] = (dx, dy, target)
+            elif (dx, dy) == (0, 0):
+                key_to_item[tcod.event.KeySym.PERIOD] = (0, 0, target)
 
         if key in key_to_item:
             dx, dy, target = key_to_item[key]
             return self.on_directional_selection(dx, dy, target)
+
+        if is_shifted(event, tcod.event.KeySym.a) and len(items) > 1:
+            for dx, dy, _, target in items:
+                result = self.on_directional_selection(dx, dy, target)
+                if isinstance(result, Action):
+                    try:
+                        result.perform()
+                    except exceptions.Impossible as exc:
+                        self.engine.message_log.add_message(exc.args[0], color.impossible)
+            return MainGameEventHandler(self.engine)
 
         return super().ev_keydown(event)
 
