@@ -307,7 +307,7 @@
     {
         "id": "bomb",
         "name": "Bomb",
-        "char": "o",
+        "char": "*",
         "color": [
             50,
             50,
