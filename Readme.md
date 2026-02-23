@@ -48,7 +48,7 @@ Ideas & efforts under way.
 - [x] show darts in Weapon seciton of inventory
 - [x] Monster Details dialog needs to be reworked for visibility (e.g., should not say Aware if can't see)
 - [x] have dedicated Read command, like Quaff
-- [ ] need a sfx when thrown items hit or drop to ground
+- [x] need a sfx when thrown items hit or drop to ground
 - [x] don't show remaining turns of sleep in Monster Detail
 - [x] have multiple sound effects for sword clash/hit
 - [x] need a 'poof' sfx when spawning an item with wishing wand or debug console
