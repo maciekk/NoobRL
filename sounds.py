@@ -66,6 +66,18 @@ _EFFECT_DEFS = [
         ],
     ),
     (
+        "zapped for",
+        [
+            "sfx/freesound_community-lazercannon-37980.mp3",
+        ],
+    ),
+    (
+        "sizzles through the air",
+        [
+            "sfx/freesound_community-lazercannon-37980.mp3",
+        ],
+    ),
+    (
         "starts to stumble around",
         [
             "sfx/evil-shreik-45560.wav",

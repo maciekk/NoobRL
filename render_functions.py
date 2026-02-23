@@ -169,6 +169,51 @@ def animate_explosion(
         time.sleep(0.08)
 
 
+def animate_lightning_ray(
+    engine,
+    path: list[tuple[int, int]],
+    ray_char: str,
+    console,
+    context,
+) -> None:
+    """Animate a lightning ray growing along the given path tiles.
+
+    The ray extends tile-by-tile, then flickers at full extension. Game state is not mutated.
+    """
+    TRAIL_COLOR = (100, 180, 255)
+    TIP_COLOR = (255, 255, 255)
+
+    visible_path = [
+        (x, y) for x, y in path
+        if engine.game_map.in_bounds(x, y) and engine.game_map.visible[x, y]
+    ]
+    if not visible_path:
+        return
+
+    # Growing animation: each frame adds one more tile
+    for i in range(1, len(visible_path) + 1):
+        console.clear()
+        engine.render(console)
+        for j, (tx, ty) in enumerate(visible_path[:i]):
+            clr = TIP_COLOR if j == i - 1 else TRAIL_COLOR
+            console.print(x=tx, y=ty, string=ray_char, fg=clr)
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.025)
+
+    # Flicker at full extension
+    for flicker_char, clr in [
+        ("*", TIP_COLOR),
+        (ray_char, (160, 220, 255)),
+        ("*", (255, 255, 200)),
+    ]:
+        console.clear()
+        engine.render(console)
+        for tx, ty in visible_path:
+            console.print(x=tx, y=ty, string=flicker_char, fg=clr)
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.04)
+
+
 def animate_projectile(
     engine,
     frames: list[tuple[int, int, str, tuple[int, int, int]]],

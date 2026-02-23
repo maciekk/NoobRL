@@ -1688,6 +1688,70 @@ class TeleportTargetHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+class LightningRayTargetHandler(SelectIndexHandler):
+    """Targeting handler for the Wand of Lightning; shows the ray path as a preview."""
+
+    MAX_RAY_LENGTH = 16
+
+    def __init__(
+        self,
+        engine: Engine,
+        callback: Callable[[Tuple[int, int]], Optional[Action]],
+    ):
+        super().__init__(engine)
+        self.callback = callback
+
+    def _ray_char(self) -> str:
+        player = self.engine.player
+        tx, ty = self.engine.mouse_location
+        dx = tx - player.x
+        dy = ty - player.y
+        if dx == 0:
+            return "|"
+        if dy == 0:
+            return "-"
+        if (dx > 0) == (dy > 0):
+            return "\\"
+        return "/"
+
+    def _get_ray_path(self) -> list[tuple[int, int]]:
+        """Trace ray from player toward cursor, up to MAX_RAY_LENGTH non-wall tiles."""
+        player = self.engine.player
+        px, py = player.x, player.y
+        tx, ty = self.engine.mouse_location
+        if (tx, ty) == (px, py):
+            return []
+        dx = tx - px
+        dy = ty - py
+        length = max(abs(dx), abs(dy))
+        scale = (self.MAX_RAY_LENGTH + 2) / length
+        far_x = int(px + dx * scale)
+        far_y = int(py + dy * scale)
+        gm = self.engine.game_map
+        line = tcod.los.bresenham((px, py), (far_x, far_y)).tolist()
+        if line and (line[0][0], line[0][1]) == (px, py):
+            line = line[1:]
+        path: list[tuple[int, int]] = []
+        for lx, ly in line:
+            if len(path) >= self.MAX_RAY_LENGTH:
+                break
+            if not gm.in_bounds(lx, ly):
+                break
+            if not gm.tiles["walkable"][lx, ly]:
+                break
+            path.append((lx, ly))
+        return path
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+        ray_char = self._ray_char()
+        for tx, ty in self._get_ray_path():
+            console.print(x=tx, y=ty, string=ray_char, fg=(80, 160, 255))
+
+    def on_index_selected(self, x: int, y: int) -> Optional[Action]:
+        return self.callback((x, y))
+
+
 class MainGameEventHandler(EventHandler):
     """Primary gameplay handler that maps keypresses to game actions."""
 

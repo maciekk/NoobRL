@@ -241,6 +241,21 @@
         }
     },
     {
+        "id": "wand_lightning",
+        "name": "Wand of Lightning",
+        "char": "/",
+        "color": [
+            100,
+            200,
+            255
+        ],
+        "charges": 5,
+        "consumable": {
+            "name": "LightningWandConsumable",
+            "damage": 8
+        }
+    },
+    {
         "id": "wand_wishing",
         "name": "Wand of Wishing",
         "char": "/",

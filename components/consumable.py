@@ -112,6 +112,101 @@ class WishingWandConsumable(WandConsumable):  # pylint: disable=abstract-method
         return WishItemHandler(self.engine, self.parent)
 
 
+class LightningWandConsumable(WandConsumable):
+    """A wand that fires a piercing lightning ray, damaging all actors in its path."""
+
+    MAX_RAY_LENGTH = 16
+
+    def __init__(self, damage: int):
+        self.damage = damage
+
+    def get_description(self) -> list[str]:
+        return [
+            f"Fires a lightning ray for {self.damage} damage",
+            f"Pierces all targets up to {self.MAX_RAY_LENGTH} tiles",
+        ]
+
+    @staticmethod
+    def _ray_char(dx: int, dy: int) -> str:
+        if dx == 0:
+            return "|"
+        if dy == 0:
+            return "-"
+        if (dx > 0) == (dy > 0):
+            return "\\"
+        return "/"
+
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        self._check_charges()
+        from input_handlers import LightningRayTargetHandler  # pylint: disable=import-outside-toplevel
+        self.engine.message_log.add_message(
+            "Point the wand and confirm.", color.needs_target
+        )
+        return LightningRayTargetHandler(
+            self.engine,
+            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
+        )
+
+    def activate(self, action: actions.ItemAction) -> None:
+        import tcod.los  # pylint: disable=import-outside-toplevel
+        consumer = action.entity
+        gm = self.engine.game_map
+        px, py = consumer.x, consumer.y
+        tx, ty = action.target_xy
+
+        if (tx, ty) == (px, py):
+            raise Impossible("Choose a direction to fire the wand.")
+
+        dx = tx - px
+        dy = ty - py
+        length = max(abs(dx), abs(dy))
+        scale = (self.MAX_RAY_LENGTH + 2) / length
+        far_x = int(px + dx * scale)
+        far_y = int(py + dy * scale)
+
+        line = tcod.los.bresenham((px, py), (far_x, far_y)).tolist()
+        if line and (line[0][0], line[0][1]) == (px, py):
+            line = line[1:]
+
+        path: list[tuple[int, int]] = []
+        for lx, ly in line:
+            if len(path) >= self.MAX_RAY_LENGTH:
+                break
+            if not gm.in_bounds(lx, ly):
+                break
+            if not gm.tiles["walkable"][lx, ly]:
+                break
+            path.append((lx, ly))
+
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+        if _ih._context is not None and _ih._root_console is not None:
+            from render_functions import animate_lightning_ray  # pylint: disable=import-outside-toplevel
+            animate_lightning_ray(
+                self.engine, path, self._ray_char(dx, dy),
+                _ih._root_console, _ih._context,
+            )
+
+        targets_hit = []
+        for lx, ly in path:
+            actor = gm.get_actor_at_location(lx, ly)
+            if actor and actor is not consumer:
+                targets_hit.append(actor)
+
+        if not targets_hit:
+            self.engine.message_log.add_message(
+                "The lightning bolt sizzles through the air.", color.player_atk
+            )
+        else:
+            for target in targets_hit:
+                self.engine.message_log.add_message(
+                    f"The {target.name} is zapped for {self.damage} damage!",
+                    color.player_atk,
+                )
+                target.fighter.take_damage(self.damage)
+
+        self.consume()
+
+
 class ConfusionConsumable(Consumable):
     """Confuses a target for a set number of turns."""
 

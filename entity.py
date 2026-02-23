@@ -41,6 +41,7 @@ CONSUMABLE_MAP = {
     "RageConsumable": consumable.RageConsumable,
     "ClairvoyanceConsumable": consumable.ClairvoyanceConsumable,
     "WishingWandConsumable": consumable.WishingWandConsumable,
+    "LightningWandConsumable": consumable.LightningWandConsumable,
     "InvisibilityConsumable": consumable.InvisibilityConsumable,
     "SpeedConsumable": consumable.SpeedConsumable,
     "DetectMonsterConsumable": consumable.DetectMonsterConsumable,
