@@ -74,7 +74,7 @@ Ideas & efforts under way.
 - [ ] incremental monster knowledge (scales w/# killed)
 - [x] anonymized consumables: i.e., nature of consumables not immediately known (like Nethack)
 - [ ] maybe later add max stack size for consumables
-- [ ] wands should have charges, be non-stackable `#next`
+- [x] wands should have charges, be non-stackable `#next`
 - [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
 

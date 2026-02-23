@@ -751,6 +751,8 @@ def _item_category(item: "Item") -> int:
             return 0
         if item.equippable.equipment_type == EquipmentType.ARMOR:
             return 1
+    if item.char == "*":
+        return 0
     if item.char == "!":
         return 2
     if item.char == "?":
