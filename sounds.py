@@ -68,13 +68,13 @@ _EFFECT_DEFS = [
     (
         "zapped for",
         [
-            "sfx/freesound_community-lazercannon-37980.mp3",
+            "sfx/155790__deleted_user_1941307__shipboard_railgun.mp3",
         ],
     ),
     (
         "sizzles through the air",
         [
-            "sfx/freesound_community-lazercannon-37980.mp3",
+            "sfx/155790__deleted_user_1941307__shipboard_railgun.mp3",
         ],
     ),
     (
