@@ -826,4 +826,8 @@ class ThrowAction(Action):
             self._apply_consumable_effect(thrown_item, None, final_x, final_y)
             return
 
+        if not hit_actor:
+            self.engine.message_log.add_message(
+                f"The {thrown_item.display_name} clatters to the ground.", color.white
+            )
         self._place_thrown_item(thrown_item, final_x, final_y, game_map)

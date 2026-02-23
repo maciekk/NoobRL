@@ -66,6 +66,24 @@ _EFFECT_DEFS = [
         ],
     ),
     (
+        "Dart hits",
+        [
+            "sfx/u_xjrmmgxfru-hit-armor-03-266300.mp3",
+        ],
+    ),
+    (
+        "clatters to the ground",
+        [
+            "sfx/dragon-studio-sword-clattering-to-the-ground-393838.mp3",
+        ],
+    ),
+    (
+        "for 1 damage!",
+        [
+            "sfx/floraphonic-metal-hit-96-200425.mp3",
+        ],
+    ),
+    (
         "zapped for",
         [
             "sfx/155790__deleted_user_1941307__shipboard_railgun.mp3",
