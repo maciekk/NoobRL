@@ -254,7 +254,7 @@ class DebugHandler(AskUserEventHandler):
             return DebugSelectHandler(self.engine, matches, count)
         if key == tcod.event.KeySym.ESCAPE:
             return MainGameEventHandler(self.engine)
-        elif key == tcod.event.KeySym.BACKSPACE:
+        if key == tcod.event.KeySym.BACKSPACE:
             self.buffer = self.buffer[:-1]
         elif key == tcod.event.KeySym.SPACE:
             self.buffer += " "
