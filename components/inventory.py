@@ -81,15 +81,14 @@ class Inventory(BaseComponent):
         if not dropped.stackable:
             return
         for entity in list(self.gamemap.entities):
-            if (
-                entity is not dropped
-                and isinstance(entity, type(dropped))
-                and entity.name == dropped.name
-                and hasattr(entity, "stackable")
+            same_location = entity.x == dropped.x and entity.y == dropped.y
+            is_stack = (
+                hasattr(entity, "stackable")
                 and entity.stackable
-                and entity.x == dropped.x
-                and entity.y == dropped.y
-            ):
+                and entity.name == dropped.name
+                and isinstance(entity, type(dropped))
+            )
+            if entity is not dropped and same_location and is_stack:
                 entity.stack_count += dropped.stack_count
                 self.gamemap.entities.discard(dropped)
                 return

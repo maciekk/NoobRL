@@ -6,6 +6,8 @@ from __future__ import annotations
 import random
 from typing import Optional, TYPE_CHECKING
 import numpy as np  # pylint: disable=import-error
+import tcod.los  # pylint: disable=import-error
+import tile_types
 import actions
 import color
 import components.ai
@@ -84,7 +86,7 @@ class IdentificationConsumable(Consumable):  # pylint: disable=abstract-method
         return IdentifyItemHandler(self.engine, self.parent)
 
 
-class WandConsumable(Consumable):
+class WandConsumable(Consumable):  # pylint: disable=abstract-method
     """Base class for wand items. Uses charges; spent wands stay in inventory."""
 
     def _check_charges(self) -> None:
@@ -98,6 +100,35 @@ class WandConsumable(Consumable):
         inventory = entity.parent
         if isinstance(inventory, components.inventory.Inventory):
             entity.stack_count -= 1
+
+    def _compute_ray_path(
+        self, px: int, py: int, tx: int, ty: int,
+        max_length: int, stop_at_walls: bool = True,
+    ) -> list:
+        """Compute ray path tiles from (px, py) toward (tx, ty).
+
+        Returns up to max_length in-bounds tiles. Stops at walls if stop_at_walls is True.
+        """
+        gm = self.engine.game_map
+        dx = tx - px
+        dy = ty - py
+        length = max(abs(dx), abs(dy))
+        scale = (max_length + 2) / length
+        line = tcod.los.bresenham(
+            (px, py), (int(px + dx * scale), int(py + dy * scale))
+        ).tolist()
+        if line and (line[0][0], line[0][1]) == (px, py):
+            line = line[1:]
+        path: list = []
+        for lx, ly in line:
+            if len(path) >= max_length:
+                break
+            if not gm.in_bounds(lx, ly):
+                break
+            if stop_at_walls and not gm.tiles["walkable"][lx, ly]:
+                break
+            path.append((lx, ly))
+        return path
 
 
 class WishingWandConsumable(WandConsumable):  # pylint: disable=abstract-method
@@ -148,47 +179,27 @@ class LightningWandConsumable(WandConsumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
-        import tcod.los  # pylint: disable=import-outside-toplevel
         consumer = action.entity
-        gm = self.engine.game_map
         px, py = consumer.x, consumer.y
         tx, ty = action.target_xy
 
         if (tx, ty) == (px, py):
             raise Impossible("Choose a direction to fire the wand.")
 
-        dx = tx - px
-        dy = ty - py
-        length = max(abs(dx), abs(dy))
-        scale = (self.MAX_RAY_LENGTH + 2) / length
-        far_x = int(px + dx * scale)
-        far_y = int(py + dy * scale)
-
-        line = tcod.los.bresenham((px, py), (far_x, far_y)).tolist()
-        if line and (line[0][0], line[0][1]) == (px, py):
-            line = line[1:]
-
-        path: list[tuple[int, int]] = []
-        for lx, ly in line:
-            if len(path) >= self.MAX_RAY_LENGTH:
-                break
-            if not gm.in_bounds(lx, ly):
-                break
-            if not gm.tiles["walkable"][lx, ly]:
-                break
-            path.append((lx, ly))
+        dx, dy = tx - px, ty - py
+        path = self._compute_ray_path(px, py, tx, ty, self.MAX_RAY_LENGTH)
 
         import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-        if _ih._context is not None and _ih._root_console is not None:
+        if _ih.context is not None and _ih.root_console is not None:
             from render_functions import animate_lightning_ray  # pylint: disable=import-outside-toplevel
             animate_lightning_ray(
                 self.engine, path, self._ray_char(dx, dy),
-                _ih._root_console, _ih._context,
+                _ih.root_console, _ih.context,
             )
 
         targets_hit = []
         for lx, ly in path:
-            actor = gm.get_actor_at_location(lx, ly)
+            actor = self.engine.game_map.get_actor_at_location(lx, ly)
             if actor and actor is not consumer:
                 targets_hit.append(actor)
 
@@ -241,8 +252,6 @@ class DiggingWandConsumable(WandConsumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
-        import tcod.los  # pylint: disable=import-outside-toplevel
-        import tile_types  # pylint: disable=import-outside-toplevel
         consumer = action.entity
         gm = self.engine.game_map
         px, py = consumer.x, consumer.y
@@ -251,32 +260,16 @@ class DiggingWandConsumable(WandConsumable):
         if (tx, ty) == (px, py):
             raise Impossible("Choose a direction to fire the wand.")
 
-        dx = tx - px
-        dy = ty - py
-        length = max(abs(dx), abs(dy))
-        scale = (self.RANGE + 2) / length
-        far_x = int(px + dx * scale)
-        far_y = int(py + dy * scale)
-
-        line = tcod.los.bresenham((px, py), (far_x, far_y)).tolist()
-        if line and (line[0][0], line[0][1]) == (px, py):
-            line = line[1:]
-
-        # Build path of exactly RANGE tiles; stop only at map bounds (not walls).
-        path: list[tuple[int, int]] = []
-        for lx, ly in line:
-            if len(path) >= self.RANGE:
-                break
-            if not gm.in_bounds(lx, ly):
-                break
-            path.append((lx, ly))
+        dx, dy = tx - px, ty - py
+        # stop_at_walls=False: digging beam passes through walls
+        path = self._compute_ray_path(px, py, tx, ty, self.RANGE, stop_at_walls=False)
 
         import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-        if _ih._context is not None and _ih._root_console is not None:
+        if _ih.context is not None and _ih.root_console is not None:
             from render_functions import animate_digging_ray  # pylint: disable=import-outside-toplevel
             animate_digging_ray(
                 self.engine, path, self._ray_char(dx, dy),
-                _ih._root_console, _ih._context,
+                _ih.root_console, _ih.context,
             )
 
         walls_dug = 0
@@ -674,10 +667,10 @@ class BombConsumable(Consumable):  # pylint: disable=abstract-method
 
     def explode(self, x: int, y: int, game_map, engine) -> None:
         """Explode at the given location, damaging all actors in radius."""
-        import input_handlers as _ih
-        if _ih._context is not None and _ih._root_console is not None:
-            from render_functions import animate_explosion
-            animate_explosion(engine, x, y, self.radius, _ih._root_console, _ih._context)
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+        if _ih.context is not None and _ih.root_console is not None:
+            from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
+            animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
 
         targets_hit = False
         for actor in game_map.actors:

@@ -27,6 +27,7 @@ class Equipment(BaseComponent):
 
     @property
     def defense_bonus(self) -> int:
+        """Total defense bonus from all equipped items."""
         bonus = 0
 
         if self.weapon is not None and self.weapon.equippable is not None:
@@ -42,6 +43,7 @@ class Equipment(BaseComponent):
 
     @property
     def power_bonus(self) -> int:
+        """Total power bonus from all equipped items."""
         bonus = 0
 
         if self.weapon is not None and self.weapon.equippable is not None:
@@ -57,9 +59,10 @@ class Equipment(BaseComponent):
 
     def item_is_equipped(self, item: Item) -> bool:
         """Check if an item is currently equipped in any slot."""
-        return self.weapon == item or self.armor == item or self.amulet == item
+        return item in (self.weapon, self.armor, self.amulet)
 
     def unequip_message(self, item_name: str) -> None:
+        """Log a message when an item is removed."""
         if self.parent is None:
             return
         if self.parent.gamemap is None:
@@ -69,6 +72,7 @@ class Equipment(BaseComponent):
         )
 
     def equip_message(self, item_name: str) -> None:
+        """Log a message when an item is equipped."""
         if self.parent is None:
             return
         if self.parent.gamemap is None:
@@ -93,6 +97,7 @@ class Equipment(BaseComponent):
             item.equippable.on_equip()
 
     def unequip_from_slot(self, slot: str, add_message: bool) -> None:
+        """Remove the item in the given slot, optionally logging a message."""
         current_item = getattr(self, slot)
 
         if add_message:

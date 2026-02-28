@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import dice
 from components.base_component import BaseComponent
 
 if TYPE_CHECKING:
     from entity import Actor
-
-import dice
 
 HP_LEVEL_UP_DICE = "5d2"
 
@@ -18,7 +17,7 @@ class Level(BaseComponent):
     """Tracks XP, levels, and provides methods to increase stats on level up."""
     parent: Actor
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         current_level: int = 1,
         current_xp: int = 0,
@@ -34,10 +33,12 @@ class Level(BaseComponent):
 
     @property
     def experience_to_next_level(self) -> int:
+        """XP threshold required to reach the next level."""
         return self.level_up_base + self.current_level * self.level_up_factor
 
     @property
     def requires_level_up(self) -> bool:
+        """True if the actor has accumulated enough XP to level up."""
         return self.current_xp >= self.experience_to_next_level
 
     def add_xp(self, xp: int) -> None:

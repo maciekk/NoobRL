@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import color, random
+import random
+
+import color
 from components.base_component import BaseComponent
 from render_order import RenderOrder
 
@@ -24,42 +26,46 @@ class Fighter(BaseComponent):
 
     @property
     def hp(self) -> int:
+        """Current HP."""
         return self._hp
 
     @hp.setter
     def hp(self, value: int) -> None:
+        """Set HP, clamped to [0, max_hp]; triggers death at 0."""
         self._hp = max(0, min(value, self.max_hp))
         if self._hp == 0 and self.parent.ai:
             self.die()
 
     @property
     def defense(self) -> int:
+        """Total defense including equipment bonuses."""
         return self.base_defense + self.defense_bonus
 
     @property
     def power(self) -> int:
+        """Total power including equipment bonuses."""
         return self.base_power + self.power_bonus
 
     @property
     def defense_bonus(self) -> int:
+        """Defense bonus from equipped items."""
         if self.parent.equipment:
             return self.parent.equipment.defense_bonus
-        else:
-            return 0
+        return 0
 
     @property
     def power_bonus(self) -> int:
+        """Power bonus from equipped items."""
         if self.parent.equipment:
             return self.parent.equipment.power_bonus
-        else:
-            return 0
+        return 0
 
     def die(self) -> None:
         """Transform actor into a corpse, trigger chain explosions, and award XP to player."""
         # If already a corpse, don't re-run death logic.
         # If it's a primed exploding corpse, trigger its chain explosion.
         if self.parent.render_order == RenderOrder.CORPSE:
-            from components.ai import ExplodingCorpseAI
+            from components.ai import ExplodingCorpseAI  # pylint: disable=import-outside-toplevel
 
             if isinstance(self.parent.ai, ExplodingCorpseAI):
                 self.parent.ai.explode()
@@ -95,7 +101,7 @@ class Fighter(BaseComponent):
         self.parent.render_order = RenderOrder.CORPSE
 
         # Check for death explosion (e.g. Puffball)
-        from components.ai import ExplodingCorpseAI
+        from components.ai import ExplodingCorpseAI  # pylint: disable=import-outside-toplevel
 
         if self.parent.death_explosion and not isinstance(
             self.parent.ai, ExplodingCorpseAI
@@ -118,10 +124,7 @@ class Fighter(BaseComponent):
         if self.hp == self.max_hp:
             return 0
 
-        new_hp_value = self.hp + amount
-
-        if new_hp_value > self.max_hp:
-            new_hp_value = self.max_hp
+        new_hp_value = min(self.hp + amount, self.max_hp)
 
         amount_recovered = new_hp_value - self.hp
 
@@ -135,13 +138,20 @@ class Fighter(BaseComponent):
         if self.parent.is_asleep:
             self.parent.is_asleep = False
             # Remove sleep effect
-            sleep_effects = [eff for eff in self.parent.effects if hasattr(eff, 'name') and eff.name == "Sleep"]
+            sleep_effects = [
+                eff for eff in self.parent.effects
+                if hasattr(eff, 'name') and eff.name == "Sleep"
+            ]
             for eff in sleep_effects:
                 self.parent.effects.remove(eff)
             # Print wake-up message
             if self.parent is self.engine.player:
-                self.engine.message_log.add_message("You wake up from the attack!", color.white)
+                self.engine.message_log.add_message(
+                    "You wake up from the attack!", color.white
+                )
             else:
-                self.engine.message_log.add_message(f"The {self.parent.name} wakes up!", color.white)
+                self.engine.message_log.add_message(
+                    f"The {self.parent.name} wakes up!", color.white
+                )
 
         self.hp -= amount

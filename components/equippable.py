@@ -28,11 +28,9 @@ class Equippable(BaseComponent):
 
     def on_equip(self) -> None:
         """Called when this equippable is equipped; can be overridden for special effects."""
-        pass
 
     def on_unequip(self) -> None:
         """Called when this equippable is unequipped; can be overridden to reverse effects."""
-        pass
 
 
 class Dagger(Equippable):
@@ -90,7 +88,7 @@ class AmuletOfClairvoyance(Equippable):
         super().__init__(equipment_type=EquipmentType.AMULET)
 
     def on_equip(self) -> None:
-        from components.consumable import apply_clairvoyance
+        from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
 
         apply_clairvoyance(self.engine)
 

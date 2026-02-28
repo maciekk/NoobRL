@@ -124,9 +124,9 @@ class ExplodingCorpseAI(BaseAI):
         self.entity.ai = None
 
         import input_handlers as _ih
-        if _ih._context is not None and _ih._root_console is not None:
+        if _ih.context is not None and _ih.root_console is not None:
             from render_functions import animate_explosion
-            animate_explosion(engine, x, y, self.radius, _ih._root_console, _ih._context)
+            animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
 
         engine.message_log.add_message("BOOM!", color.enemy_atk)
         engine.message_log.add_message(

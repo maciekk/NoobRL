@@ -772,10 +772,10 @@ class ThrowAction(Action):
         path, final_x, final_y, hit_actor = self._trace_throw_path(game_map, sx, sy)
 
         import input_handlers as _ih
-        if _ih._context is not None and _ih._root_console is not None:
+        if _ih.context is not None and _ih.root_console is not None:
             from render_functions import animate_projectile
             frames = [(x, y, self.item.char, self.item.color) for x, y in path]
-            animate_projectile(self.engine, frames, _ih._root_console, _ih._context)
+            animate_projectile(self.engine, frames, _ih.root_console, _ih.context)
 
         # Remove one item from inventory.
         if self.item.stackable and self.item.stack_count > 1:
