@@ -252,7 +252,7 @@ class DebugHandler(AskUserEventHandler):
                     )
                 return MainGameEventHandler(self.engine)
             return DebugSelectHandler(self.engine, matches, count)
-        elif key == tcod.event.KeySym.ESCAPE:
+        if key == tcod.event.KeySym.ESCAPE:
             return MainGameEventHandler(self.engine)
         elif key == tcod.event.KeySym.BACKSPACE:
             self.buffer = self.buffer[:-1]

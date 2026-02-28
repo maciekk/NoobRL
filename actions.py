@@ -727,7 +727,8 @@ class ThrowAction(Action):
             )
 
     def _trace_throw_path(self, game_map, sx: int, sy: int):
-        """Walk Bresenham line from (sx, sy) to target_xy; return (path, landing tile, hit actor)."""
+        """Walk Bresenham line from (sx, sy) to target_xy; return (path, landing tile, hit actor).
+        """
         tx, ty = self.target_xy
         line = tcod.los.bresenham((sx, sy), (tx, ty)).tolist()
         if line and (line[0][0], line[0][1]) == (sx, sy):
