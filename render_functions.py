@@ -214,6 +214,31 @@ def animate_lightning_ray(
         time.sleep(0.04)
 
 
+def animate_digging_ray(
+    engine,
+    path: list[tuple[int, int]],
+    ray_char: str,
+    console,
+    context,
+) -> None:
+    """Animate a digging beam growing along the given path tiles."""
+    TRAIL_COLOR = (160, 100, 40)
+    TIP_COLOR = (220, 180, 80)
+
+    if not path:
+        return
+
+    for i in range(1, len(path) + 1):
+        console.clear()
+        engine.render(console)
+        for j, (tx, ty) in enumerate(path[:i]):
+            if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
+                clr = TIP_COLOR if j == i - 1 else TRAIL_COLOR
+                console.print(x=tx, y=ty, string=ray_char, fg=clr)
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.025)
+
+
 def animate_projectile(
     engine,
     frames: list[tuple[int, int, str, tuple[int, int, int]]],

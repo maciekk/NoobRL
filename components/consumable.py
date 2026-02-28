@@ -207,6 +207,103 @@ class LightningWandConsumable(WandConsumable):
         self.consume()
 
 
+class DiggingWandConsumable(WandConsumable):
+    """A wand that fires a beam of range 5 that destroys walls and damages monsters."""
+
+    RANGE = 5
+    DAMAGE = 3
+
+    def get_description(self) -> list[str]:
+        return [
+            f"Fires a digging beam, range {self.RANGE}",
+            f"Destroys walls; deals {self.DAMAGE} damage to monsters hit",
+        ]
+
+    @staticmethod
+    def _ray_char(dx: int, dy: int) -> str:
+        if dx == 0:
+            return "|"
+        if dy == 0:
+            return "-"
+        if (dx > 0) == (dy > 0):
+            return "\\"
+        return "/"
+
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        self._check_charges()
+        from input_handlers import DiggingRayTargetHandler  # pylint: disable=import-outside-toplevel
+        self.engine.message_log.add_message(
+            "Point the wand and confirm.", color.needs_target
+        )
+        return DiggingRayTargetHandler(
+            self.engine,
+            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
+        )
+
+    def activate(self, action: actions.ItemAction) -> None:
+        import tcod.los  # pylint: disable=import-outside-toplevel
+        import tile_types  # pylint: disable=import-outside-toplevel
+        consumer = action.entity
+        gm = self.engine.game_map
+        px, py = consumer.x, consumer.y
+        tx, ty = action.target_xy
+
+        if (tx, ty) == (px, py):
+            raise Impossible("Choose a direction to fire the wand.")
+
+        dx = tx - px
+        dy = ty - py
+        length = max(abs(dx), abs(dy))
+        scale = (self.RANGE + 2) / length
+        far_x = int(px + dx * scale)
+        far_y = int(py + dy * scale)
+
+        line = tcod.los.bresenham((px, py), (far_x, far_y)).tolist()
+        if line and (line[0][0], line[0][1]) == (px, py):
+            line = line[1:]
+
+        # Build path of exactly RANGE tiles; stop only at map bounds (not walls).
+        path: list[tuple[int, int]] = []
+        for lx, ly in line:
+            if len(path) >= self.RANGE:
+                break
+            if not gm.in_bounds(lx, ly):
+                break
+            path.append((lx, ly))
+
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+        if _ih._context is not None and _ih._root_console is not None:
+            from render_functions import animate_digging_ray  # pylint: disable=import-outside-toplevel
+            animate_digging_ray(
+                self.engine, path, self._ray_char(dx, dy),
+                _ih._root_console, _ih._context,
+            )
+
+        walls_dug = 0
+        for lx, ly in path:
+            if not gm.tiles["walkable"][lx, ly]:
+                gm.tiles[lx, ly] = tile_types.floor
+                walls_dug += 1
+            actor = gm.get_actor_at_location(lx, ly)
+            if actor and actor is not consumer:
+                self.engine.message_log.add_message(
+                    f"The {actor.name} is struck by the beam for {self.DAMAGE} damage!",
+                    color.player_atk,
+                )
+                actor.fighter.take_damage(self.DAMAGE)
+
+        if walls_dug > 0:
+            self.engine.message_log.add_message(
+                "The beam carves through the stone!", color.player_atk
+            )
+        else:
+            self.engine.message_log.add_message(
+                "The beam passes through the air.", color.player_atk
+            )
+
+        self.consume()
+
+
 class ConfusionConsumable(Consumable):
     """Confuses a target for a set number of turns."""
 

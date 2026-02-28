@@ -23,7 +23,7 @@ _POTIONS = [
     "p_speed", "p_detect_monster", "p_sleep", "p_blindness",
 ]
 _SCROLLS = ["s_confusion", "s_fireball", "s_blink", "s_lightning", "s_identify"]
-_WANDS = ["wand_wishing"]
+_WANDS = ["wand_wishing", "wand_digging"]
 _WEAPONS = ["dagger", "sword", "long_sword", "odachi"]
 _ARMOR = ["leather_armor", "chain_mail", "steel_armor"]
 

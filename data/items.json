@@ -256,6 +256,20 @@
         }
     },
     {
+        "id": "wand_digging",
+        "name": "Wand of Digging",
+        "char": "/",
+        "color": [
+            139,
+            90,
+            43
+        ],
+        "charges": 5,
+        "consumable": {
+            "name": "DiggingWandConsumable"
+        }
+    },
+    {
         "id": "wand_wishing",
         "name": "Wand of Wishing",
         "char": "/",
