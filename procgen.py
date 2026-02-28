@@ -1,13 +1,19 @@
+"""Procedural dungeon generation for NoobRL."""
 from __future__ import annotations
 
 import math
 import random
+import string
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
-import tcod, string
+import tcod  # pylint: disable=import-error
 
-from game_map import GameMap
+import options
 import tile_types
+from components.effect import SleepEffect
+from dice import roll
+from entity import Actor, Chest
+from game_map import GameMap
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -60,13 +66,13 @@ enemy_chances: Dict[int, List[Tuple[string, int]]] = {
 def get_max_value_for_floor(
     max_value_by_floor: List[Tuple[int, int]], floor: int
 ) -> int:
+    """Return the maximum value applicable for the given floor number."""
     current_value = 0
 
     for floor_minimum, value in max_value_by_floor:
         if floor_minimum > floor:
             break
-        else:
-            current_value = value
+        current_value = value
 
     return current_value
 
@@ -77,19 +83,19 @@ def get_entities_at_random(
     number_of_entities: int,
     floor: int,
 ) -> List[Entity]:
+    """Return a random sample of entities weighted by floor-appropriate chances."""
     entity_weighted_chances = {}
 
     for key, values in weighted_chances_by_floor.items():
         if key > floor:
             break
-        else:
-            for value in values:
-                id = value[0]
-                entity = engine.item_manager.items.get(id)
-                if entity is None:
-                    entity = engine.monster_manager.monsters.get(id)
-                weighted_chance = value[1]
-                entity_weighted_chances[entity] = weighted_chance
+        for value in values:
+            entity_id = value[0]
+            entity = engine.item_manager.items.get(entity_id)
+            if entity is None:
+                entity = engine.monster_manager.monsters.get(entity_id)
+            weighted_chance = value[1]
+            entity_weighted_chances[entity] = weighted_chance
 
     entities = list(entity_weighted_chances.keys())
     entity_weighted_chance_values = list(entity_weighted_chances.values())
@@ -102,6 +108,8 @@ def get_entities_at_random(
 
 
 class RectangularRoom:
+    """A rectangular room defined by its top-left corner and dimensions."""
+
     def __init__(self, x: int, y: int, width: int, height: int):
         self.x1 = x
         self.y1 = y
@@ -110,6 +118,7 @@ class RectangularRoom:
 
     @property
     def center(self) -> Tuple[int, int]:
+        """Return the center tile of this room."""
         center_x = int((self.x1 + self.x2) / 2)
         center_y = int((self.y1 + self.y2) / 2)
 
@@ -130,11 +139,12 @@ class RectangularRoom:
         )
 
 
-def place_entities(
+def place_entities(  # pylint: disable=too-many-locals
     room: RectangularRoom,
     dungeon: GameMap,
     floor_number: int,
 ) -> None:
+    """Populate a room with random monsters, items, and possibly a chest."""
     number_of_monsters = random.randint(
         0, get_max_value_for_floor(max_monsters_by_floor, floor_number)
     )
@@ -152,7 +162,7 @@ def place_entities(
     for entity in monsters + items:
         if entity is None:
             print(
-                f"WARNING: None entity in spawn list ",
+                "WARNING: None entity in spawn list ",
                 f"(floor {floor_number}, room at {room.x1},{room.y1})"
             )
             continue
@@ -162,7 +172,7 @@ def place_entities(
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             if entity is None:
                 print(
-                    f"WARNING: None entity in dungeon ",
+                    "WARNING: None entity in dungeon ",
                     f"(floor {floor_number}, room at {room.x1},{room.y1})"
                 )
                 continue
@@ -170,8 +180,6 @@ def place_entities(
 
             # 20% chance for monsters to spawn asleep
             if entity in monsters and random.random() < 0.20:
-                from entity import Actor
-                from components.effect import SleepEffect
                 if isinstance(spawned, Actor):
                     eff = SleepEffect(engine=dungeon.engine, duration=999)
                     spawned.effects.append(eff)
@@ -180,9 +188,6 @@ def place_entities(
 
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
-        from entity import Chest
-        from dice import roll
-
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
@@ -242,7 +247,7 @@ def _would_create_wide_corridor(tiles, x, y, planned_floor=None):
     return False
 
 
-def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, int]]:
+def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, int]]:  # pylint: disable=too-many-locals,too-many-branches
     """Find corridor-room junctions where doors can be placed.
 
     A junction is a corridor tile where:
@@ -302,17 +307,15 @@ def find_door_locations(dungeon: GameMap, room_tiles: set) -> List[Tuple[int, in
             elif len(room_neighbors) == 2:
                 # Two room neighbors - only valid if they're in opposite directions
                 # (forming a straight line through the junction)
-                if (room_neighbors == [0, 1]) or (room_neighbors == [2, 3]):
+                if room_neighbors in ([0, 1], [2, 3]):
                     door_locations.append((x, y))
                 # Otherwise skip (perpendicular = running along edge)
 
     return door_locations
 
 
-def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
+def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:  # pylint: disable=too-many-locals
     """Place roughly elliptical patches of tall grass in some rooms."""
-    import options
-
     for room in rooms:
         if random.random() >= options.grass_patch_chance:
             continue
@@ -353,7 +356,7 @@ def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
                     continue
                 # Only convert floor and wall tiles
                 tile = dungeon.tiles[x, y]
-                if (tile == tile_types.floor or tile == tile_types.wall) and (
+                if tile in (tile_types.floor, tile_types.wall) and (
                     x,
                     y,
                 ) not in dungeon.secret_doors:
@@ -382,7 +385,7 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
                 dungeon.tiles[x, y] = tile_types.door_closed
 
 
-def generate_dungeon(
+def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches
     max_rooms: int,
     room_min_size: int,
     room_max_size: int,
@@ -401,7 +404,7 @@ def generate_dungeon(
     center_of_last_room = (0, 0)
     center_of_first_room = (0, 0)
 
-    for r in range(max_rooms):
+    for _ in range(max_rooms):
         room_width = random.randint(room_min_size, room_max_size)
         room_height = random.randint(room_min_size, room_max_size)
 

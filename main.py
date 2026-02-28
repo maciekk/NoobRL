@@ -2,7 +2,7 @@
 """Main entry point for NoobRL roguelike game."""
 import traceback
 
-import tcod
+import tcod  # pylint: disable=import-error
 
 import color
 import exceptions
@@ -25,10 +25,9 @@ def main() -> None:
     n_rows = 50
 
     # Set to '2' (for small tileset on high-res monitors).
-    # TODO: fix; no longer scales
     scale_factor = 1
 
-    tileset, scale_factor, player_char = tilesets.load_sheet(options.tileset)
+    tileset, scale_factor, _ = tilesets.load_sheet(options.tileset)
 
     handler = setup_game.MainMenu()
 
@@ -55,7 +54,7 @@ def main() -> None:
                         # extant PIXEL-based ones.
                         context.convert_event(event)
                         handler = handler.handle_events(event)
-                except Exception:  # Handle exceptions in game.
+                except Exception:  # pylint: disable=broad-exception-caught  # Handle exceptions in game.
                     traceback.print_exc()  # Print error to stderr.
                     # Then print the error to the message log.
                     if isinstance(handler, input_handlers.EventHandler):

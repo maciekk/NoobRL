@@ -4,17 +4,20 @@ from __future__ import annotations
 import copy
 import json
 import math
-import numpy as np
+import random
 import string
 from typing import Optional, List, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 
-import tcod
+import numpy as np  # pylint: disable=import-error
+import tcod  # pylint: disable=import-error
 
 import components.ai
 import components.equipment
 import components.fighter
 import components.inventory
 import components.level
+from components import consumable, equippable
+from equipment_types import EquipmentType
 from render_order import RenderOrder
 
 if TYPE_CHECKING:
@@ -26,8 +29,6 @@ if TYPE_CHECKING:
     from components.inventory import Inventory
     from components.level import Level
     from game_map import GameMap
-
-from components import consumable, equippable
 
 T = TypeVar("T", bound="Entity")
 
@@ -69,14 +70,14 @@ AI_MAP = {
 }
 
 
-class Entity:
+class Entity:  # pylint: disable=too-many-instance-attributes
     """
     A generic object to represent players, enemies, items, etc.
     """
 
     parent: Union[GameMap, Inventory, None]
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         parent: Optional[GameMap] = None,
         x: int = 0,
@@ -168,10 +169,10 @@ class Entity:
         return [(index[0], index[1]) for index in path]
 
 
-class Actor(Entity):
+class Actor(Entity):  # pylint: disable=too-many-instance-attributes
     """A living entity with combat stats, AI, inventory, and equipment."""
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self,
         *,
         x: int = 0,
@@ -257,6 +258,8 @@ class Actor(Entity):
 
 
 class Chest(Entity):
+    """A container entity that holds items and can be opened."""
+
     def __init__(
         self,
         *,
@@ -277,9 +280,9 @@ class Chest(Entity):
         self.opened = False
         self.stored_item_ids: List[str] = []
 
-    def open(self, opener: Actor) -> None:
+    def open(self, _opener: Actor) -> None:
         """Open the chest and spawn its pre-determined items."""
-        import exceptions
+        import exceptions  # pylint: disable=import-outside-toplevel
 
         if self.opened:
             raise exceptions.Impossible("This chest is already open.")
@@ -306,7 +309,9 @@ class Chest(Entity):
 
 
 class Item(Entity):
-    def __init__(
+    """An item entity that can be picked up, used, or equipped."""
+
+    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,redefined-outer-name
         self,
         *,
         x: int = 0,
@@ -369,7 +374,6 @@ class Item(Entity):
                     return engine.potion_alias_colors[self.item_id]
                 alias = engine.potion_aliases.get(self.item_id, "")
                 if "iridescent" in alias:
-                    import random
                     rng = random.Random(engine.turn * 997 + sum(ord(c) for c in self.item_id))
                     while True:
                         r, g, b = rng.randint(0, 255), rng.randint(0, 255), rng.randint(0, 255)
@@ -380,8 +384,6 @@ class Item(Entity):
     @property
     def stackable(self) -> bool:
         """True if this item can be stacked in inventory."""
-        from equipment_types import EquipmentType
-
         if self.char == "/":           # Wands use charges, not stacks
             return False
         if self.equippable is not None and self.equippable.equipment_type == EquipmentType.THROWN:
@@ -390,17 +392,19 @@ class Item(Entity):
 
 
 class ItemManager:
+    """Loads and manages item templates from a JSON file."""
+
     def __init__(self, fname: string):
         self.items = {}
         self.load(fname)
 
     def load(self, fname: string) -> None:
         """Load item templates from a JSON file."""
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             data = f.read()
             for item in json.loads(data):
-                id = item.pop("id")
-                item["item_id"] = id
+                entity_id = item.pop("id")
+                item["item_id"] = entity_id
                 if "charges" in item:
                     item["stack_count"] = item.pop("charges")
                 d = item.get("consumable", None)
@@ -411,7 +415,7 @@ class ItemManager:
                 if d:
                     equippable_class = EQUIPPABLE_MAP[d.pop("name")]
                     item["equippable"] = equippable_class(**d)
-                self.items[id] = Item(**item)
+                self.items[entity_id] = Item(**item)
 
     def clone(self, name: Optional[string]) -> Optional[Item]:
         """Return a deep copy of an item template by name."""
@@ -423,6 +427,8 @@ class ItemManager:
 
 
 class MonsterManager:
+    """Loads and manages actor (monster) templates from a JSON file."""
+
     def __init__(self, fname: string, item_manager: ItemManager):
         self.monsters = {}
         self.item_manager = item_manager
@@ -430,10 +436,10 @@ class MonsterManager:
 
     def load(self, fname: string) -> None:
         """Load actor templates from a JSON file."""
-        with open(fname, "r") as f:
+        with open(fname, "r", encoding="utf-8") as f:
             data = f.read()
             for item in json.loads(data):
-                id = item.pop("id")
+                entity_id = item.pop("id")
                 item["ai_cls"] = AI_MAP[item.pop("ai_cls")]
                 d = item.get("equipment", None)
                 if d is not None:
@@ -449,7 +455,7 @@ class MonsterManager:
                 d = item.get("level", None)
                 if d:
                     item["level"] = components.level.Level(**d)
-                self.monsters[id] = Actor(**item)
+                self.monsters[entity_id] = Actor(**item)
 
     def clone(self, name: string) -> Actor:
         """Return a deep copy of an actor template by name."""

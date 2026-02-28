@@ -78,8 +78,8 @@ CONFIRM_KEYS = {
 MIN_FRAME_INTERVAL = 0.025
 
 # Set by main.py so handle_action can render between repeated steps.
-context: Optional["tcod.context.Context"] = None
-root_console: Optional["tcod.console.Console"] = None
+context: Optional["tcod.context.Context"] = None  # pylint: disable=invalid-name
+root_console: Optional["tcod.console.Console"] = None  # pylint: disable=invalid-name
 
 
 # Modifier key helpers
@@ -251,6 +251,7 @@ class QuitConfirmHandler(EventHandler):
         console.print(x + 2, y + 1, msg, fg=color.white, bg=color.black)
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        """Quit on 'y', otherwise return to game."""
         if event.sym == tcod.event.KeySym.y:
             raise SystemExit()
         return MainGameEventHandler(self.engine)
@@ -785,7 +786,7 @@ class InventoryEventHandler(ListSelectionHandler):
             s += " [E]"
         return s
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
         """Render inventory menu with section headers between item categories."""
         self.engine.render(console)
 
@@ -834,7 +835,7 @@ class InventoryEventHandler(ListSelectionHandler):
             console.print(x + 1, y + 1, self.EMPTY_TEXT)
             return
 
-        CYAN = (0, 255, 255)
+        cyan = (0, 255, 255)
         for row_y, ((base, suffix), row) in enumerate(zip(row_data, rows), start=y + 1):
             if row[0] == "header":
                 console.print(x + 1, row_y, base, fg=color.impossible)
@@ -845,7 +846,7 @@ class InventoryEventHandler(ListSelectionHandler):
                 bg = color.white if highlighted else color.black
                 console.print(x + 1, row_y, base, fg=fg_main, bg=bg)
                 if suffix:
-                    fg_suffix = color.black if highlighted else CYAN
+                    fg_suffix = color.black if highlighted else cyan
                     console.print(x + 1 + len(base), row_y, suffix, fg=fg_suffix, bg=bg)
 
     def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
@@ -1230,7 +1231,9 @@ def find_openable_targets(engine: Engine) -> list:
                 )
 
             for entity in engine.game_map.entities:
-                if entity.x == x and entity.y == y and hasattr(entity, "open") and not getattr(entity, "opened", False):
+                if (entity.x == x and entity.y == y
+                        and hasattr(entity, "open")
+                        and not getattr(entity, "opened", False)):
                     direction = "here" if (dx == 0 and dy == 0) else "nearby"
                     targets.append(
                         (dx, dy, f"{entity.name.capitalize()} ({direction})", entity)
@@ -1443,7 +1446,7 @@ class MonsterDetailHandler(AskUserEventHandler):
         self.actor = actor
         self.back_handler = back_handler
 
-    def on_render(self, console: tcod.Console) -> None:
+    def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
         super().on_render(console)
 
         actor = self.actor
@@ -1716,7 +1719,7 @@ class LightningRayTargetHandler(SelectIndexHandler):
             return "\\"
         return "/"
 
-    def _get_ray_path(self) -> list[tuple[int, int]]:
+    def _get_ray_path(self) -> list[tuple[int, int]]:  # pylint: disable=too-many-locals
         """Trace ray from player toward cursor, up to MAX_RAY_LENGTH non-wall tiles."""
         player = self.engine.player
         px, py = player.x, player.y
@@ -1780,8 +1783,8 @@ class DiggingRayTargetHandler(SelectIndexHandler):
             return "\\"
         return "/"
 
-    def _get_ray_path(self) -> list[tuple[int, int]]:
-        """Trace ray from player toward cursor, up to MAX_RAY_LENGTH tiles, passing through walls."""
+    def _get_ray_path(self) -> list[tuple[int, int]]:  # pylint: disable=too-many-locals
+        """Trace ray from player to cursor, up to MAX_RAY_LENGTH tiles, passing through walls."""
         player = self.engine.player
         px, py = player.x, player.y
         tx, ty = self.engine.mouse_location

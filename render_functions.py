@@ -1,3 +1,4 @@
+"""Helper functions for rendering UI elements and animations."""
 from __future__ import annotations
 
 import time
@@ -29,21 +30,23 @@ def entity_brief(entity) -> str:
 
 
 def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
+    """Return a human-readable name for the tile at (x, y)."""
     tile = game_map.tiles[x, y]
     if tile == tile_types.down_stairs:
         return "stairs down"
-    elif tile == tile_types.up_stairs:
+    if tile == tile_types.up_stairs:
         return "stairs up"
-    elif tile == tile_types.wall:
+    if tile == tile_types.wall:
         return "wall"
-    elif tile == tile_types.floor:
+    if tile == tile_types.floor:
         return "floor"
-    elif tile == tile_types.tall_grass:
+    if tile == tile_types.tall_grass:
         return "tall grass"
     return ""
 
 
 def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
+    """Return a formatted string of entity and tile names at the given location."""
     if not game_map.in_bounds(x, y) or not game_map.visible[x, y]:
         return ""
 
@@ -64,7 +67,7 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     return " ".join(parts).capitalize()
 
 
-def render_bar(
+def render_bar(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     console: Console,
     name,
     current_value: int,
@@ -75,6 +78,7 @@ def render_bar(
     y: int,
     total_width: int,
 ) -> None:
+    """Render a colored progress bar with a label."""
     bar_width = int(float(current_value) / maximum_value * total_width)
     bar_width = min(bar_width, total_width)
 
@@ -105,6 +109,7 @@ def render_dungeon_level(
 def render_names_at_mouse_location(
     console: Console, x: int, y: int, engine: Engine
 ) -> None:
+    """Print entity/tile names at the current mouse cursor position."""
     mouse_x, mouse_y = int(engine.mouse_location[0]), int(engine.mouse_location[1])
 
     names_at_mouse_location = get_names_at_location(
@@ -133,7 +138,7 @@ def _explosion_color(heat: float) -> tuple:
     return stops[-1][1]
 
 
-def animate_explosion(
+def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     engine,
     x: int,
     y: int,
@@ -180,8 +185,8 @@ def animate_lightning_ray(
 
     The ray extends tile-by-tile, then flickers at full extension. Game state is not mutated.
     """
-    TRAIL_COLOR = (100, 180, 255)
-    TIP_COLOR = (255, 255, 255)
+    trail_color = (100, 180, 255)
+    tip_color = (255, 255, 255)
 
     visible_path = [
         (x, y) for x, y in path
@@ -195,14 +200,14 @@ def animate_lightning_ray(
         console.clear()
         engine.render(console)
         for j, (tx, ty) in enumerate(visible_path[:i]):
-            clr = TIP_COLOR if j == i - 1 else TRAIL_COLOR
+            clr = tip_color if j == i - 1 else trail_color
             console.print(x=tx, y=ty, string=ray_char, fg=clr)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.025)
 
     # Flicker at full extension
     for flicker_char, clr in [
-        ("*", TIP_COLOR),
+        ("*", tip_color),
         (ray_char, (160, 220, 255)),
         ("*", (255, 255, 200)),
     ]:
@@ -222,8 +227,8 @@ def animate_digging_ray(
     context,
 ) -> None:
     """Animate a digging beam growing along the given path tiles."""
-    TRAIL_COLOR = (160, 100, 40)
-    TIP_COLOR = (220, 180, 80)
+    trail_color = (160, 100, 40)
+    tip_color = (220, 180, 80)
 
     if not path:
         return
@@ -233,7 +238,7 @@ def animate_digging_ray(
         engine.render(console)
         for j, (tx, ty) in enumerate(path[:i]):
             if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
-                clr = TIP_COLOR if j == i - 1 else TRAIL_COLOR
+                clr = tip_color if j == i - 1 else trail_color
                 console.print(x=tx, y=ty, string=ray_char, fg=clr)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.025)

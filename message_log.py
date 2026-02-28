@@ -1,13 +1,16 @@
-from typing import Iterable, List, Reversible, Tuple, TYPE_CHECKING
+"""Message log for displaying scrollable game messages."""
+from typing import Iterable, List, Reversible, Tuple
 import textwrap
 
-import tcod
+import tcod  # pylint: disable=import-error
 
 import color
 import sounds
 
 
-class Message:
+class Message:  # pylint: disable=too-few-public-methods
+    """A single message entry with text and foreground color."""
+
     def __init__(self, text: str, fg: Tuple[int, int, int]):
         self.plain_text = text
         self.fg = fg
@@ -22,6 +25,8 @@ class Message:
 
 
 class MessageLog:
+    """Stores and renders a scrollable log of game messages."""
+
     def __init__(self) -> None:
         self.messages: List[Message] = []
 
@@ -44,7 +49,7 @@ class MessageLog:
 
         sounds.maybe_play_sfx(text)
 
-    def render(
+    def render(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         console: tcod.console.Console,
         x: int,
@@ -69,7 +74,7 @@ class MessageLog:
             )
 
     @classmethod
-    def render_messages(
+    def render_messages(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         cls,
         console: tcod.console.Console,
         x: int,

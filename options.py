@@ -1,4 +1,5 @@
-# Player options that modify game behavior.
+"""Player options that modify game behavior."""
+# pylint: disable=invalid-name
 
 # Walking into a closed door automatically opens it (costs a turn).
 auto_open_doors = True
