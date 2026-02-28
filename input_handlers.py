@@ -1,5 +1,5 @@
 """Keyboard and mouse input handling via a state machine of handler classes."""
-# pylint: disable=too-many-lines,fixme
+# pylint: disable=too-many-lines,fixme,cyclic-import,duplicate-code
 
 from __future__ import annotations
 

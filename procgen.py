@@ -1,4 +1,5 @@
 """Procedural dungeon generation for NoobRL."""
+# pylint: disable=cyclic-import
 from __future__ import annotations
 
 import math
@@ -34,7 +35,8 @@ item_chances: Dict[int, List[Tuple[string, int]]] = {
     0: [("p_heal", 35), ("dart", 20)],
     2: [("s_confusion", 10), ("s_identify", 15), ("s_blink", 15)],
     3: [("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5), ("s_teleport", 12), ("bomb", 10)],
-    4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5), ("wand_lightning", 8), ("wand_digging", 10)],
+    4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5),
+        ("wand_lightning", 8), ("wand_digging", 10)],
     5: [("sword", 3), ("long_sword", 3), ("odachi", 2), ("p_damage", 3)],
     6: [
         ("s_fireball", 25),
@@ -369,11 +371,11 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
     20% no door, 50% open door, 30% closed door.
     """
     for x, y in door_locations:
-        roll = random.random()
-        if roll < 0.20:
+        rand_val = random.random()
+        if rand_val < 0.20:
             # No door
             pass
-        elif roll < 0.70:  # 0.20 + 0.50
+        elif rand_val < 0.70:  # 0.20 + 0.50
             # Open door
             dungeon.tiles[x, y] = tile_types.door_open
         else:

@@ -1,16 +1,16 @@
 """Handle the loading and initialization of game sessions."""
+# pylint: disable=cyclic-import
 
 from __future__ import annotations
 
-import copy
 import lzma
 import pickle
 import traceback
 from typing import Optional
 
-import tcod
-import pygame.mixer
-from tcod import libtcodpy
+import tcod  # pylint: disable=import-error
+import pygame.mixer  # pylint: disable=import-error
+from tcod import libtcodpy  # pylint: disable=import-error
 
 import color
 from engine import Engine
@@ -75,6 +75,7 @@ class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
 
     def __init__(self):
+        super().__init__()
         _init_audio()
         self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav")
 
@@ -114,16 +115,17 @@ class MainMenu(input_handlers.BaseEventHandler):
     def ev_keydown(
         self, event: tcod.event.KeyDown
     ) -> Optional[input_handlers.BaseEventHandler]:
+        """Handle main menu key input: quit, continue, or new game."""
         if event.sym in (tcod.event.KeySym.q, tcod.event.KeySym.ESCAPE):
             raise SystemExit()
-        elif event.sym == tcod.event.KeySym.c:
+        if event.sym == tcod.event.KeySym.c:
             if self.channel:
                 self.channel.stop()
             try:
                 return input_handlers.MainGameEventHandler(load_game("savegame.sav"))
             except FileNotFoundError:
                 return input_handlers.PopupMessage(self, "No saved game to load.")
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=broad-exception-caught
                 traceback.print_exc()  # Print to stderr.
                 return input_handlers.PopupMessage(self, f"Failed to load save:\n{exc}")
         elif event.sym == tcod.event.KeySym.n:

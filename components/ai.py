@@ -1,11 +1,12 @@
 """Artificial intelligence behavior for enemies and effects."""
+# pylint: disable=cyclic-import
 
 from __future__ import annotations
 
 import random
 from typing import List, Optional, Tuple, TYPE_CHECKING
 
-import numpy as np
+import numpy as np  # pylint: disable=import-error
 
 import color
 import tile_types
@@ -123,9 +124,9 @@ class ExplodingCorpseAI(BaseAI):
         # Defuse self first to prevent re-triggering during chain reactions
         self.entity.ai = None
 
-        import input_handlers as _ih
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
         if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_explosion
+            from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
             animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
 
         engine.message_log.add_message("BOOM!", color.enemy_atk)
@@ -256,7 +257,7 @@ class PatrollingEnemy(BaseAI):
         x, y = coords[random.randrange(len(coords))]
         return int(x), int(y)
 
-    def perform(self) -> None:
+    def perform(self) -> None:  # pylint: disable=too-many-return-statements
         if self.entity.is_asleep:
             return
 

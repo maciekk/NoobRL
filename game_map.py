@@ -1,4 +1,5 @@
 """Manages the dungeon map grid, entities, and field-of-view state for a single floor."""
+# pylint: disable=cyclic-import
 
 from __future__ import annotations
 

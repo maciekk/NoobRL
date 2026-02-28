@@ -1,4 +1,5 @@
 """Actions that entities can perform to interact with the game world."""
+# pylint: disable=cyclic-import
 
 from __future__ import annotations
 
@@ -7,7 +8,7 @@ import math
 import random
 from typing import Optional, Tuple, TYPE_CHECKING
 
-import tcod
+import tcod  # pylint: disable=import-error
 
 import color
 import sounds
@@ -112,7 +113,9 @@ class WishAction(Action):
 class PickupAction(Action):
     """Pickup an item and add it to the inventory, optionally from a specific tile."""
 
-    def __init__(self, entity: Actor, target_x: Optional[int] = None, target_y: Optional[int] = None) -> None:
+    def __init__(
+        self, entity: Actor, target_x: Optional[int] = None, target_y: Optional[int] = None
+    ) -> None:
         super().__init__(entity)
         self.target_x = target_x
         self.target_y = target_y
@@ -724,7 +727,7 @@ class ThrowAction(Action):
             )
 
     def _trace_throw_path(self, game_map, sx: int, sy: int):
-        """Walk the Bresenham line from (sx, sy) to target_xy; return (path, landing tile, hit actor)."""
+        """Walk Bresenham line from (sx, sy) to target_xy; return (path, landing tile, hit actor)."""
         tx, ty = self.target_xy
         line = tcod.los.bresenham((sx, sy), (tx, ty)).tolist()
         if line and (line[0][0], line[0][1]) == (sx, sy):
@@ -771,9 +774,9 @@ class ThrowAction(Action):
         sx, sy = self.entity.x, self.entity.y
         path, final_x, final_y, hit_actor = self._trace_throw_path(game_map, sx, sy)
 
-        import input_handlers as _ih
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
         if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_projectile
+            from render_functions import animate_projectile  # pylint: disable=import-outside-toplevel
             frames = [(x, y, self.item.char, self.item.color) for x, y in path]
             animate_projectile(self.engine, frames, _ih.root_console, _ih.context)
 

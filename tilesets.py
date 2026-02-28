@@ -1,4 +1,5 @@
-import tcod
+"""Available tilesets and helper to load a tileset by name fragment."""
+import tcod  # pylint: disable=import-error
 
 TILESETS = [
     ("dejavu10x10_gs_tc.png", (32, 8, tcod.tileset.CHARMAP_TCOD), 2, "@"),
@@ -32,6 +33,7 @@ TILESETS = [
 
 
 def load_sheet(name):
+    """Load a tileset whose filename contains *name*; return (tileset, scale, player_char)."""
     for fname, (x, y, charmap), sfactor, player_char in TILESETS:
         if name in fname:
             break

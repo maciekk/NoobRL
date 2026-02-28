@@ -1,12 +1,13 @@
+"""Sound effect playback triggered by message log content."""
 import random
 import threading
 import time
 
-import pygame.mixer
+import pygame.mixer  # pylint: disable=import-error
 
 # Stagger delay (seconds) between multiple sounds triggered in quick succession.
 _STAGGER_SECS = 0.1
-_next_play_time = 0.0
+_NEXT_PLAY_TIME = 0.0
 
 _EFFECT_DEFS = [
     (
@@ -186,7 +187,7 @@ _EFFECT_DEFS = [
 ]
 
 # Populated by init(); None means audio is unavailable.
-_loaded_effects = None
+_LOADED_EFFECTS = None
 
 
 def init():
@@ -194,32 +195,34 @@ def init():
 
     Must be called after pygame.mixer.init().
     """
-    global _loaded_effects
-    _loaded_effects = [
+    global _LOADED_EFFECTS  # pylint: disable=global-statement
+    _LOADED_EFFECTS = [
         (match_str, [pygame.mixer.Sound(path) for path in paths])
         for match_str, paths in _EFFECT_DEFS
     ]
 
 
 def maybe_play_sfx(log_line):
-    global _next_play_time
-    if _loaded_effects is None:
+    """Play a matching sound effect if audio is available and a trigger matches."""
+    global _NEXT_PLAY_TIME  # pylint: disable=global-statement
+    if _LOADED_EFFECTS is None:
         return
-    for match_str, sfx_options in _loaded_effects:
+    for match_str, sfx_options in _LOADED_EFFECTS:
         if match_str in log_line:
             sound = random.choice(sfx_options)
             now = time.monotonic()
-            play_at = max(now, _next_play_time)
+            play_at = max(now, _NEXT_PLAY_TIME)
             delay = play_at - now
             if delay <= 0:
                 sound.play()
             else:
                 threading.Timer(delay, sound.play).start()
-            _next_play_time = play_at + _STAGGER_SECS
+            _NEXT_PLAY_TIME = play_at + _STAGGER_SECS
             return
 
 
 def play(fname):
+    """Play a sound file directly, returning the channel or None if audio is off."""
     if not pygame.mixer.get_init():
         return None
     sound = pygame.mixer.Sound(fname)

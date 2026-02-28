@@ -1,6 +1,7 @@
+"""Tile type definitions and NumPy dtypes for the game map."""
 from typing import Tuple
 
-import numpy as np  # type: ignore
+import numpy as np  # type: ignore  # pylint: disable=import-error
 
 # Tile graphics structured type compatible with Console.tiles_rgb.
 graphic_dt = np.dtype(

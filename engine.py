@@ -1,13 +1,12 @@
 """Core game engine managing game state, turn cycle, and rendering."""
 from __future__ import annotations
 
-import copy
 import lzma
 import pickle
 from typing import TYPE_CHECKING
 
-from tcod.console import Console
-from tcod.map import compute_fov
+from tcod.console import Console  # pylint: disable=import-error
+from tcod.map import compute_fov  # pylint: disable=import-error
 
 import color
 from entity import ItemManager, MonsterManager
@@ -20,7 +19,7 @@ if TYPE_CHECKING:
     from game_map import GameMap, GameWorld
 
 
-class Engine:
+class Engine:  # pylint: disable=too-many-instance-attributes
     """Central game state: manages map, player, entities, turns, and rendering."""
 
     game_map: GameMap
@@ -42,8 +41,8 @@ class Engine:
 
     def initialize_scroll_aliases(self) -> None:
         """Assign a random fake name to each scroll type for this game run."""
-        import random
-        with open("data/scroll_names.txt") as f:
+        import random  # pylint: disable=import-outside-toplevel
+        with open("data/scroll_names.txt", encoding="utf-8") as f:
             names = [line.strip() for line in f if line.strip()]
         scroll_ids = [
             item_id for item_id, item in self.item_manager.items.items()
@@ -55,10 +54,10 @@ class Engine:
 
     def initialize_potion_aliases(self) -> None:
         """Assign a random appearance to each potion type for this game run."""
-        import random
-        with open("data/potion_looks.txt") as f:
+        import random  # pylint: disable=import-outside-toplevel
+        with open("data/potion_looks.txt", encoding="utf-8") as f:
             looks = [line.strip() for line in f if line.strip()]
-        with open("data/potion_colors.txt") as f:
+        with open("data/potion_colors.txt", encoding="utf-8") as f:
             color_entries = []
             for line in f:
                 line = line.strip()

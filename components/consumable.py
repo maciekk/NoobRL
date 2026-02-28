@@ -1,5 +1,5 @@
 """Component that defines consumable item abilities."""
-# pylint: disable=fixme
+# pylint: disable=fixme,cyclic-import,duplicate-code
 
 from __future__ import annotations
 
@@ -101,7 +101,7 @@ class WandConsumable(Consumable):  # pylint: disable=abstract-method
         if isinstance(inventory, components.inventory.Inventory):
             entity.stack_count -= 1
 
-    def _compute_ray_path(
+    def _compute_ray_path(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
         self, px: int, py: int, tx: int, ty: int,
         max_length: int, stop_at_walls: bool = True,
     ) -> list:
@@ -178,7 +178,7 @@ class LightningWandConsumable(WandConsumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(self, action: actions.ItemAction) -> None:  # pylint: disable=too-many-locals
         consumer = action.entity
         px, py = consumer.x, consumer.y
         tx, ty = action.target_xy
@@ -251,7 +251,7 @@ class DiggingWandConsumable(WandConsumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:
+    def activate(self, action: actions.ItemAction) -> None:  # pylint: disable=too-many-locals
         consumer = action.entity
         gm = self.engine.game_map
         px, py = consumer.x, consumer.y

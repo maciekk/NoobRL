@@ -1,9 +1,11 @@
+"""Debug console and spawn utilities for in-game testing."""
+# pylint: disable=cyclic-import,duplicate-code
 import random
 import re
 from collections import deque
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
-import tcod
+import tcod  # pylint: disable=import-error
 
 import color
 import sounds
@@ -29,7 +31,8 @@ _ARMOR = ["leather_armor", "chain_mail", "steel_armor"]
 
 
 def spawn_chest_of_wonder(game_map: GameMap) -> None:
-    from entity import Chest
+    """Spawn a Chest of Wonder near the player on the given map."""
+    from entity import Chest  # pylint: disable=import-outside-toplevel
 
     player = game_map.engine.player
     px, py = player.x, player.y
@@ -146,6 +149,7 @@ def find_cluster_positions(
 
 
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
+    """Clone entity by ID, adding items to inventory or placing monsters on the map."""
     entity = game_map.engine.item_manager.clone(entity_id)
     is_item = entity is not None
     if entity is None:
@@ -169,9 +173,8 @@ def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
         sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
         # If added to inventory successfully, no need to spawn on map
         return entity
-    else:
-        # Monsters always spawn on the map
-        return entity.spawn(game_map, x, y)
+    # Monsters always spawn on the map
+    return entity.spawn(game_map, x, y)
 
 
 def find_matches(engine: Engine, query: str) -> List[Tuple[str, str]]:
@@ -219,7 +222,9 @@ class DebugHandler(AskUserEventHandler):
         )
         console.print(x=x + 1, y=y + 1, string=f"Enter entity to spawn: {self.buffer}")
 
-    def ev_keydown(self, event: tcod.event.KeyDown):
+    def ev_keydown(  # pylint: disable=too-many-return-statements,too-many-branches
+        self, event: tcod.event.KeyDown
+    ):
         key = event.sym
         if key == tcod.event.KeySym.RETURN:
             query, count = parse_query(self.buffer)
@@ -229,7 +234,7 @@ class DebugHandler(AskUserEventHandler):
             if len(matches) == 0:
                 self.engine.message_log.add_message(f"No match for '{query}'.")
                 return MainGameEventHandler(self.engine)
-            elif len(matches) == 1:
+            if len(matches) == 1:
                 entity_id, name = matches[0]
                 if entity_id == CHEST_OF_WONDER_ID:
                     spawn_chest_of_wonder(self.engine.game_map)
@@ -246,8 +251,7 @@ class DebugHandler(AskUserEventHandler):
                         self.engine.player.y,
                     )
                 return MainGameEventHandler(self.engine)
-            else:
-                return DebugSelectHandler(self.engine, matches, count)
+            return DebugSelectHandler(self.engine, matches, count)
         elif key == tcod.event.KeySym.ESCAPE:
             return MainGameEventHandler(self.engine)
         elif key == tcod.event.KeySym.BACKSPACE:
