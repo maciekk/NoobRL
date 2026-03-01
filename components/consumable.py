@@ -1,5 +1,5 @@
 """Component that defines consumable item abilities."""
-# pylint: disable=fixme,cyclic-import,abstract-method,import-outside-toplevel
+# pylint: disable=fixme,abstract-method,import-outside-toplevel
 
 from __future__ import annotations
 

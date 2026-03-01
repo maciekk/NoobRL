@@ -41,6 +41,7 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] slow down the digging wand ray animation?
 - [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
 - [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
 - [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
@@ -83,14 +84,15 @@ Ideas & efforts under way.
 
 ### Items (Potions, Scrolls, Powers, etc)
 - [ ] add: Potion of Berserk - 50% more damage for 10 turns
-- [ ] add: Wand of Digging `#next`
+- [x] add: Wand of Digging `#next`
 - [ ] add rings
 - [ ] add more wands
 - [ ] items react to nearby spells (e.g., fireball makes a potion explode)
 - [ ] maybe: magic proficiency skill, which multiplies damage to all magical effects
-- [ ] digging tools, wands - modify the dungeon walls, but slow
+- [x] digging tools, wands - modify the dungeon walls, but slow
 - [ ] LoS will need to be independent from player sight distance (b/c some monsters will have better eyesight)
 - [ ] have various light sources, with various light radii; thus visibility of X is compound of 3 factors: LoS map + min(player sight_distance, light source range)
+- [ ] add pickaxe that is more common, shows earlier than Wand of Digging
 
 ### UI
 - [ ] use different, appropriate sfx for wizard attack

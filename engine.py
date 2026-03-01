@@ -9,7 +9,7 @@ from tcod.console import Console  # pylint: disable=import-error
 from tcod.map import compute_fov  # pylint: disable=import-error
 
 import color
-from entity import ItemManager, MonsterManager
+from managers import ItemManager, MonsterManager
 import exceptions
 from message_log import MessageLog
 import render_functions
