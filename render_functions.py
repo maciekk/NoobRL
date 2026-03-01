@@ -67,7 +67,7 @@ def get_names_at_location(x: int, y: int, game_map: GameMap) -> str:
     return " ".join(parts).capitalize()
 
 
-def render_bar(  # pylint: disable=too-many-arguments
+def render_bar(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     console: Console,
     name,
     current_value: int,
@@ -138,7 +138,7 @@ def _explosion_color(heat: float) -> tuple:
     return stops[-1][1]
 
 
-def animate_explosion(  # pylint: disable=too-many-arguments
+def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional-arguments
     engine,
     x: int,
     y: int,

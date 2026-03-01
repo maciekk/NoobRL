@@ -49,7 +49,7 @@ class MessageLog:
 
         sounds.maybe_play_sfx(text)
 
-    def render(  # pylint: disable=too-many-arguments
+    def render(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         self,
         console: tcod.console.Console,
         x: int,
@@ -74,7 +74,7 @@ class MessageLog:
             )
 
     @classmethod
-    def render_messages(  # pylint: disable=too-many-arguments
+    def render_messages(  # pylint: disable=too-many-arguments,too-many-positional-arguments
         cls,
         console: tcod.console.Console,
         x: int,
