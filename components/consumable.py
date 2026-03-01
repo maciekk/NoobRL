@@ -1,5 +1,5 @@
 """Component that defines consumable item abilities."""
-# pylint: disable=fixme,cyclic-import,duplicate-code
+# pylint: disable=fixme,cyclic-import,abstract-method,import-outside-toplevel
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import random
 from typing import Optional, TYPE_CHECKING
 import numpy as np  # pylint: disable=import-error
 import tcod.los  # pylint: disable=import-error
+from render_functions import animate_lightning_ray, animate_digging_ray, animate_explosion
 import tile_types
 import actions
 import color
@@ -66,14 +67,14 @@ class Consumable(BaseComponent):
                 inventory.items.remove(entity)
 
 
-class IdentificationConsumable(Consumable):  # pylint: disable=abstract-method
+class IdentificationConsumable(Consumable):
     """Lets the player identify one unidentified item in their inventory."""
 
     def get_description(self) -> list[str]:
         return ["Identifies one item in your inventory"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import IdentifyItemHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import IdentifyItemHandler
         unidentified = [
             item for item in consumer.inventory.items
             if item.display_name != item.name
@@ -86,7 +87,7 @@ class IdentificationConsumable(Consumable):  # pylint: disable=abstract-method
         return IdentifyItemHandler(self.engine, self.parent)
 
 
-class WandConsumable(Consumable):  # pylint: disable=abstract-method
+class WandConsumable(Consumable):
     """Base class for wand items. Uses charges; spent wands stay in inventory."""
 
     def _check_charges(self) -> None:
@@ -101,23 +102,39 @@ class WandConsumable(Consumable):  # pylint: disable=abstract-method
         if isinstance(inventory, components.inventory.Inventory):
             entity.stack_count -= 1
 
-    def _compute_ray_path(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
-        self, px: int, py: int, tx: int, ty: int,
+    @staticmethod
+    def _ray_char(dx: int, dy: int) -> str:
+        if dx == 0:
+            return "|"
+        if dy == 0:
+            return "-"
+        if (dx > 0) == (dy > 0):
+            return "\\"
+        return "/"
+
+    def _animate_ray(self, path: list, ray_char: str, animate_fn) -> None:
+        """Animate a ray if the rendering context is available."""
+        import input_handlers as _ih
+        if _ih.context is not None and _ih.root_console is not None:
+            animate_fn(self.engine, path, ray_char, _ih.root_console, _ih.context)
+
+    def _compute_ray_path(
+        self, origin: tuple, target: tuple,
         max_length: int, stop_at_walls: bool = True,
     ) -> list:
-        """Compute ray path tiles from (px, py) toward (tx, ty).
+        """Compute ray path tiles from origin toward target.
 
         Returns up to max_length in-bounds tiles. Stops at walls if stop_at_walls is True.
         """
         gm = self.engine.game_map
-        dx = tx - px
-        dy = ty - py
+        dx = target[0] - origin[0]
+        dy = target[1] - origin[1]
         length = max(abs(dx), abs(dy))
         scale = (max_length + 2) / length
         line = tcod.los.bresenham(
-            (px, py), (int(px + dx * scale), int(py + dy * scale))
+            origin, (int(origin[0] + dx * scale), int(origin[1] + dy * scale))
         ).tolist()
-        if line and (line[0][0], line[0][1]) == (px, py):
+        if line and (line[0][0], line[0][1]) == origin:
             line = line[1:]
         path: list = []
         for lx, ly in line:
@@ -131,14 +148,14 @@ class WandConsumable(Consumable):  # pylint: disable=abstract-method
         return path
 
 
-class WishingWandConsumable(WandConsumable):  # pylint: disable=abstract-method
+class WishingWandConsumable(WandConsumable):
     """A wand that grants any single wish-able item."""
     def get_description(self) -> list[str]:
         return ["Grants a wish for any item"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
         self._check_charges()
-        from input_handlers import WishItemHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import WishItemHandler
         self.engine.message_log.add_message("What do you wish for?", color.needs_target)
         return WishItemHandler(self.engine, self.parent)
 
@@ -157,19 +174,9 @@ class LightningWandConsumable(WandConsumable):
             f"Pierces all targets up to {self.MAX_RAY_LENGTH} tiles",
         ]
 
-    @staticmethod
-    def _ray_char(dx: int, dy: int) -> str:
-        if dx == 0:
-            return "|"
-        if dy == 0:
-            return "-"
-        if (dx > 0) == (dy > 0):
-            return "\\"
-        return "/"
-
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
         self._check_charges()
-        from input_handlers import LightningRayTargetHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import LightningRayTargetHandler
         self.engine.message_log.add_message(
             "Point the wand and confirm.", color.needs_target
         )
@@ -178,7 +185,7 @@ class LightningWandConsumable(WandConsumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:  # pylint: disable=too-many-locals
+    def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         px, py = consumer.x, consumer.y
         tx, ty = action.target_xy
@@ -187,15 +194,8 @@ class LightningWandConsumable(WandConsumable):
             raise Impossible("Choose a direction to fire the wand.")
 
         dx, dy = tx - px, ty - py
-        path = self._compute_ray_path(px, py, tx, ty, self.MAX_RAY_LENGTH)
-
-        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-        if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_lightning_ray  # pylint: disable=import-outside-toplevel
-            animate_lightning_ray(
-                self.engine, path, self._ray_char(dx, dy),
-                _ih.root_console, _ih.context,
-            )
+        path = self._compute_ray_path((px, py), (tx, ty), self.MAX_RAY_LENGTH)
+        self._animate_ray(path, self._ray_char(dx, dy), animate_lightning_ray)
 
         targets_hit = []
         for lx, ly in path:
@@ -230,19 +230,9 @@ class DiggingWandConsumable(WandConsumable):
             f"Destroys walls; deals {self.DAMAGE} damage to monsters hit",
         ]
 
-    @staticmethod
-    def _ray_char(dx: int, dy: int) -> str:
-        if dx == 0:
-            return "|"
-        if dy == 0:
-            return "-"
-        if (dx > 0) == (dy > 0):
-            return "\\"
-        return "/"
-
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
         self._check_charges()
-        from input_handlers import DiggingRayTargetHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import DiggingRayTargetHandler
         self.engine.message_log.add_message(
             "Point the wand and confirm.", color.needs_target
         )
@@ -251,7 +241,7 @@ class DiggingWandConsumable(WandConsumable):
             callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
         )
 
-    def activate(self, action: actions.ItemAction) -> None:  # pylint: disable=too-many-locals
+    def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         gm = self.engine.game_map
         px, py = consumer.x, consumer.y
@@ -262,15 +252,8 @@ class DiggingWandConsumable(WandConsumable):
 
         dx, dy = tx - px, ty - py
         # stop_at_walls=False: digging beam passes through walls
-        path = self._compute_ray_path(px, py, tx, ty, self.RANGE, stop_at_walls=False)
-
-        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-        if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_digging_ray  # pylint: disable=import-outside-toplevel
-            animate_digging_ray(
-                self.engine, path, self._ray_char(dx, dy),
-                _ih.root_console, _ih.context,
-            )
+        path = self._compute_ray_path((px, py), (tx, ty), self.RANGE, stop_at_walls=False)
+        self._animate_ray(path, self._ray_char(dx, dy), animate_digging_ray)
 
         walls_dug = 0
         for lx, ly in path:
@@ -307,7 +290,7 @@ class ConfusionConsumable(Consumable):
         return [f"Confuses target for {self.number_of_turns} turns"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import SelectEntityHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import SelectEntityHandler
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
@@ -474,7 +457,7 @@ class TeleportConsumable(Consumable):
         return ["Teleport to any visible location"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import TeleportTargetHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import TeleportTargetHandler
         self.engine.message_log.add_message(
             "Select a destination.", color.needs_target
         )
@@ -509,7 +492,7 @@ class FireballDamageConsumable(Consumable):
         return [f"Deals {self.damage} damage in radius {self.radius}"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import AreaRangedAttackHandler  # pylint: disable=import-outside-toplevel
+        from input_handlers import AreaRangedAttackHandler
         self.engine.message_log.add_message(
             "Select a target location.", color.needs_target
         )
@@ -655,7 +638,7 @@ class SleepConsumable(Consumable):
         self.consume()
 
 
-class BombConsumable(Consumable):  # pylint: disable=abstract-method
+class BombConsumable(Consumable):
     """Explodes in an area when thrown, dealing damage in a radius."""
 
     def __init__(self, damage: int, radius: int):
@@ -667,9 +650,8 @@ class BombConsumable(Consumable):  # pylint: disable=abstract-method
 
     def explode(self, x: int, y: int, game_map, engine) -> None:
         """Explode at the given location, damaging all actors in radius."""
-        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+        import input_handlers as _ih
         if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
             animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
 
         targets_hit = False
