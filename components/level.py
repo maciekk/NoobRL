@@ -17,7 +17,7 @@ class Level(BaseComponent):
     """Tracks XP, levels, and provides methods to increase stats on level up."""
     parent: Actor
 
-    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         current_level: int = 1,
         current_xp: int = 0,

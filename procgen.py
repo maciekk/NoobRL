@@ -387,7 +387,7 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
                 dungeon.tiles[x, y] = tile_types.door_closed
 
 
-def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches
+def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-locals,too-many-branches
     max_rooms: int,
     room_min_size: int,
     room_max_size: int,

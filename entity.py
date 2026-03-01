@@ -77,7 +77,7 @@ class Entity:  # pylint: disable=too-many-instance-attributes
 
     parent: Union[GameMap, Inventory, None]
 
-    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         parent: Optional[GameMap] = None,
         x: int = 0,
@@ -172,7 +172,7 @@ class Entity:  # pylint: disable=too-many-instance-attributes
 class Actor(Entity):  # pylint: disable=too-many-instance-attributes
     """A living entity with combat stats, AI, inventory, and equipment."""
 
-    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+    def __init__(  # pylint: disable=too-many-arguments,too-many-locals
         self,
         *,
         x: int = 0,
@@ -311,7 +311,7 @@ class Chest(Entity):
 class Item(Entity):
     """An item entity that can be picked up, used, or equipped."""
 
-    def __init__(  # pylint: disable=too-many-arguments,too-many-positional-arguments,redefined-outer-name
+    def __init__(  # pylint: disable=too-many-arguments,redefined-outer-name
         self,
         *,
         x: int = 0,

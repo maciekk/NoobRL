@@ -101,7 +101,7 @@ class WandConsumable(Consumable):  # pylint: disable=abstract-method
         if isinstance(inventory, components.inventory.Inventory):
             entity.stack_count -= 1
 
-    def _compute_ray_path(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals
+    def _compute_ray_path(  # pylint: disable=too-many-arguments,too-many-locals
         self, px: int, py: int, tx: int, ty: int,
         max_length: int, stop_at_walls: bool = True,
     ) -> list:
