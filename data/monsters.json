@@ -11,7 +11,7 @@
     },
     "fighter": {
       "hp": 15,
-      "base_defense": 2,
+      "base_defense": 1,
       "base_power": 4
     },
     "inventory":{

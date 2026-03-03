@@ -25,7 +25,7 @@ BIG_CRIT = 0.30
 DEFAULT_CRIT = 0.05
 
 # Player base stats (from monsters.json player entry)
-PLAYER_BASE_DEFENSE = 2
+PLAYER_BASE_DEFENSE = 1
 PLAYER_START_WEAPON = 2  # dagger, always equipped at start
 
 
