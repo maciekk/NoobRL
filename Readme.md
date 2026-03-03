@@ -41,6 +41,10 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] balance the level up stat gain mechanics
+- [ ] JSON-ify weapons; stats should not be in code
+- [ ] ideally explosion animation should happen while sfx is playing
+- [ ] explosions should burn off tall grass
 - [ ] slow down the digging wand ray animation?
 - [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
 - [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
