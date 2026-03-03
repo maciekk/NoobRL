@@ -32,12 +32,12 @@ max_monsters_by_floor = [
 ]
 
 item_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [("p_heal", 35), ("dart", 20)],
+    0: [("p_heal", 35), ("dart", 20), ("leather_armor", 8)],
     2: [("s_confusion", 10), ("s_identify", 15), ("s_blink", 15)],
     3: [("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5), ("s_teleport", 12), ("bomb", 10)],
     4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5),
         ("wand_lightning", 8), ("wand_digging", 10)],
-    5: [("sword", 3), ("long_sword", 3), ("odachi", 2), ("p_damage", 3)],
+    5: [("long_sword", 3), ("p_damage", 3)],
     6: [
         ("s_fireball", 25),
         ("chain_mail", 15),
@@ -52,15 +52,15 @@ enemy_chances: Dict[int, List[Tuple[string, int]]] = {
     0: [("kobold", 80), ("orc", 80)],
     2: [("crawler", 20), ("puffball", 15)],
     3: [("troll", 5)],
-    5: [("troll", 15), ("crawler", 35)],
+    5: [("troll", 15), ("crawler", 35), ("wizard", 5)],
     6: [("wizard", 8), ("troll", 20)],
     7: [
         ("troll", 60),
         ("dragon", 1),
-        ("ender_dragon", 1),
-        ("hydra", 1),
         ("wizard", 12),
     ],
+    8: [("hydra", 1)],
+    9: [("ender_dragon", 1)],
     10: [("troll", 65), ("dragon", 2), ("ender_dragon", 2), ("hydra", 2)],
 }
 

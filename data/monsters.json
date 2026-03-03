@@ -93,9 +93,9 @@
     "equipment": {
     },
     "fighter": {
-      "hp": 55,
+      "hp": 38,
       "base_defense": 2,
-      "base_power": 12
+      "base_power": 11
     },
     "inventory": {
       "capacity": 0
@@ -116,8 +116,8 @@
     },
     "fighter": {
       "hp": 35,
-      "base_defense": 0,
-      "base_power": 17
+      "base_defense": 1,
+      "base_power": 15
     },
     "inventory": {
       "capacity": 0
@@ -132,6 +132,7 @@
     "char": "H",
     "color": [0, 224, 150],
     "ai_cls": "HostileEnemy",
+    "base_speed": 50,
     "equipment": {
     },
     "fighter": {
@@ -158,9 +159,9 @@
     "equipment": {
     },
     "fighter": {
-      "hp": 14,
+      "hp": 16,
       "base_defense": 1,
-      "base_power": 9
+      "base_power": 8
     },
     "inventory": {
       "capacity": 0

@@ -54,10 +54,10 @@ class LongSword(Equippable):
 
 
 class Odachi(Equippable):
-    """A legendary sword with +9 power bonus."""
+    """A legendary sword with +8 power bonus."""
 
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=9)
+        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=8)
 
 
 class LeatherArmor(Equippable):
