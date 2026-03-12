@@ -14,3 +14,6 @@ tileset = "Bedstead"
 
 # Probability each room gets a tall grass patch (0.0 disables).
 grass_patch_chance = 0.1
+
+# Show the sound wave ripple animation when a noise is made.
+show_sound = True

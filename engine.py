@@ -12,6 +12,7 @@ from tcod.map import compute_fov  # pylint: disable=import-error
 import color
 from managers import ItemManager, MonsterManager
 import exceptions
+import options
 from message_log import MessageLog
 import render_functions
 
@@ -163,11 +164,14 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """BFS-propagate queued sound events; alert monsters that hear them."""
         if not self._pending_sounds:
             return
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
         walkable = self.game_map.tiles["walkable"]
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
         for sx, sy, radius in self._pending_sounds:
             visited: set[tuple[int, int]] = {(sx, sy)}
             queue: deque[tuple[int, int, int]] = deque([(sx, sy, 0)])
+            tiles_by_dist: dict[int, list[tuple[int, int]]] = {}
+            alerted: list[tuple] = []  # deferred alerts collected during BFS
             while queue:
                 cx, cy, dist = queue.popleft()
                 if dist >= radius:
@@ -181,28 +185,31 @@ class Engine:  # pylint: disable=too-many-instance-attributes
                     if not walkable[nx, ny]:
                         continue
                     visited.add((nx, ny))
+                    tiles_by_dist.setdefault(dist + 1, []).append((nx, ny))
                     queue.append((nx, ny, dist + 1))
                     actor = self.game_map.get_actor_at_location(nx, ny)
                     if actor and actor is not self.player and actor.ai:
-                        if not hasattr(actor.ai, "on_sound"):
-                            continue
-                        was_asleep = actor.is_asleep
-                        had_investigate = getattr(actor.ai, "investigate_target", None) is not None
-                        actor.ai.on_sound(sx, sy)
-                        newly_woken = was_asleep and not actor.is_asleep
-                        newly_alerted = (
-                            not had_investigate
-                            and getattr(actor.ai, "investigate_target", None) is not None
-                        )
-                        if (newly_woken or newly_alerted) and self.game_map.visible[nx, ny]:
-                            if newly_woken:
-                                self.message_log.add_message(
-                                    f"The {actor.name} stirs awake!"
-                                )
-                            else:
-                                self.message_log.add_message(
-                                    f"The {actor.name} perks up."
-                                )
+                        if hasattr(actor.ai, "on_sound"):
+                            alerted.append((actor, nx, ny))
+
+            if _ih.context is not None and _ih.root_console is not None and options.show_sound:
+                from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
+                animate_sound_wave(self, tiles_by_dist, _ih.root_console, _ih.context)
+
+            for actor, nx, ny in alerted:
+                was_asleep = actor.is_asleep
+                had_investigate = getattr(actor.ai, "investigate_target", None) is not None
+                actor.ai.on_sound(sx, sy)
+                newly_woken = was_asleep and not actor.is_asleep
+                newly_alerted = (
+                    not had_investigate
+                    and getattr(actor.ai, "investigate_target", None) is not None
+                )
+                if (newly_woken or newly_alerted) and self.game_map.visible[nx, ny]:
+                    if newly_woken:
+                        self.message_log.add_message(f"The {actor.name} stirs awake!")
+                    else:
+                        self.message_log.add_message(f"The {actor.name} perks up.")
         self._pending_sounds.clear()
 
     def apply_timed_effects(self) -> None:

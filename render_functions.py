@@ -244,6 +244,41 @@ def animate_digging_ray(
         time.sleep(0.025)
 
 
+def animate_sound_wave(
+    engine,
+    tiles_by_dist: dict[int, list[tuple[int, int]]],
+    console,
+    context,
+) -> None:
+    """Animate an expanding sound wave ripple on visible tiles.
+
+    Shows the wave front ring-by-ring outward from the source, skipping
+    distances where no tiles fall within the player's FOV. Does not mutate
+    game state.
+    """
+    _COLOR = (0, 100, 100)
+    _CHAR = "+"
+    max_dist = max(tiles_by_dist) if tiles_by_dist else 0
+    rendered_any = False
+    for dist in range(1, max_dist + 1):
+        visible_ring = [
+            (x, y)
+            for x, y in tiles_by_dist.get(dist, [])
+            if engine.game_map.visible[x, y]
+        ]
+        if not visible_ring:
+            continue
+        console.clear()
+        engine.render(console)
+        for tx, ty in visible_ring:
+            console.print(x=tx, y=ty, string=_CHAR, fg=_COLOR)
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.03)
+        rendered_any = True
+    if rendered_any:
+        time.sleep(0.2)
+
+
 def animate_projectile(
     engine,
     frames: list[tuple[int, int, str, tuple[int, int, int]]],
