@@ -11,6 +11,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import tcod  # pylint: disable=import-error
 
 import color
+import dice
 import sounds
 from components.effect import (
     BlindnessEffect,
@@ -345,8 +346,15 @@ class MeleeAction(ActionWithDirection):
             crit_chance = 0.3
         else:
             crit_chance = 0.05
+        base_power = self.entity.fighter.power
+        weapon_roll = 0
+        if self.entity.equipment and self.entity.equipment.weapon:
+            equippable = self.entity.equipment.weapon.equippable
+            if equippable and equippable.damage_dice:
+                weapon_roll = dice.roll(equippable.damage_dice)
+        attack_power = base_power + weapon_roll
         damage, is_crit = compute_damage(
-            self.entity.fighter.power,
+            attack_power,
             target.fighter.defense,
             crit_chance,
         )
@@ -360,8 +368,13 @@ class MeleeAction(ActionWithDirection):
             attack_color = color.crit_atk
             crit_text = " [CRIT!]"
         if damage > 0:
+            if self.entity is self.engine.player and weapon_roll:
+                crit_note = ",x1.5" if is_crit else ""
+                breakdown = f" ({base_power}+{weapon_roll}{crit_note})"
+            else:
+                breakdown = ""
             self.engine.message_log.add_message(
-                f"{attack_desc} for {damage} hit points" f"{crit_text}.",
+                f"{attack_desc} for {damage} hit points{breakdown}{crit_text}.",
                 attack_color,
             )
             target.fighter.take_damage(damage)
@@ -647,8 +660,12 @@ class ThrowAction(Action):
     def _compute_damage(self, item: Item) -> int:
         if item.equippable:
             if item.equippable.equipment_type == EquipmentType.THROWN:
+                if item.equippable.damage_dice:
+                    return dice.roll(item.equippable.damage_dice)
                 return item.equippable.power_bonus
             if item.equippable.equipment_type == EquipmentType.WEAPON:
+                if item.equippable.damage_dice:
+                    return max(1, dice.roll(item.equippable.damage_dice) // 2)
                 return max(1, item.equippable.power_bonus // 2)
         return 1
 

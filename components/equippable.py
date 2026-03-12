@@ -20,11 +20,13 @@ class Equippable(BaseComponent):
         equipment_type: EquipmentType,
         power_bonus: int = 0,
         defense_bonus: int = 0,
+        damage_dice: str = "",
     ):
         self.equipment_type = equipment_type
 
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
+        self.damage_dice = damage_dice
 
     def on_equip(self) -> None:
         """Called when this equippable is equipped; can be overridden for special effects."""
@@ -34,30 +36,30 @@ class Equippable(BaseComponent):
 
 
 class Dagger(Equippable):
-    """A basic dagger with +2 power bonus."""
+    """A basic dagger that deals 1d4 damage."""
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=2)
+        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d4")
 
 
 class Sword(Equippable):
-    """A standard sword with +4 power bonus."""
+    """A standard sword that deals 1d6 damage."""
 
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=4)
+        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d6")
 
 
 class LongSword(Equippable):
-    """A powerful sword with +6 power bonus."""
+    """A powerful sword that deals 1d8 damage."""
 
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=6)
+        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d8")
 
 
 class Odachi(Equippable):
-    """A legendary sword with +8 power bonus."""
+    """A legendary sword that deals 2d6 damage."""
 
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, power_bonus=8)
+        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="2d6")
 
 
 class LeatherArmor(Equippable):
@@ -94,10 +96,10 @@ class AmuletOfClairvoyance(Equippable):
 
 
 class Dart(Equippable):
-    """A thrown weapon with +4 power bonus."""
+    """A thrown weapon that deals 1d4 damage."""
 
     def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.THROWN, power_bonus=4)
+        super().__init__(equipment_type=EquipmentType.THROWN, damage_dice="1d4")
 
 
 class AmuletOfDetectMonster(Equippable):

@@ -63,7 +63,7 @@ def parse_procgen_dicts():
 
 
 def parse_equippable_stats():
-    """Extract power_bonus / defense_bonus per class from equippable.py via AST."""
+    """Extract power_bonus / defense_bonus / damage_dice per class from equippable.py via AST."""
     path = os.path.join(REPO_ROOT, "components", "equippable.py")
     with open(path) as f:
         source = f.read()
@@ -81,6 +81,14 @@ def parse_equippable_stats():
                                     kw.value
                                 )
                             except (ValueError, TypeError):
+                                pass
+                        elif kw.arg == "damage_dice":
+                            try:
+                                dice_str = ast.literal_eval(kw.value)
+                                n, sides = dice_str.split("d")
+                                avg = int(n) * (int(sides) + 1) / 2
+                                stats.setdefault(cls_name, {})["power_bonus"] = avg
+                            except (ValueError, TypeError, AttributeError):
                                 pass
     return stats
 

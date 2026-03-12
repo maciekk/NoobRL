@@ -18,6 +18,13 @@ If you get error about tcod missing, you likely need to do:
 source venv/bin/activate
 ```
 
+If the system Python has been upgraded (e.g., 3.13 → 3.14), the venv will break because its compiled packages are version-specific. Recreate it:
+
+```bash
+python3 -m venv venv --clear
+venv/bin/pip install tcod numpy pygame
+```
+
 ```
 ```
 Dependencies: `tcod`, `numpy`, `pygame`. No requirements.txt exists; install manually via pip.
@@ -137,6 +144,8 @@ Rendering flows: `Engine.render()` → `GameMap.render()` (tiles via `np.select`
 ### Other Modules
 
 `color.py` (color constants), `tile_types.py` (NumPy structured arrays for tiles), `sounds.py` (pygame.mixer audio), `dice.py` (D&D dice notation parser, e.g. "5d2"), `tilesets.py`, `debug.py` (debug console handler).
+
+**Sound system (`sounds.py`)**: Sound effects are triggered automatically by `message_log.add_message()` via `maybe_play_sfx(text)`. The `_EFFECT_DEFS` list maps trigger substrings to lists of audio files — the first entry whose substring appears in the log message wins, and a random file from that entry's list is played. Order matters: put more specific triggers (e.g. `"[CRIT!]"`) before broader ones (e.g. `"hit points"`) so they match first. A `_STAGGER_SECS` delay is applied between rapid successive sounds. Some sounds are played directly via `sounds.play(path)` (e.g. wishing, debug spawns) without going through the message log.
 
 ## Key Patterns
 

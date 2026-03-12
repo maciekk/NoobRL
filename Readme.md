@@ -76,7 +76,7 @@ Ideas & efforts under way.
 
 ### Weapons & Armour
 - [ ] add bows & arrows
-- [ ] variable damage on weapons (e.g., 1d10)
+- [x] variable damage on weapons (e.g., 1d10)
 - [ ] different types of damage: various melee (blunt, pierce, slash), fire, ice, etc.
   - [ ] add monster weaknesses (e.g., damage type)
 - [ ] armour and weapon properties that affect crit_chance and crit_mult

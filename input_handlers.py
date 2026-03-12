@@ -489,6 +489,16 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         return super().ev_keydown(event)
 
 
+def _attack_display(player: "Actor") -> str:
+    """Return a human-readable attack string, e.g. '4+1d4' or '6'."""
+    equipment = player.equipment
+    if equipment and equipment.weapon and equipment.weapon.equippable:
+        eq = equipment.weapon.equippable
+        if eq.damage_dice:
+            return f"{player.fighter.power}+{eq.damage_dice}"
+    return str(player.fighter.power)
+
+
 class CharacterScreenEventHandler(AskUserEventHandler):
     """Displays player statistics, experience, and kill counts."""
 
@@ -513,13 +523,15 @@ class CharacterScreenEventHandler(AskUserEventHandler):
         kills_height = len(kill_lines) + 2 if kill_lines else 0
         height = stats_height + kills_height
 
+        player = self.engine.player
+        attack_str = _attack_display(player)
         kill_strings = [f"Kills: {total_kills}"] + kill_lines if kill_lines else []
         all_strings = [
-            f"Level: {self.engine.player.level.current_level}",
-            f"XP: {self.engine.player.level.current_xp}",
-            f"XP for next Level: {self.engine.player.level.experience_to_next_level}",
-            f"Attack: {self.engine.player.fighter.power}",
-            f"Defense: {self.engine.player.fighter.defense}",
+            f"Level: {player.level.current_level}",
+            f"XP: {player.level.current_xp}",
+            f"XP for next Level: {player.level.experience_to_next_level}",
+            f"Attack: {attack_str}",
+            f"Defense: {player.fighter.defense}",
         ] + kill_strings
         max_str_width = max((len(s) for s in all_strings), default=0)
         width = max(len(self.TITLE) + 4, max_str_width + 2)
@@ -547,10 +559,10 @@ class CharacterScreenEventHandler(AskUserEventHandler):
             string=f"XP for next Level: {self.engine.player.level.experience_to_next_level}",
         )
         console.print(
-            x=x + 1, y=y + 4, string=f"Attack: {self.engine.player.fighter.power}"
+            x=x + 1, y=y + 4, string=f"Attack: {attack_str}"
         )
         console.print(
-            x=x + 1, y=y + 5, string=f"Defense: {self.engine.player.fighter.defense}"
+            x=x + 1, y=y + 5, string=f"Defense: {player.fighter.defense}"
         )
 
         if kill_lines:
@@ -956,7 +968,9 @@ def _item_type_and_stat_lines(item: "Item") -> list:  # pylint: disable=too-many
             for desc_line in item.consumable.get_description():
                 lines.append((desc_line, color.white))
     if item.equippable:
-        if item.equippable.power_bonus:
+        if item.equippable.damage_dice:
+            lines.append((f"Damage: {item.equippable.damage_dice}", color.white))
+        elif item.equippable.power_bonus:
             lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
         if item.equippable.defense_bonus:
             lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))

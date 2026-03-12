@@ -17,7 +17,13 @@ _EFFECT_DEFS = [
         ],
     ),
     (
-        "hit points.",
+        "[CRIT!]",
+        [
+            "sfx/mixkit-samurai-sword-impact-2789.wav",
+        ],
+    ),
+    (
+        "hit points",
         [
             "sfx/mixkit-sword-cutting-flesh-2788.wav",
             "sfx/mixkit-metal-hit-woosh-1485.wav",
@@ -25,12 +31,6 @@ _EFFECT_DEFS = [
             "sfx/foil-clang.wav",
             #"sfx/sword-clang.wav",
             "sfx/sword-clash-nice.wav",
-        ],
-    ),
-    (
-        "hit points [CRIT!]",
-        [
-            "sfx/mixkit-samurai-sword-impact-2789.wav",
         ],
     ),
     (
