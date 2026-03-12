@@ -246,7 +246,7 @@ def animate_digging_ray(
 
 def animate_sound_wave(
     engine,
-    tiles_by_dist: dict[int, list[tuple[int, int]]],
+    tiles_by_dist: dict[int, "list | set"],
     console,
     context,
 ) -> None:
@@ -256,8 +256,8 @@ def animate_sound_wave(
     distances where no tiles fall within the player's FOV. Does not mutate
     game state.
     """
-    _COLOR = (0, 100, 100)
-    _CHAR = "+"
+    _COLOR = (255, 255, 255)
+    _CHAR = ","
     max_dist = max(tiles_by_dist) if tiles_by_dist else 0
     rendered_any = False
     for dist in range(1, max_dist + 1):
@@ -276,7 +276,7 @@ def animate_sound_wave(
         time.sleep(0.03)
         rendered_any = True
     if rendered_any:
-        time.sleep(0.2)
+        time.sleep(0.23)
 
 
 def animate_projectile(
