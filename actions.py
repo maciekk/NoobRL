@@ -13,6 +13,7 @@ import tcod  # pylint: disable=import-error
 import color
 import dice
 import sounds
+from sound_travel import SoundTravel
 from components.effect import (
     BlindnessEffect,
     InvisibilityEffect,
@@ -241,6 +242,7 @@ class OpenDoorAction(Action):
         if tile == tile_types.door_closed:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
             self.engine.message_log.add_message("You open the door.", color.white)
+            self.engine.emit_sound(self.x, self.y, SoundTravel.DOOR)
         else:
             raise exceptions.Impossible("There is no closed door there.")
 
@@ -266,6 +268,7 @@ class CloseDoorAction(Action):
         if tile == tile_types.door_open:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
             self.engine.message_log.add_message("You close the door.", color.white)
+            self.engine.emit_sound(self.x, self.y, SoundTravel.DOOR)
         else:
             raise exceptions.Impossible("There is no open door there.")
 
@@ -383,6 +386,7 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} but does no damage.",
                 attack_color,
             )
+        self.engine.emit_sound(*self.dest_xy, SoundTravel.MELEE)
 
 
 class RangedAttackAction(ActionWithDirection):

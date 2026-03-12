@@ -157,6 +157,18 @@ class HostileEnemy(BaseAI):
         super().__init__(entity)
         self.path: List[Tuple[int, int]] = []
         self.last_known_target: Optional[Tuple[int, int]] = None
+        self.investigate_target: Optional[Tuple[int, int]] = None
+
+    def on_sound(self, source_x: int, source_y: int) -> None:
+        """React to a nearby sound: wake if asleep, investigate source if not already hostile."""
+        if self.entity.is_asleep:
+            from components.effect import SleepEffect  # pylint: disable=import-outside-toplevel
+            self.entity.is_asleep = False
+            self.entity.effects = [
+                e for e in self.entity.effects if not isinstance(e, SleepEffect)
+            ]
+        if not self.entity.noticed_player:
+            self.investigate_target = (source_x, source_y)
 
     def _try_wizard_door(self, dest_x: int, dest_y: int) -> bool:
         """Open a door if this is a Wizard and the destination is a closed door."""
@@ -186,6 +198,9 @@ class HostileEnemy(BaseAI):
             and not self.engine.player.is_invisible
             and distance <= self.entity.sight_range
         ):
+            # Player spotted: cancel any investigation and turn fully hostile.
+            self.investigate_target = None
+
             # Give actor chance to notice player, if that has not happened yet.
             if not self.entity.noticed_player:
                 self.entity.noticed_player = True
@@ -211,6 +226,14 @@ class HostileEnemy(BaseAI):
                 return
 
             self.path = self.entity.get_path_to(target.x, target.y)
+
+        elif self.investigate_target:
+            ix, iy = self.investigate_target
+            if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
+                self.investigate_target = None
+                self.path = []
+            else:
+                self.path = self.entity.get_path_to(ix, iy)
 
         elif self.last_known_target:
             if (self.entity.x, self.entity.y) == self.last_known_target:
@@ -248,6 +271,18 @@ class PatrollingEnemy(BaseAI):
         self.path: List[Tuple[int, int]] = []
         self.patrol_target: Optional[Tuple[int, int]] = None
         self.wander_turns: int = 0
+        self.investigate_target: Optional[Tuple[int, int]] = None
+
+    def on_sound(self, source_x: int, source_y: int) -> None:
+        """React to a nearby sound: wake if asleep, investigate source if not already hostile."""
+        if self.entity.is_asleep:
+            from components.effect import SleepEffect  # pylint: disable=import-outside-toplevel
+            self.entity.is_asleep = False
+            self.entity.effects = [
+                e for e in self.entity.effects if not isinstance(e, SleepEffect)
+            ]
+        if not self.entity.noticed_player:
+            self.investigate_target = (source_x, source_y)
 
     def _pick_patrol_target(self) -> Optional[Tuple[int, int]]:
         """Pick a random walkable tile on the current map."""
@@ -276,6 +311,9 @@ class PatrollingEnemy(BaseAI):
             and not self.engine.player.is_invisible
             and distance <= self.entity.sight_range
         ):
+            # Player spotted: cancel any investigation.
+            self.investigate_target = None
+
             if distance <= self.entity.attack_range:
                 if self.entity.ranged_attack:
                     RangedAttackAction(self.entity, dx, dy).perform()
@@ -291,6 +329,24 @@ class PatrollingEnemy(BaseAI):
                     dest_x - self.entity.x,
                     dest_y - self.entity.y,
                 ).perform()
+            return
+
+        # Investigate a sound source if one is queued
+        if self.investigate_target:
+            ix, iy = self.investigate_target
+            if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
+                self.investigate_target = None
+                self.path = []
+            else:
+                self.path = self.entity.get_path_to(ix, iy)
+                if self.path:
+                    dest_x, dest_y = self.path.pop(0)
+                    MovementAction(
+                        self.entity,
+                        dest_x - self.entity.x,
+                        dest_y - self.entity.y,
+                    ).perform()
+                    return
             return
 
         # Arrived at patrol target: wander for a while

@@ -1,0 +1,9 @@
+{
+    "melee": 8,
+    "door": 5,
+    "fireball": 15,
+    "lightning": 12,
+    "lightning_wand": 12,
+    "digging_wand": 10,
+    "bomb": 15
+}

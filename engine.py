@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import lzma
 import pickle
+from collections import deque
 from typing import TYPE_CHECKING
 
 from tcod.console import Console  # pylint: disable=import-error
@@ -38,6 +39,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.potion_aliases: dict[str, str] = {}
         self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
+        self._pending_sounds: list[tuple[int, int, int]] = []  # (x, y, radius)
 
     def initialize_scroll_aliases(self) -> None:
         """Assign a random fake name to each scroll type for this game run."""
@@ -153,6 +155,56 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         with open(filename, "wb") as f:
             f.write(save_data)
 
+    def emit_sound(self, x: int, y: int, radius: int) -> None:
+        """Queue a sound event to be processed at the start of the next turn cycle."""
+        self._pending_sounds.append((x, y, radius))
+
+    def _process_sounds(self) -> None:
+        """BFS-propagate queued sound events; alert monsters that hear them."""
+        if not self._pending_sounds:
+            return
+        walkable = self.game_map.tiles["walkable"]
+        dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for sx, sy, radius in self._pending_sounds:
+            visited: set[tuple[int, int]] = {(sx, sy)}
+            queue: deque[tuple[int, int, int]] = deque([(sx, sy, 0)])
+            while queue:
+                cx, cy, dist = queue.popleft()
+                if dist >= radius:
+                    continue
+                for ddx, ddy in dirs:
+                    nx, ny = cx + ddx, cy + ddy
+                    if (nx, ny) in visited:
+                        continue
+                    if not self.game_map.in_bounds(nx, ny):
+                        continue
+                    if not walkable[nx, ny]:
+                        continue
+                    visited.add((nx, ny))
+                    queue.append((nx, ny, dist + 1))
+                    actor = self.game_map.get_actor_at_location(nx, ny)
+                    if actor and actor is not self.player and actor.ai:
+                        if not hasattr(actor.ai, "on_sound"):
+                            continue
+                        was_asleep = actor.is_asleep
+                        had_investigate = getattr(actor.ai, "investigate_target", None) is not None
+                        actor.ai.on_sound(sx, sy)
+                        newly_woken = was_asleep and not actor.is_asleep
+                        newly_alerted = (
+                            not had_investigate
+                            and getattr(actor.ai, "investigate_target", None) is not None
+                        )
+                        if (newly_woken or newly_alerted) and self.game_map.visible[nx, ny]:
+                            if newly_woken:
+                                self.message_log.add_message(
+                                    f"The {actor.name} stirs awake!"
+                                )
+                            else:
+                                self.message_log.add_message(
+                                    f"The {actor.name} perks up."
+                                )
+        self._pending_sounds.clear()
+
     def apply_timed_effects(self) -> None:
         """Apply per-turn logic for all active timed effects on actors."""
         for entity in set(self.game_map.actors):
@@ -166,6 +218,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             self.update_fov()
             return
         self.apply_timed_effects()
+        self._process_sounds()
         self.handle_enemy_turns()
         self.update_fov()
         self.turn += 1
