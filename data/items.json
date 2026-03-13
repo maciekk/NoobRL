@@ -350,7 +350,7 @@
         "consumable": {
             "name": "FertilizerBombConsumable",
             "damage": 0,
-            "radius": 2
+            "radius": 3
         },
         "stack_count": 3
     },
