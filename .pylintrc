@@ -1,0 +1,19 @@
+[MAIN]
+# Allow pylint to load these C extensions for better introspection
+extension-pkg-allow-list=tcod,pygame
+
+[TYPECHECK]
+# tcod.event.KeySym exposes letter members (e.g. KeySym.h) dynamically at
+# runtime via a C extension mechanism that pylint cannot introspect.
+# Suppress false-positive no-member errors for the entire tcod.event module.
+ignored-modules=tcod.event
+
+[MESSAGES CONTROL]
+# arguments-differ: tcod.event.EventDispatch uses generic *args signatures; all
+# overrides here are correct typed overloads of that pattern — not real errors.
+# too-many-arguments / too-many-positional-arguments: raised where the function
+# signature is intentional and refactoring would reduce clarity.
+disable=
+    arguments-differ,
+    too-many-arguments,
+    too-many-positional-arguments
