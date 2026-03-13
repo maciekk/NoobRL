@@ -525,6 +525,20 @@ class FireballDamageConsumable(Consumable):
                 )
                 actor.fighter.take_damage(self.damage)
 
+        x, y = target_xy
+        game_map = self.engine.game_map
+        grass_burned = 0
+        for tx in range(x - self.radius, x + self.radius + 1):
+            for ty in range(y - self.radius, y + self.radius + 1):
+                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
+                    if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.tall_grass:
+                        game_map.tiles[tx, ty] = tile_types.floor
+                        grass_burned += 1
+        if grass_burned > 0:
+            self.engine.message_log.add_message(
+                "The flames scorch the vegetation!", color.player_atk
+            )
+
         self.engine.emit_sound(target_xy, SoundTravel.FIREBALL)
         self.consume()
 
@@ -677,8 +691,20 @@ class BombConsumable(Consumable):
                 actor.fighter.take_damage(self.damage)
                 targets_hit = True
 
+        grass_burned = 0
+        for tx in range(x - self.radius, x + self.radius + 1):
+            for ty in range(y - self.radius, y + self.radius + 1):
+                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
+                    if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.tall_grass:
+                        game_map.tiles[tx, ty] = tile_types.floor
+                        grass_burned += 1
+
         engine.emit_sound((x, y), SoundTravel.BOMB)
-        if not targets_hit:
+        if grass_burned > 0:
+            engine.message_log.add_message(
+                "The blast scorches the vegetation!", color.player_atk
+            )
+        if not targets_hit and grass_burned == 0:
             engine.message_log.add_message(
                 "The bomb explodes, but no one is caught in the blast!",
                 color.white,
