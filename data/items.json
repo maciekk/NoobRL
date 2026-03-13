@@ -145,7 +145,8 @@
             192
         ],
         "equippable": {
-            "name": "Dart"
+            "equipment_type": "THROWN",
+            "damage_dice": "1d4"
         },
         "stack_count": 3
     },
@@ -159,7 +160,8 @@
             255
         ],
         "equippable": {
-            "name": "Dagger"
+            "equipment_type": "WEAPON",
+            "damage_dice": "1d4"
         }
     },
     {
@@ -172,7 +174,8 @@
             255
         ],
         "equippable": {
-            "name": "Sword"
+            "equipment_type": "WEAPON",
+            "damage_dice": "1d6"
         }
     },
     {
@@ -185,7 +188,8 @@
             255
         ],
         "equippable": {
-            "name": "LongSword"
+            "equipment_type": "WEAPON",
+            "damage_dice": "1d8"
         }
     },
     {
@@ -198,7 +202,8 @@
             255
         ],
         "equippable": {
-            "name": "Odachi"
+            "equipment_type": "WEAPON",
+            "damage_dice": "2d6"
         }
     },
     {
@@ -211,7 +216,8 @@
             19
         ],
         "equippable": {
-            "name": "LeatherArmor"
+            "equipment_type": "ARMOR",
+            "defense_bonus": 1
         }
     },
     {
@@ -224,7 +230,8 @@
             19
         ],
         "equippable": {
-            "name": "ChainMail"
+            "equipment_type": "ARMOR",
+            "defense_bonus": 3
         }
     },
     {
@@ -237,7 +244,8 @@
             156
         ],
         "equippable": {
-            "name": "SteelArmor"
+            "equipment_type": "ARMOR",
+            "defense_bonus": 5
         }
     },
     {

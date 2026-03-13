@@ -13,6 +13,7 @@ import components.inventory
 import components.level
 from components import consumable, equippable
 from entity import Item, Actor
+from equipment_types import EquipmentType
 
 CONSUMABLE_MAP = {
     "ConfusionConsumable": consumable.ConfusionConsumable,
@@ -36,16 +37,8 @@ CONSUMABLE_MAP = {
     "IdentificationConsumable": consumable.IdentificationConsumable,
 }
 EQUIPPABLE_MAP = {
-    "Dagger": equippable.Dagger,
-    "Sword": equippable.Sword,
-    "LongSword": equippable.LongSword,
-    "Odachi": equippable.Odachi,
-    "LeatherArmor": equippable.LeatherArmor,
-    "ChainMail": equippable.ChainMail,
-    "SteelArmor": equippable.SteelArmor,
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
     "AmuletOfDetectMonster": equippable.AmuletOfDetectMonster,
-    "Dart": equippable.Dart,
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,
@@ -75,8 +68,12 @@ class ItemManager:
                     item["consumable"] = consumable_class(**d)
                 d = item.get("equippable", None)
                 if d:
-                    equippable_class = EQUIPPABLE_MAP[d.pop("name")]
-                    item["equippable"] = equippable_class(**d)
+                    name = d.pop("name", None)
+                    if name:
+                        item["equippable"] = EQUIPPABLE_MAP[name](**d)
+                    else:
+                        eq_type = EquipmentType[d.pop("equipment_type")]
+                        item["equippable"] = equippable.Equippable(equipment_type=eq_type, **d)
                 self.items[entity_id] = Item(**item)
 
     def clone(self, name: Optional[string]) -> Optional[Item]:

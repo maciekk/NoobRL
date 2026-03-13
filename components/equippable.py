@@ -35,54 +35,6 @@ class Equippable(BaseComponent):
         """Called when this equippable is unequipped; can be overridden to reverse effects."""
 
 
-class Dagger(Equippable):
-    """A basic dagger that deals 1d4 damage."""
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d4")
-
-
-class Sword(Equippable):
-    """A standard sword that deals 1d6 damage."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d6")
-
-
-class LongSword(Equippable):
-    """A powerful sword that deals 1d8 damage."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="1d8")
-
-
-class Odachi(Equippable):
-    """A legendary sword that deals 2d6 damage."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.WEAPON, damage_dice="2d6")
-
-
-class LeatherArmor(Equippable):
-    """Basic leather armor with +1 defense bonus."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=1)
-
-
-class ChainMail(Equippable):
-    """Moderate armor with +3 defense bonus."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=3)
-
-
-class SteelArmor(Equippable):
-    """Heavy armor with +5 defense bonus."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.ARMOR, defense_bonus=5)
-
-
 class AmuletOfClairvoyance(Equippable):
     """An amulet that reveals the dungeon layout when equipped."""
 
@@ -93,13 +45,6 @@ class AmuletOfClairvoyance(Equippable):
         from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
 
         apply_clairvoyance(self.engine)
-
-
-class Dart(Equippable):
-    """A thrown weapon that deals 1d4 damage."""
-
-    def __init__(self) -> None:
-        super().__init__(equipment_type=EquipmentType.THROWN, damage_dice="1d4")
 
 
 class AmuletOfDetectMonster(Equippable):
