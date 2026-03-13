@@ -11,6 +11,7 @@ from typing import Optional, Tuple, TYPE_CHECKING
 import tcod  # pylint: disable=import-error
 
 import color
+from constants import CARDINAL_DIRS
 import dice
 from location import Location
 import sounds
@@ -475,7 +476,7 @@ class MovementRepeatedAction(MovementAction):
     def _find_corridor_turn(self):
         """If in a corridor, return the unique continuation dir."""
         px, py = self.entity.x, self.entity.y
-        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        cardinal = CARDINAL_DIRS
         backward = (-self.dx, -self.dy)
 
         # Don't follow turns near open areas (room corners).
@@ -509,7 +510,7 @@ class MovementRepeatedAction(MovementAction):
         except exceptions.Impossible:
             # Try to follow a corridor turn.
             px, py = self.entity.x, self.entity.y
-            cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+            cardinal = CARDINAL_DIRS
             neighbors = sum(1 for d in cardinal if self._walkable(px + d[0], py + d[1]))
             if neighbors >= 3:
                 return None  # In open area, don't turn.
@@ -537,7 +538,7 @@ class CarefulMovementAction(MovementAction):
 
     def _count_neighbors(self, x, y):
         """Count walkable cardinal neighbors of a tile."""
-        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        cardinal = CARDINAL_DIRS
         return sum(1 for d in cardinal if self._walkable(x + d[0], y + d[1]))
 
     def _on_interesting_tile(self) -> bool:
@@ -557,7 +558,7 @@ class CarefulMovementAction(MovementAction):
         open areas.
         """
         px, py = self.entity.x, self.entity.y
-        cardinal = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+        cardinal = CARDINAL_DIRS
         backward = (-self.dx, -self.dy)
 
         # Don't follow turns near open areas (room corners).

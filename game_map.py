@@ -9,6 +9,7 @@ import numpy as np  # type: ignore[import]  # pylint: disable=import-error
 from tcod.console import Console  # pylint: disable=import-error
 
 from entity import Actor, Item
+from location import Location
 import tile_types
 
 if TYPE_CHECKING:
@@ -97,6 +98,10 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
                 return actor
 
         return None
+
+    def is_visible(self, loc: Location) -> bool:
+        """Return True if the given location is within the player's current FOV."""
+        return self.visible[loc.x, loc.y]
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Return True if x and y are inside of the bounds of this map."""
