@@ -6,7 +6,6 @@ import json
 import math
 import os
 import random
-import string
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
 import tcod  # pylint: disable=import-error
@@ -22,6 +21,14 @@ if TYPE_CHECKING:
     from engine import Engine
     from entity import Entity
 
+# Type aliases — give readable names to complex repeated types.
+#   SpawnEntry     — one weighted entry: (entity_id, spawn_weight)
+#   SpawnTable     — keyed by the minimum floor on which entries become available
+#   FloorThreshold — (min_floor, value) step used in max-entity-count tables
+SpawnEntry = Tuple[str, int]
+SpawnTable = Dict[int, List[SpawnEntry]]
+FloorThreshold = Tuple[int, int]
+
 max_items_by_floor = [
     (1, 1),
     (4, 2),
@@ -33,19 +40,19 @@ max_monsters_by_floor = [
     (6, 5),
 ]
 
-def _load_chances(filename: str) -> Dict[int, List[Tuple[str, int]]]:
+def _load_chances(filename: str) -> SpawnTable:
     path = os.path.join(os.path.dirname(__file__), "data", filename)
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
     return {int(k): [tuple(entry) for entry in v] for k, v in raw.items()}
 
 
-item_chances: Dict[int, List[Tuple[str, int]]] = _load_chances("loot_table.json")
-enemy_chances: Dict[int, List[Tuple[str, int]]] = _load_chances("enemy_table.json")
+item_chances: SpawnTable = _load_chances("loot_table.json")
+enemy_chances: SpawnTable = _load_chances("enemy_table.json")
 
 
 def get_max_value_for_floor(
-    max_value_by_floor: List[Tuple[int, int]], floor: int
+    max_value_by_floor: List[FloorThreshold], floor: int
 ) -> int:
     """Return the maximum value applicable for the given floor number."""
     current_value = 0
@@ -60,7 +67,7 @@ def get_max_value_for_floor(
 
 def get_entities_at_random(
     engine: Engine,
-    weighted_chances_by_floor: Dict[int, List[Tuple[string, int]]],
+    weighted_chances_by_floor: SpawnTable,
     number_of_entities: int,
     floor: int,
 ) -> List[Entity]:
