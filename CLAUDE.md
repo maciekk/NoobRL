@@ -29,7 +29,18 @@ venv/bin/pip install tcod numpy pygame
 ```
 Dependencies: `tcod`, `numpy`, `pygame`. No requirements.txt exists; install manually via pip.
 
-There is no test suite, linter configuration, or formal build system. The Makefile only generates ctags (`make ctags`).
+The Makefile only generates ctags (`make ctags`).
+
+## Tests
+
+Run the test suite before every commit:
+
+```bash
+source venv/bin/activate
+python -m pytest
+```
+
+Tests require `pytest` in the venv (`pip install pytest`). They mock `tcod` and `pygame` so no display is needed.
 
 ## Architecture Overview
 
