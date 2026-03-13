@@ -242,7 +242,7 @@ class OpenDoorAction(Action):
         if tile == tile_types.door_closed:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
             self.engine.message_log.add_message("You open the door.", color.white)
-            self.engine.emit_sound(self.x, self.y, SoundTravel.DOOR)
+            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR)
         else:
             raise exceptions.Impossible("There is no closed door there.")
 
@@ -268,7 +268,7 @@ class CloseDoorAction(Action):
         if tile == tile_types.door_open:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
             self.engine.message_log.add_message("You close the door.", color.white)
-            self.engine.emit_sound(self.x, self.y, SoundTravel.DOOR)
+            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR)
         else:
             raise exceptions.Impossible("There is no open door there.")
 
@@ -386,7 +386,7 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} but does no damage.",
                 attack_color,
             )
-        self.engine.emit_sound(*self.dest_xy, SoundTravel.MELEE)
+        self.engine.emit_sound(self.dest_xy, SoundTravel.MELEE)
 
 
 class RangedAttackAction(ActionWithDirection):
@@ -678,6 +678,7 @@ class ThrowAction(Action):
     ) -> None:
         """Apply a thrown consumable's effect to a target actor or at a location."""
         consumable = item.consumable
+        class_name = consumable.__class__.__name__
 
         if consumable.is_bomb:
             # Use provided x, y if given, otherwise use target location

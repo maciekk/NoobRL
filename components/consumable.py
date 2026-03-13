@@ -221,7 +221,7 @@ class LightningWandConsumable(WandConsumable):
                     color.player_atk,
                 )
                 target.fighter.take_damage(self.damage)
-            self.engine.emit_sound(tx, ty, SoundTravel.LIGHTNING_WAND)
+            self.engine.emit_sound((tx, ty), SoundTravel.LIGHTNING_WAND)
 
         self.consume()
 
@@ -285,7 +285,7 @@ class DiggingWandConsumable(WandConsumable):
                 "The beam passes through the air.", color.player_atk
             )
 
-        self.engine.emit_sound(tx, ty, SoundTravel.DIGGING_WAND)
+        self.engine.emit_sound((tx, ty), SoundTravel.DIGGING_WAND)
         self.consume()
 
 
@@ -525,7 +525,7 @@ class FireballDamageConsumable(Consumable):
                 )
                 actor.fighter.take_damage(self.damage)
 
-        self.engine.emit_sound(*target_xy, SoundTravel.FIREBALL)
+        self.engine.emit_sound(target_xy, SoundTravel.FIREBALL)
         self.consume()
 
 
@@ -599,7 +599,7 @@ class LightningDamageConsumable(Consumable):
                 f" with a loud thunder, for {self.damage} damage!"
             )
             target.fighter.take_damage(self.damage)
-            self.engine.emit_sound(target.x, target.y, SoundTravel.LIGHTNING)
+            self.engine.emit_sound((target.x, target.y), SoundTravel.LIGHTNING)
             self.consume()
         else:
             raise Impossible("No enemy is close enough to strike.")
@@ -677,7 +677,7 @@ class BombConsumable(Consumable):
                 actor.fighter.take_damage(self.damage)
                 targets_hit = True
 
-        engine.emit_sound(x, y, SoundTravel.BOMB)
+        engine.emit_sound((x, y), SoundTravel.BOMB)
         if not targets_hit:
             engine.message_log.add_message(
                 "The bomb explodes, but no one is caught in the blast!",

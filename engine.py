@@ -40,7 +40,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.potion_aliases: dict[str, str] = {}
         self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
-        self._pending_sounds: list[tuple[int, int, int]] = []  # (x, y, radius)
+        self._pending_sounds: list[tuple[tuple[int, int], int]] = []  # (location, radius)
 
     def initialize_scroll_aliases(self) -> None:
         """Assign a random fake name to each scroll type for this game run."""
@@ -156,14 +156,13 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         with open(filename, "wb") as f:
             f.write(save_data)
 
-    def emit_sound(self, x: int, y: int, radius: int) -> None:
+    def emit_sound(self, location: tuple[int, int], radius: int) -> None:
         """Queue a sound event to be processed at the start of the next turn cycle."""
-        self._pending_sounds.append((x, y, radius))
+        self._pending_sounds.append((location, radius))
 
     def _bfs_sound(
         self,
-        sx: int,
-        sy: int,
+        sound_location: tuple[int, int],
         radius: int,
         combined_by_dist: dict,
         alerted: dict,
@@ -171,8 +170,8 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """BFS-expand one sound source, accumulating tiles and alerted actors in-place."""
         walkable = self.game_map.tiles["walkable"]
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-        visited: set[tuple[int, int]] = {(sx, sy)}
-        queue: deque[tuple[int, int, int]] = deque([(sx, sy, 0)])
+        visited: set[tuple[int, int]] = {sound_location}
+        queue: deque[tuple[int, int, int]] = deque([(*sound_location, 0)])
         while queue:
             cx, cy, dist = queue.popleft()
             if dist >= radius:
@@ -218,8 +217,8 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         combined_by_dist: dict[int, set[tuple[int, int]]] = {}
         # actor → (nx, ny, sx, sy) — keep only first source that reaches each actor
         alerted: dict[object, tuple] = {}
-        for sx, sy, radius in self._pending_sounds:
-            self._bfs_sound(sx, sy, radius, combined_by_dist, alerted)
+        for location, radius in self._pending_sounds:
+            self._bfs_sound(location, radius, combined_by_dist, alerted)
         if _ih.context is not None and _ih.root_console is not None and options.show_sound:
             from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
             animate_sound_wave(self, combined_by_dist, _ih.root_console, _ih.context)
