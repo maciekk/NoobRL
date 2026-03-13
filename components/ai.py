@@ -169,7 +169,7 @@ class HostileEnemy(BaseAI):
                 e for e in self.entity.effects if not isinstance(e, SleepEffect)
             ]
         if not self.entity.noticed_player:
-            self.investigate_target = (source_x, source_y)
+            self.investigate_target = Location(source_x, source_y)
 
     def _try_wizard_door(self, dest_x: int, dest_y: int) -> bool:
         """Open a door if this is a Wizard and the destination is a closed door."""
@@ -285,7 +285,7 @@ class PatrollingEnemy(BaseAI):
                 e for e in self.entity.effects if not isinstance(e, SleepEffect)
             ]
         if not self.entity.noticed_player:
-            self.investigate_target = (source_x, source_y)
+            self.investigate_target = Location(source_x, source_y)
 
     def _pick_patrol_target(self) -> Optional[Tuple[int, int]]:
         """Pick a random walkable tile on the current map."""
