@@ -1673,20 +1673,16 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.callback = callback
 
     def on_render(self, console: tcod.Console) -> None:
-        """Highlight the tile under the cursor."""
+        """Highlight the tiles within the blast circle."""
         super().on_render(console)
 
         x, y = self.engine.mouse_location
 
-        # Draw a rectangle around the targeted area, so the player can see the affected tiles.
-        console.draw_frame(
-            x=x - self.radius - 1,
-            y=y - self.radius - 1,
-            width=self.radius**2,
-            height=self.radius**2,
-            fg=color.red,
-            clear=False,
-        )
+        for tx in range(x - self.radius, x + self.radius + 1):
+            for ty in range(y - self.radius, y + self.radius + 1):
+                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
+                    if 0 <= tx < console.width and 0 <= ty < console.height:
+                        console.bg[tx, ty] = color.red
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
