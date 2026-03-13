@@ -32,7 +32,7 @@ PLAYER_START_WEAPON = 2  # dagger, always equipped at start
 def parse_procgen_dicts():
     """Extract item_chances and enemy_chances from procgen.py via AST (no import needed)."""
     path = os.path.join(REPO_ROOT, "procgen.py")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         source = f.read()
     tree = ast.parse(source)
     result = {}
@@ -62,10 +62,28 @@ def parse_procgen_dicts():
     return result.get("item_chances", {}), result.get("enemy_chances", {})
 
 
+def _extract_call_kw_stats(cls_name, call_node, stats):
+    """Read power_bonus, defense_bonus, or damage_dice keywords from an ast.Call node."""
+    for kw in call_node.keywords:
+        if kw.arg in ("power_bonus", "defense_bonus"):
+            try:
+                stats.setdefault(cls_name, {})[kw.arg] = ast.literal_eval(kw.value)
+            except (ValueError, TypeError):
+                pass
+        elif kw.arg == "damage_dice":
+            try:
+                dice_str = ast.literal_eval(kw.value)
+                n, sides = dice_str.split("d")
+                avg = int(n) * (int(sides) + 1) / 2
+                stats.setdefault(cls_name, {})["power_bonus"] = avg
+            except (ValueError, TypeError, AttributeError):
+                pass
+
+
 def parse_equippable_stats():
     """Extract power_bonus / defense_bonus / damage_dice per class from equippable.py via AST."""
     path = os.path.join(REPO_ROOT, "components", "equippable.py")
-    with open(path) as f:
+    with open(path, encoding="utf-8") as f:
         source = f.read()
     tree = ast.parse(source)
     stats: dict = {}
@@ -74,28 +92,13 @@ def parse_equippable_stats():
             cls_name = node.name
             for item in ast.walk(node):
                 if isinstance(item, ast.Call):
-                    for kw in item.keywords:
-                        if kw.arg in ("power_bonus", "defense_bonus"):
-                            try:
-                                stats.setdefault(cls_name, {})[kw.arg] = ast.literal_eval(
-                                    kw.value
-                                )
-                            except (ValueError, TypeError):
-                                pass
-                        elif kw.arg == "damage_dice":
-                            try:
-                                dice_str = ast.literal_eval(kw.value)
-                                n, sides = dice_str.split("d")
-                                avg = int(n) * (int(sides) + 1) / 2
-                                stats.setdefault(cls_name, {})["power_bonus"] = avg
-                            except (ValueError, TypeError, AttributeError):
-                                pass
+                    _extract_call_kw_stats(cls_name, item, stats)
     return stats
 
 
 def load_json(filename):
     """Load a JSON file relative to REPO_ROOT."""
-    with open(os.path.join(REPO_ROOT, filename)) as f:
+    with open(os.path.join(REPO_ROOT, filename), encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -143,19 +146,8 @@ def eff_dps(power, player_defense, speed, crit_chance):
     return expected * (speed / 100.0)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="NoobRL balance report")
-    parser.add_argument("--max-floor", type=int, default=12)
-    args = parser.parse_args()
-
-    item_chances, enemy_chances = parse_procgen_dicts()
-    equip_stats = parse_equippable_stats()
-    items_by_id = {item["id"]: item for item in load_json("data/items.json")}
-    monsters_by_id = {m["id"]: m for m in load_json("data/monsters.json")}
-
-    flags = []  # accumulate all detected issues
-
-    # ── Weapon Progression ─────────────────────────────────────────────────
+def _report_weapons(items_by_id, item_chances, equip_stats, flags):
+    """Print weapon progression table and flag same-floor conflicts."""
     print("=== Weapon Progression ===")
     print(f"  {'Class':<20} {'ID':<16} {'Power':>5}  {'Floor':>5}")
     print(f"  {'-'*52}")
@@ -172,7 +164,6 @@ def main():
         weapon_rows.append((power, floor if floor is not None else 999, cls_name, item_id))
     weapon_rows.sort()
 
-    # Flag same-floor weapon conflicts
     floor_to_weapons: dict = {}
     for _, f, _, item_id in weapon_rows:
         if f != 999:
@@ -186,7 +177,9 @@ def main():
         note = "  ← not in spawn table" if f == 999 else ""
         print(f"  {cls_name:<20} {item_id:<16} {power:>5}  {floor_str:>5}{note}")
 
-    # ── Armor Progression ──────────────────────────────────────────────────
+
+def _report_armors(items_by_id, item_chances, equip_stats, flags):
+    """Print armor progression table and flag same-floor conflicts."""
     print()
     print("=== Armor Progression ===")
     print(f"  {'Class':<20} {'ID':<16} {'Def':>4}  {'Floor':>5}")
@@ -217,7 +210,9 @@ def main():
         note = "  ← not in spawn table" if f == 999 else ""
         print(f"  {cls_name:<20} {item_id:<16} {defense:>4}  {floor_str:>5}{note}")
 
-    # ── Equippables in JSON but not in spawn table ─────────────────────────
+
+def _report_missing_equippables(items_by_id, item_chances, flags):
+    """Print equippables defined in JSON but absent from the spawn table."""
     print()
     print("=== Equippables in JSON but not in spawn table ===")
     spawnable_ids = all_ids_in(item_chances)
@@ -233,84 +228,114 @@ def main():
     else:
         print("  (none)")
 
-    # ── Monster Threat by Floor ────────────────────────────────────────────
+
+def _check_debut_balance(new_ids, monsters_by_id, player_defense, floor, flags):
+    """Flag when monsters debuting on the same floor have wildly different DPS."""
+    new_dpses = []
+    for mid in new_ids:
+        m = monsters_by_id.get(mid)
+        if m is None:
+            continue
+        fighter = m.get("fighter", {})
+        power = fighter.get("base_power", 0)
+        speed = m.get("base_speed", 100)
+        name = m.get("name", mid)
+        crit = BIG_CRIT if name in BIG_MONSTERS else DEFAULT_CRIT
+        dps = eff_dps(power, player_defense, speed, crit)
+        new_dpses.append((name, dps))
+    if new_dpses:
+        min_dps = min(d for _, d in new_dpses)
+        max_dps_val = max(d for _, d in new_dpses)
+        if min_dps > 0 and max_dps_val > min_dps * 1.5:
+            flags.append(
+                f"IMBALANCED DEBUT on F{floor}:"
+                f" max DPS={max_dps_val:.2f} is >1.5× min DPS={min_dps:.2f}"
+            )
+
+
+def _print_floor_monsters(floor, pool, new_ids, monsters_by_id, player_defense,
+                           prev_max_dps, flags):
+    """Print DPS table for all monsters in the pool at this floor; return floor max DPS."""
+    print(f"  {'':5} {'Name':<15} {'PWR':>4} {'DEF':>4} {'SPD':>4}"
+          f" {'CRIT':>5} {'DPS':>6}  Notes")
+    print(f"  {'-'*62}")
+    floor_max_dps = 0.0
+    for monster_id in sorted(pool):
+        m = monsters_by_id.get(monster_id)
+        if m is None:
+            continue
+        fighter = m.get("fighter", {})
+        power = fighter.get("base_power", 0)
+        defense = fighter.get("base_defense", 0)
+        speed = m.get("base_speed", 100)
+        name = m.get("name", monster_id)
+        crit = BIG_CRIT if name in BIG_MONSTERS else DEFAULT_CRIT
+        dps = eff_dps(power, player_defense, speed, crit)
+        floor_max_dps = max(floor_max_dps, dps)
+        is_new = monster_id in new_ids
+        tag = "[NEW]" if is_new else "     "
+        notes = []
+        if is_new and prev_max_dps > 0 and dps > prev_max_dps * 1.5:
+            notes.append("DPS SPIKE!")
+            flags.append(
+                f"DPS SPIKE on F{floor}: {name} eff.DPS={dps:.2f}"
+                f" vs prev floor max={prev_max_dps:.2f}"
+            )
+        print(
+            f"  {tag} {name:<15} {power:>4} {defense:>4} {speed:>4}"
+            f" {crit*100:>4.0f}% {dps:>6.2f}  {', '.join(notes)}"
+        )
+    return floor_max_dps
+
+
+def _report_threats(monsters_by_id, enemy_chances, item_chances, equip_stats,
+                    items_by_id, flags, max_floor):
+    """Print per-floor monster threat analysis and flag DPS spikes."""
     print()
     print("=== Monster Threat by Floor ===")
-
     pool: set = set()
     prev_max_dps = 0.0
-
-    for floor in sorted(f for f in enemy_chances.keys() if f <= args.max_floor):
+    for floor in sorted(f for f in enemy_chances.keys() if f <= max_floor):
         new_ids = [eid for eid, _ in enemy_chances[floor] if eid not in pool]
         for eid, _ in enemy_chances[floor]:
             pool.add(eid)
-
         best_weapon, best_armor = best_gear_at_floor(
             floor, item_chances, items_by_id, equip_stats
         )
         player_defense = PLAYER_BASE_DEFENSE + best_armor
-
         print(
             f"\n  Floor {floor} — weapon+{best_weapon}, armor+{best_armor}"
             f" → player defense={player_defense}"
         )
-        print(f"  {'':5} {'Name':<15} {'PWR':>4} {'DEF':>4} {'SPD':>4} {'CRIT':>5} {'DPS':>6}  Notes")
-        print(f"  {'-'*62}")
-
-        floor_max_dps = 0.0
-        for monster_id in sorted(pool):
-            m = monsters_by_id.get(monster_id)
-            if m is None:
-                continue
-            fighter = m.get("fighter", {})
-            power = fighter.get("base_power", 0)
-            defense = fighter.get("base_defense", 0)
-            speed = m.get("base_speed", 100)
-            name = m.get("name", monster_id)
-            crit = BIG_CRIT if name in BIG_MONSTERS else DEFAULT_CRIT
-            dps = eff_dps(power, player_defense, speed, crit)
-            floor_max_dps = max(floor_max_dps, dps)
-
-            is_new = monster_id in new_ids
-            tag = "[NEW]" if is_new else "     "
-            notes = []
-            if is_new and prev_max_dps > 0 and dps > prev_max_dps * 1.5:
-                notes.append("DPS SPIKE!")
-                flags.append(
-                    f"DPS SPIKE on F{floor}: {name} eff.DPS={dps:.2f}"
-                    f" vs prev floor max={prev_max_dps:.2f}"
-                )
-            print(
-                f"  {tag} {name:<15} {power:>4} {defense:>4} {speed:>4}"
-                f" {crit*100:>4.0f}% {dps:>6.2f}  {', '.join(notes)}"
-            )
-
-        # Flag imbalanced simultaneous debuts
+        floor_max_dps = _print_floor_monsters(
+            floor, pool, new_ids, monsters_by_id, player_defense, prev_max_dps, flags
+        )
         if len(new_ids) >= 2:
-            new_dpses = []
-            for mid in new_ids:
-                m = monsters_by_id.get(mid)
-                if m is None:
-                    continue
-                fighter = m.get("fighter", {})
-                power = fighter.get("base_power", 0)
-                speed = m.get("base_speed", 100)
-                name = m.get("name", mid)
-                crit = BIG_CRIT if name in BIG_MONSTERS else DEFAULT_CRIT
-                dps = eff_dps(power, player_defense, speed, crit)
-                new_dpses.append((name, dps))
-            if new_dpses:
-                min_dps = min(d for _, d in new_dpses)
-                max_dps_val = max(d for _, d in new_dpses)
-                if min_dps > 0 and max_dps_val > min_dps * 1.5:
-                    flags.append(
-                        f"IMBALANCED DEBUT on F{floor}:"
-                        f" max DPS={max_dps_val:.2f} is >1.5× min DPS={min_dps:.2f}"
-                    )
-
+            _check_debut_balance(new_ids, monsters_by_id, player_defense, floor, flags)
         prev_max_dps = max(prev_max_dps, floor_max_dps)
 
-    # ── Flagged Issues ─────────────────────────────────────────────────────
+
+def main():
+    """Run the balance report."""
+    parser = argparse.ArgumentParser(description="NoobRL balance report")
+    parser.add_argument("--max-floor", type=int, default=12)
+    args = parser.parse_args()
+
+    item_chances, enemy_chances = parse_procgen_dicts()
+    equip_stats = parse_equippable_stats()
+    items_by_id = {item["id"]: item for item in load_json("data/items.json")}
+    monsters_by_id = {m["id"]: m for m in load_json("data/monsters.json")}
+
+    flags = []  # accumulate all detected issues
+
+    _report_weapons(items_by_id, item_chances, equip_stats, flags)
+    _report_armors(items_by_id, item_chances, equip_stats, flags)
+    _report_missing_equippables(items_by_id, item_chances, flags)
+    _report_threats(
+        monsters_by_id, enemy_chances, item_chances, equip_stats,
+        items_by_id, flags, args.max_floor
+    )
+
     print()
     print("=== Flagged Issues ===")
     if flags:

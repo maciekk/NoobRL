@@ -160,43 +160,41 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """Queue a sound event to be processed at the start of the next turn cycle."""
         self._pending_sounds.append((x, y, radius))
 
-    def _process_sounds(self) -> None:
-        """BFS-propagate all queued sound events, animate them combined, then alert monsters."""
-        if not self._pending_sounds:
-            return
-        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+    def _bfs_sound(
+        self,
+        sx: int,
+        sy: int,
+        radius: int,
+        combined_by_dist: dict,
+        alerted: dict,
+    ) -> None:
+        """BFS-expand one sound source, accumulating tiles and alerted actors in-place."""
         walkable = self.game_map.tiles["walkable"]
         dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
-        combined_by_dist: dict[int, set[tuple[int, int]]] = {}
-        # actor → (nx, ny, sx, sy) — keep only first source that reaches each actor
-        alerted: dict[object, tuple] = {}
-        for sx, sy, radius in self._pending_sounds:
-            visited: set[tuple[int, int]] = {(sx, sy)}
-            queue: deque[tuple[int, int, int]] = deque([(sx, sy, 0)])
-            while queue:
-                cx, cy, dist = queue.popleft()
-                if dist >= radius:
+        visited: set[tuple[int, int]] = {(sx, sy)}
+        queue: deque[tuple[int, int, int]] = deque([(sx, sy, 0)])
+        while queue:
+            cx, cy, dist = queue.popleft()
+            if dist >= radius:
+                continue
+            for ddx, ddy in dirs:
+                nx, ny = cx + ddx, cy + ddy
+                if (nx, ny) in visited:
                     continue
-                for ddx, ddy in dirs:
-                    nx, ny = cx + ddx, cy + ddy
-                    if (nx, ny) in visited:
-                        continue
-                    if not self.game_map.in_bounds(nx, ny):
-                        continue
-                    if not walkable[nx, ny]:
-                        continue
-                    visited.add((nx, ny))
-                    combined_by_dist.setdefault(dist + 1, set()).add((nx, ny))
-                    queue.append((nx, ny, dist + 1))
-                    actor = self.game_map.get_actor_at_location(nx, ny)
-                    if actor and actor is not self.player and actor.ai:
-                        if hasattr(actor.ai, "on_sound") and actor not in alerted:
-                            alerted[actor] = (nx, ny, sx, sy)
+                if not self.game_map.in_bounds(nx, ny):
+                    continue
+                if not walkable[nx, ny]:
+                    continue
+                visited.add((nx, ny))
+                combined_by_dist.setdefault(dist + 1, set()).add((nx, ny))
+                queue.append((nx, ny, dist + 1))
+                actor = self.game_map.get_actor_at_location(nx, ny)
+                if actor and actor is not self.player and actor.ai:
+                    if hasattr(actor.ai, "on_sound") and actor not in alerted:
+                        alerted[actor] = (nx, ny, sx, sy)
 
-        if _ih.context is not None and _ih.root_console is not None and options.show_sound:
-            from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
-            animate_sound_wave(self, combined_by_dist, _ih.root_console, _ih.context)
-
+    def _notify_alerted_actors(self, alerted: dict) -> None:
+        """Call on_sound for each alerted actor and emit visible wake/investigate messages."""
         for actor, (nx, ny, sx, sy) in alerted.items():
             was_asleep = actor.is_asleep
             had_investigate = getattr(actor.ai, "investigate_target", None) is not None
@@ -211,6 +209,21 @@ class Engine:  # pylint: disable=too-many-instance-attributes
                     self.message_log.add_message(f"The {actor.name} stirs awake!")
                 else:
                     self.message_log.add_message(f"The {actor.name} perks up.")
+
+    def _process_sounds(self) -> None:
+        """BFS-propagate all queued sound events, animate them combined, then alert monsters."""
+        if not self._pending_sounds:
+            return
+        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+        combined_by_dist: dict[int, set[tuple[int, int]]] = {}
+        # actor → (nx, ny, sx, sy) — keep only first source that reaches each actor
+        alerted: dict[object, tuple] = {}
+        for sx, sy, radius in self._pending_sounds:
+            self._bfs_sound(sx, sy, radius, combined_by_dist, alerted)
+        if _ih.context is not None and _ih.root_console is not None and options.show_sound:
+            from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
+            animate_sound_wave(self, combined_by_dist, _ih.root_console, _ih.context)
+        self._notify_alerted_actors(alerted)
         self._pending_sounds.clear()
 
     def apply_timed_effects(self) -> None:

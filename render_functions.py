@@ -256,8 +256,8 @@ def animate_sound_wave(
     distances where no tiles fall within the player's FOV. Does not mutate
     game state.
     """
-    _COLOR = (255, 255, 255)
-    _CHAR = ","
+    wave_color = (255, 255, 255)
+    wave_char = ","
     max_dist = max(tiles_by_dist) if tiles_by_dist else 0
     rendered_any = False
     for dist in range(1, max_dist + 1):
@@ -271,7 +271,7 @@ def animate_sound_wave(
         console.clear()
         engine.render(console)
         for tx, ty in visible_ring:
-            console.print(x=tx, y=ty, string=_CHAR, fg=_COLOR)
+            console.print(x=tx, y=ty, string=wave_char, fg=wave_color)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.03)
         rendered_any = True

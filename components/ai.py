@@ -178,6 +178,35 @@ class HostileEnemy(BaseAI):
             return True
         return False
 
+    def _handle_spotted(self, target, dx: int, dy: int, distance: int) -> bool:
+        """React to a visible player: update noticed state, attack or advance.
+
+        Returns True if a combat action was taken (caller should return immediately).
+        """
+        self.investigate_target = None
+        if not self.entity.noticed_player:
+            self.entity.noticed_player = True
+            spotted_messages = {
+                "Dragon": ("You have been spotted by a dragon!", color.dragon_roar),
+                "Ender Dragon": (
+                    "You have been spotted by an ender dragon!",
+                    color.dragon_roar_end,
+                ),
+                "Hydra": ("You have been spotted by a hydra!", color.hydra_roar),
+            }
+            if self.entity.name in spotted_messages:
+                msg, msg_color = spotted_messages[self.entity.name]
+                self.engine.message_log.add_message(msg, msg_color)
+        self.last_known_target = (target.x, target.y)
+        if distance <= self.entity.attack_range:
+            if self.entity.ranged_attack:
+                RangedAttackAction(self.entity, dx, dy).perform()
+            else:
+                MeleeAction(self.entity, dx, dy).perform()
+            return True
+        self.path = self.entity.get_path_to(target.x, target.y)
+        return False
+
     def perform(self) -> None:
         # Asleep or blind entities don't act
         if self.entity.is_asleep:
@@ -198,34 +227,8 @@ class HostileEnemy(BaseAI):
             and not self.engine.player.is_invisible
             and distance <= self.entity.sight_range
         ):
-            # Player spotted: cancel any investigation and turn fully hostile.
-            self.investigate_target = None
-
-            # Give actor chance to notice player, if that has not happened yet.
-            if not self.entity.noticed_player:
-                self.entity.noticed_player = True
-                spotted_messages = {
-                    "Dragon": ("You have been spotted by a dragon!", color.dragon_roar),
-                    "Ender Dragon": (
-                        "You have been spotted by an ender dragon!",
-                        color.dragon_roar_end,
-                    ),
-                    "Hydra": ("You have been spotted by a hydra!", color.hydra_roar),
-                }
-                if self.entity.name in spotted_messages:
-                    dragon_message, dragon_message_color = spotted_messages[self.entity.name]
-                    self.engine.message_log.add_message(dragon_message, dragon_message_color)
-
-            self.last_known_target = (target.x, target.y)
-
-            if distance <= self.entity.attack_range:
-                if self.entity.ranged_attack:
-                    RangedAttackAction(self.entity, dx, dy).perform()
-                    return
-                MeleeAction(self.entity, dx, dy).perform()
+            if self._handle_spotted(target, dx, dy, distance):
                 return
-
-            self.path = self.entity.get_path_to(target.x, target.y)
 
         elif self.investigate_target:
             ix, iy = self.investigate_target
@@ -292,7 +295,41 @@ class PatrollingEnemy(BaseAI):
         x, y = coords[random.randrange(len(coords))]
         return int(x), int(y)
 
-    def perform(self) -> None:  # pylint: disable=too-many-return-statements
+    def _attack_or_chase(self, target, dx: int, dy: int, distance: int) -> None:
+        """Attack the player if in range, otherwise path toward them."""
+        self.investigate_target = None
+        if distance <= self.entity.attack_range:
+            if self.entity.ranged_attack:
+                RangedAttackAction(self.entity, dx, dy).perform()
+            else:
+                MeleeAction(self.entity, dx, dy).perform()
+            return
+        self.path = self.entity.get_path_to(target.x, target.y)
+        if self.path:
+            dest_x, dest_y = self.path.pop(0)
+            MovementAction(
+                self.entity,
+                dest_x - self.entity.x,
+                dest_y - self.entity.y,
+            ).perform()
+
+    def _follow_investigation(self) -> None:
+        """Move toward the investigation target, clearing it on arrival."""
+        ix, iy = self.investigate_target
+        if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
+            self.investigate_target = None
+            self.path = []
+            return
+        self.path = self.entity.get_path_to(ix, iy)
+        if self.path:
+            dest_x, dest_y = self.path.pop(0)
+            MovementAction(
+                self.entity,
+                dest_x - self.entity.x,
+                dest_y - self.entity.y,
+            ).perform()
+
+    def perform(self) -> None:
         if self.entity.is_asleep:
             return
 
@@ -311,42 +348,12 @@ class PatrollingEnemy(BaseAI):
             and not self.engine.player.is_invisible
             and distance <= self.entity.sight_range
         ):
-            # Player spotted: cancel any investigation.
-            self.investigate_target = None
-
-            if distance <= self.entity.attack_range:
-                if self.entity.ranged_attack:
-                    RangedAttackAction(self.entity, dx, dy).perform()
-                    return
-                MeleeAction(self.entity, dx, dy).perform()
-                return
-
-            self.path = self.entity.get_path_to(target.x, target.y)
-            if self.path:
-                dest_x, dest_y = self.path.pop(0)
-                MovementAction(
-                    self.entity,
-                    dest_x - self.entity.x,
-                    dest_y - self.entity.y,
-                ).perform()
+            self._attack_or_chase(target, dx, dy, distance)
             return
 
         # Investigate a sound source if one is queued
         if self.investigate_target:
-            ix, iy = self.investigate_target
-            if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
-                self.investigate_target = None
-                self.path = []
-            else:
-                self.path = self.entity.get_path_to(ix, iy)
-                if self.path:
-                    dest_x, dest_y = self.path.pop(0)
-                    MovementAction(
-                        self.entity,
-                        dest_x - self.entity.x,
-                        dest_y - self.entity.y,
-                    ).perform()
-                    return
+            self._follow_investigation()
             return
 
         # Arrived at patrol target: wander for a while

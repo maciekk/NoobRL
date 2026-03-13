@@ -37,7 +37,8 @@ item_chances: Dict[int, List[Tuple[string, int]]] = {
     3: [("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5), ("s_teleport", 12), ("bomb", 10)],
     4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5),
         ("wand_lightning", 8), ("wand_digging", 10)],
-    5: [("long_sword", 3), ("p_damage", 3), ("amulet_clairvoyance", 5), ("amulet_detect_monster", 5)],
+    5: [("long_sword", 3), ("p_damage", 3), ("amulet_clairvoyance", 5),
+        ("amulet_detect_monster", 5)],
     6: [
         ("s_fireball", 25),
         ("chain_mail", 15),
