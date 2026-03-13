@@ -96,6 +96,8 @@ class WishAction(Action):
         if item is None:
             raise exceptions.Impossible("Nothing happens.")
 
+        self.engine.identified_items.add(self.wish_item_id)
+
         # Try to add to inventory first
         item.parent = self.entity.inventory
         if not self.entity.inventory.add(item):
