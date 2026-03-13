@@ -30,36 +30,14 @@ PLAYER_START_WEAPON = 2  # dagger, always equipped at start
 
 
 def parse_procgen_dicts():
-    """Extract item_chances and enemy_chances from procgen.py via AST (no import needed)."""
-    path = os.path.join(REPO_ROOT, "procgen.py")
-    with open(path, encoding="utf-8") as f:
-        source = f.read()
-    tree = ast.parse(source)
-    result = {}
-    for node in ast.walk(tree):
-        # Annotated assignments: item_chances: Dict[...] = {...}
-        if isinstance(node, ast.AnnAssign):
-            if (
-                isinstance(node.target, ast.Name)
-                and node.target.id in ("item_chances", "enemy_chances")
-                and node.value is not None
-            ):
-                try:
-                    result[node.target.id] = ast.literal_eval(node.value)
-                except (ValueError, TypeError):
-                    pass
-        # Plain assignments (fallback)
-        elif isinstance(node, ast.Assign):
-            for target in node.targets:
-                if isinstance(target, ast.Name) and target.id in (
-                    "item_chances",
-                    "enemy_chances",
-                ):
-                    try:
-                        result[target.id] = ast.literal_eval(node.value)
-                    except (ValueError, TypeError):
-                        pass
-    return result.get("item_chances", {}), result.get("enemy_chances", {})
+    """Load item and enemy spawn tables from their JSON data files."""
+    def load_table(filename):
+        path = os.path.join(REPO_ROOT, "data", filename)
+        with open(path, encoding="utf-8") as f:
+            raw = json.load(f)
+        return {int(k): [tuple(entry) for entry in v] for k, v in raw.items()}
+
+    return load_table("loot_table.json"), load_table("enemy_table.json")
 
 
 def _extract_call_kw_stats(cls_name, call_node, stats):

@@ -2,7 +2,9 @@
 # pylint: disable=cyclic-import
 from __future__ import annotations
 
+import json
 import math
+import os
 import random
 import string
 from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
@@ -31,38 +33,15 @@ max_monsters_by_floor = [
     (6, 5),
 ]
 
-item_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [("p_heal", 35), ("dart", 20), ("leather_armor", 8), ("dagger", 5)],
-    2: [("s_confusion", 10), ("s_identify", 15), ("s_blink", 15)],
-    3: [("p_damage", 1), ("p_invisibility", 5), ("p_speed", 5), ("s_teleport", 12), ("bomb", 10), ("fertilizer_bomb", 8)],
-    4: [("s_lightning", 25), ("sword", 5), ("p_clairvoyance", 5),
-        ("wand_lightning", 8), ("wand_digging", 10)],
-    5: [("long_sword", 3), ("p_damage", 3), ("amulet_clairvoyance", 5),
-        ("amulet_detect_monster", 5)],
-    6: [
-        ("s_fireball", 25),
-        ("chain_mail", 15),
-        ("wand_wishing", 1),
-    ],
-    7: [("odachi", 4), ("steel_armor", 5)],
-    8: [("steel_armor", 10), ("p_damage", 6)],
-}
+def _load_chances(filename: str) -> Dict[int, List[Tuple[str, int]]]:
+    path = os.path.join(os.path.dirname(__file__), "data", filename)
+    with open(path, encoding="utf-8") as f:
+        raw = json.load(f)
+    return {int(k): [tuple(entry) for entry in v] for k, v in raw.items()}
 
-enemy_chances: Dict[int, List[Tuple[string, int]]] = {
-    0: [("kobold", 80), ("orc", 80)],
-    2: [("crawler", 20), ("puffball", 15)],
-    3: [("troll", 5)],
-    5: [("troll", 15), ("crawler", 35), ("wizard", 5)],
-    6: [("wizard", 8), ("troll", 20)],
-    7: [
-        ("troll", 60),
-        ("dragon", 1),
-        ("wizard", 12),
-    ],
-    8: [("hydra", 1)],
-    9: [("ender_dragon", 1)],
-    10: [("troll", 65), ("dragon", 2), ("ender_dragon", 2), ("hydra", 2)],
-}
+
+item_chances: Dict[int, List[Tuple[str, int]]] = _load_chances("loot_table.json")
+enemy_chances: Dict[int, List[Tuple[str, int]]] = _load_chances("enemy_table.json")
 
 
 def get_max_value_for_floor(
