@@ -514,9 +514,6 @@ class FireballDamageConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         target_xy = action.target_xy
 
-        if not self.engine.game_map.visible[target_xy]:
-            raise Impossible("You cannot target an area that you cannot see.")
-
         for actor in self.engine.game_map.actors:
             if actor.distance(*target_xy) <= self.radius:
                 self.engine.message_log.add_message(
