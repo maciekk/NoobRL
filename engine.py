@@ -10,6 +10,7 @@ from tcod.console import Console  # pylint: disable=import-error
 from tcod.map import compute_fov  # pylint: disable=import-error
 
 import color
+from location import Location
 from managers import ItemManager, MonsterManager
 import exceptions
 import options
@@ -156,9 +157,9 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         with open(filename, "wb") as f:
             f.write(save_data)
 
-    def emit_sound(self, location: tuple[int, int], radius: int) -> None:
+    def emit_sound(self, location: Location, radius: int) -> None:
         """Queue a sound event to be processed at the start of the next turn cycle."""
-        self._pending_sounds.append((location, radius))
+        self._pending_sounds.append((Location(*location), radius))
 
     def _bfs_sound(
         self,
@@ -190,7 +191,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
                 actor = self.game_map.get_actor_at_location(nx, ny)
                 if actor and actor is not self.player and actor.ai:
                     if hasattr(actor.ai, "on_sound") and actor not in alerted:
-                        alerted[actor] = (nx, ny, sx, sy)
+                        alerted[actor] = (nx, ny, sound_location.x, sound_location.y)
 
     def _notify_alerted_actors(self, alerted: dict) -> None:
         """Call on_sound for each alerted actor and emit visible wake/investigate messages."""

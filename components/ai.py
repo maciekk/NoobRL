@@ -232,12 +232,11 @@ class HostileEnemy(BaseAI):
                 return
 
         elif self.investigate_target:
-            ix, iy = self.investigate_target
-            if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
+            if self.entity.location.chebyshev_distance(self.investigate_target) <= 1:
                 self.investigate_target = None
                 self.path = []
             else:
-                self.path = self.entity.get_path_to(Location(ix, iy))
+                self.path = self.entity.get_path_to(self.investigate_target)
 
         elif self.last_known_target:
             if (self.entity.x, self.entity.y) == self.last_known_target:
@@ -316,12 +315,11 @@ class PatrollingEnemy(BaseAI):
 
     def _follow_investigation(self) -> None:
         """Move toward the investigation target, clearing it on arrival."""
-        ix, iy = self.investigate_target
-        if max(abs(self.entity.x - ix), abs(self.entity.y - iy)) <= 1:
+        if self.entity.location.chebyshev_distance(self.investigate_target) <= 1:
             self.investigate_target = None
             self.path = []
             return
-        self.path = self.entity.get_path_to(Location(ix, iy))
+        self.path = self.entity.get_path_to(self.investigate_target)
         if self.path:
             dest_x, dest_y = self.path.pop(0)
             MovementAction(
