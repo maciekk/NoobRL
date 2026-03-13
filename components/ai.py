@@ -330,6 +330,7 @@ class PatrollingEnemy(BaseAI):
             ).perform()
 
     def perform(self) -> None:
+        # pylint: disable=too-many-return-statements
         if self.entity.is_asleep:
             return
 

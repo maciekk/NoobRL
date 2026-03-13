@@ -7,7 +7,12 @@ import random
 from typing import Optional, TYPE_CHECKING
 import numpy as np  # pylint: disable=import-error
 import tcod.los  # pylint: disable=import-error
-from render_functions import animate_lightning_ray, animate_digging_ray, animate_explosion, animate_grass_growth
+from render_functions import (
+    animate_lightning_ray,
+    animate_digging_ray,
+    animate_explosion,
+    animate_grass_growth,
+)
 import tile_types
 import actions
 import color
@@ -33,6 +38,7 @@ if TYPE_CHECKING:
 class Consumable(BaseComponent):
     """Base class for consumable items with ability to be used and consumed."""
     parent: Item
+    is_bomb: bool = False
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
         """Try to return the action for this item."""
@@ -645,6 +651,7 @@ class SleepConsumable(Consumable):
 
 class BombConsumable(Consumable):
     """Explodes in an area when thrown, dealing damage in a radius."""
+    is_bomb: bool = True
 
     def __init__(self, damage: int, radius: int):
         self.damage = damage
