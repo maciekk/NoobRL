@@ -49,10 +49,11 @@ Ideas & efforts under way.
 - [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
 - [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
 - [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
+- [x] add "fertilizer bomb" which causes a tall grass patch to grow at point of impact
 
 ### Interesting Mechanics
 - [ ] auto-pickup items
-- [ ] simulate noise and monster hearing
+- [x] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] item weights and maximum carry weight
 - [ ] track how many of a monster SEEN in a run? (if don't kill everything you see)
@@ -69,7 +70,7 @@ Ideas & efforts under way.
 
 ### Monsters
 - [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs `#next`
-- [ ] add: Banshee (do not attack, but if seen, will scream and alert within a given radius)
+- [ ] add: Banshee (do not attack, but if seen, will scream and alert within a huge radius, e.g., 100 squares)
 - [ ] enemy special powers (Ex: speed, strength, invisibility, etc...)
 - [ ] enemies should sometimes drop loot when killed (is corpse part of drop?)
 - [ ] find something useful to do with monster corpses (food? crafting?)
@@ -107,5 +108,5 @@ Ideas & efforts under way.
 - [ ] JSON-ify: spells?
 - [ ] JSON-ify: loot drop tables?
 - [ ] JSON-ify: tile_types.py
-- [ ] balance game, avoid becoming god too early; levels ups should occur exponentially further
+- [x] balance game, avoid becoming god too early; levels ups should occur exponentially further
 

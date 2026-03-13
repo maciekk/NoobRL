@@ -680,7 +680,7 @@ class ThrowAction(Action):
         consumable = item.consumable
         class_name = consumable.__class__.__name__
 
-        if class_name == "BombConsumable":
+        if class_name in ("BombConsumable", "FertilizerBombConsumable"):
             # Use provided x, y if given, otherwise use target location
             if x is None or y is None:
                 if target:
@@ -818,7 +818,7 @@ class ThrowAction(Action):
 
         if hit_actor:
             if thrown_item.consumable:
-                if thrown_item.consumable.__class__.__name__ != "BombConsumable":
+                if thrown_item.consumable.__class__.__name__ not in ("BombConsumable", "FertilizerBombConsumable"):
                     self.engine.message_log.add_message(
                         f"The {thrown_item.display_name} hits the {hit_actor.name} and breaks!",
                         color.player_atk,
@@ -833,7 +833,7 @@ class ThrowAction(Action):
             hit_actor.fighter.take_damage(damage)
         elif not game_map.tiles["walkable"][final_x, final_y]:
             if thrown_item.consumable:
-                if thrown_item.consumable.__class__.__name__ == "BombConsumable":
+                if thrown_item.consumable.__class__.__name__ in ("BombConsumable", "FertilizerBombConsumable"):
                     self.engine.message_log.add_message(
                         f"The {thrown_item.display_name} hits the wall and explodes!",
                         color.white,
@@ -847,7 +847,7 @@ class ThrowAction(Action):
                 return
 
         # Bombs always explode at their final position
-        if thrown_item.consumable and thrown_item.consumable.__class__.__name__ == "BombConsumable":
+        if thrown_item.consumable and thrown_item.consumable.__class__.__name__ in ("BombConsumable", "FertilizerBombConsumable"):
             self._apply_consumable_effect(thrown_item, None, final_x, final_y)
             return
 

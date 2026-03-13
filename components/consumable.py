@@ -7,7 +7,7 @@ import random
 from typing import Optional, TYPE_CHECKING
 import numpy as np  # pylint: disable=import-error
 import tcod.los  # pylint: disable=import-error
-from render_functions import animate_lightning_ray, animate_digging_ray, animate_explosion
+from render_functions import animate_lightning_ray, animate_digging_ray, animate_explosion, animate_grass_growth
 import tile_types
 import actions
 import color
@@ -674,6 +674,36 @@ class BombConsumable(Consumable):
         if not targets_hit:
             engine.message_log.add_message(
                 "The bomb explodes, but no one is caught in the blast!",
+                color.white,
+            )
+
+
+class FertilizerBombConsumable(BombConsumable):
+    """Grows a patch of tall grass where thrown instead of exploding."""
+
+    def get_description(self) -> list[str]:
+        return [f"Grows tall grass in radius {self.radius} on impact"]
+
+    def explode(self, x: int, y: int, game_map, engine) -> None:
+        import input_handlers as _ih
+        if _ih.context is not None and _ih.root_console is not None:
+            animate_grass_growth(engine, x, y, self.radius, _ih.root_console, _ih.context)
+
+        tiles_grown = 0
+        for tx in range(x - self.radius, x + self.radius + 1):
+            for ty in range(y - self.radius, y + self.radius + 1):
+                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
+                    if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.floor:
+                        game_map.tiles[tx, ty] = tile_types.tall_grass
+                        tiles_grown += 1
+
+        if tiles_grown > 0:
+            engine.message_log.add_message(
+                "Vegetation erupts from the ground!", color.status_effect_applied
+            )
+        else:
+            engine.message_log.add_message(
+                "The fertilizer bomb bursts, but finds no soil to take root in.",
                 color.white,
             )
 

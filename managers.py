@@ -31,6 +31,7 @@ CONSUMABLE_MAP = {
     "DetectMonsterConsumable": consumable.DetectMonsterConsumable,
     "SleepConsumable": consumable.SleepConsumable,
     "BombConsumable": consumable.BombConsumable,
+    "FertilizerBombConsumable": consumable.FertilizerBombConsumable,
     "BlindnessConsumable": consumable.BlindnessConsumable,
     "IdentificationConsumable": consumable.IdentificationConsumable,
 }

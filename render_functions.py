@@ -174,6 +174,38 @@ def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional
         time.sleep(0.08)
 
 
+def animate_grass_growth(
+    engine,
+    x: int,
+    y: int,
+    radius: int,
+    console,
+    context,
+) -> None:
+    """Animate grass sprouting outward from (x, y) with the given radius."""
+    tiles = [
+        (tx, ty)
+        for tx in range(x - radius, x + radius + 1)
+        for ty in range(y - radius, y + radius + 1)
+        if (tx - x) ** 2 + (ty - y) ** 2 <= radius ** 2
+        and engine.game_map.in_bounds(tx, ty)
+        and engine.game_map.visible[tx, ty]
+    ]
+    if not tiles:
+        return
+    r = max(radius, 1)
+    for f in range(4):
+        console.clear()
+        engine.render(console)
+        for tx, ty in tiles:
+            d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
+            intensity = int(80 + 150 * (1.0 - f / 3) * (1.0 - d / r * 0.5))
+            intensity = max(30, min(255, intensity))
+            console.print(x=tx, y=ty, string=";", fg=(0, intensity, 0))
+        context.present(console, keep_aspect=True, integer_scaling=False)
+        time.sleep(0.08)
+
+
 def animate_lightning_ray(
     engine,
     path: list[tuple[int, int]],

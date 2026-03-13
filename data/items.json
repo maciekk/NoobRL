@@ -335,6 +335,18 @@
         "stack_count": 3
     },
     {
+        "id": "fertilizer_bomb",
+        "name": "Fertilizer Bomb",
+        "char": "*",
+        "color": [40, 160, 40],
+        "consumable": {
+            "name": "FertilizerBombConsumable",
+            "damage": 0,
+            "radius": 2
+        },
+        "stack_count": 3
+    },
+    {
         "id": "p_blindness",
         "name": "Potion of Blindness",
         "char": "!",
