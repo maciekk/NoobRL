@@ -150,29 +150,21 @@ def find_cluster_positions(
 
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
     """Clone entity by ID, adding items to inventory or placing monsters on the map."""
-    entity = game_map.engine.item_manager.clone(entity_id)
-    is_item = entity is not None
-    if entity is None:
-        entity = game_map.engine.monster_manager.clone(entity_id)
+    if entity_id in game_map.engine.item_manager.items:
+        item, added = game_map.engine.give_item_to_player(entity_id)
+        if not added:
+            game_map.engine.message_log.add_message(
+                f"Your inventory is full; {item.name} dropped on floor."
+            )
+        sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+        return item
+
+    entity = game_map.engine.monster_manager.clone(entity_id)
     if entity is None:
         game_map.engine.message_log.add_message(
             f"Unknown object '{entity_id}' requested."
         )
         return None
-
-    # Items go to inventory if there's room, otherwise drop on floor
-    if is_item:
-        player = game_map.engine.player
-        entity.parent = player.inventory
-        if not player.inventory.add(entity):
-            # Inventory is full, drop on floor instead
-            entity.spawn(game_map, x, y)
-            game_map.engine.message_log.add_message(
-                f"Your inventory is full; {entity.name} dropped on floor."
-            )
-        sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
-        # If added to inventory successfully, no need to spawn on map
-        return entity
     # Monsters always spawn on the map
     return entity.spawn(game_map, x, y)
 

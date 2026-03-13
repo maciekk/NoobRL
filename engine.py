@@ -19,7 +19,7 @@ from message_log import MessageLog
 import render_functions
 
 if TYPE_CHECKING:
-    from entity import Actor
+    from entity import Actor, Item
     from game_map import GameMap, GameWorld
 
 
@@ -84,6 +84,23 @@ class Engine:  # pylint: disable=too-many-instance-attributes
                 look = look.replace("$COLOR", color_name)
                 self.potion_alias_colors[item_id] = color_rgb
             self.potion_aliases[item_id] = look
+
+    def give_item_to_player(self, item_id: str) -> tuple["Item | None", bool]:
+        """Clone item by ID, auto-identify it, and give it to the player.
+
+        Adds to inventory if there is room, otherwise drops at the player's feet.
+        Returns (item, True) if added to inventory, (item, False) if dropped on floor,
+        or (None, False) if item_id is unknown.
+        """
+        item = self.item_manager.clone(item_id)
+        if item is None:
+            return None, False
+        self.identified_items.add(item_id)
+        item.parent = self.player.inventory
+        if self.player.inventory.add(item):
+            return item, True
+        item.place(self.player.x, self.player.y, self.game_map)
+        return item, False
 
     def handle_enemy_turns(self) -> None:
         """Process AI actions for all non-player actors."""
