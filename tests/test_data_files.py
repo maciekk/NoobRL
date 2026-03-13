@@ -1,4 +1,5 @@
 """Tests that JSON data files are well-formed and internally consistent."""
+# pylint: disable=missing-function-docstring, import-error, unused-argument
 import json
 import os
 

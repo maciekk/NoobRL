@@ -1,4 +1,5 @@
 """Smoke tests for game components that can run without a live engine."""
+# pylint: disable=missing-class-docstring, missing-function-docstring
 from unittest.mock import MagicMock
 
 from components.fighter import Fighter

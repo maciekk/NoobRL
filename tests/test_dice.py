@@ -1,4 +1,5 @@
 """Tests for dice rolling utilities."""
+# pylint: disable=missing-function-docstring, import-error
 import pytest
 from dice import parse, roll
 

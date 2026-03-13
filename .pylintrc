@@ -8,6 +8,10 @@ extension-pkg-allow-list=tcod,pygame
 # Suppress false-positive no-member errors for the entire tcod.event module.
 ignored-modules=tcod.event
 
+[DESIGN]
+# balance_report.py analysis functions legitimately use up to 20 local variables.
+max-locals=20
+
 [MESSAGES CONTROL]
 # arguments-differ: tcod.event.EventDispatch uses generic *args signatures; all
 # overrides here are correct typed overloads of that pattern — not real errors.

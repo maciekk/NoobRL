@@ -1,4 +1,5 @@
 """Tests for Location NamedTuple."""
+# pylint: disable=missing-function-docstring
 from location import Location
 
 

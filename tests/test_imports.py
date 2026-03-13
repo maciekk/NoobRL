@@ -3,6 +3,7 @@
 These catch syntax errors, missing imports, and broken module-level code
 across the entire codebase without requiring a live display or engine.
 """
+# pylint: disable=missing-function-docstring, import-outside-toplevel, unused-import
 
 
 def test_import_location():
