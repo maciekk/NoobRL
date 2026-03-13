@@ -10,6 +10,7 @@ import numpy as np  # pylint: disable=import-error
 import tcod  # pylint: disable=import-error
 
 from equipment_types import EquipmentType
+from location import Location
 from render_order import RenderOrder
 
 if TYPE_CHECKING:
@@ -95,7 +96,12 @@ class Entity:  # pylint: disable=too-many-instance-attributes
         self.x += dx
         self.y += dy
 
-    def get_path_to(self, dest_x: int, dest_y: int) -> List[Tuple[int, int]]:
+    @property
+    def location(self) -> Location:
+        """Return the current position as a Location."""
+        return Location(self.x, self.y)
+
+    def get_path_to(self, dest: Location) -> List[Location]:
         """Compute and return a path to the target position.
         If there is no valid path then returns an empty list.
         """
@@ -118,10 +124,10 @@ class Entity:  # pylint: disable=too-many-instance-attributes
         pathfinder.add_root((self.x, self.y))  # Start position.
 
         # Compute the path to the destination and remove the starting point.
-        path: List[List[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+        path: List[List[int]] = pathfinder.path_to(dest)[1:].tolist()
 
-        # Convert from List[List[int]] to List[Tuple[int, int]].
-        return [(index[0], index[1]) for index in path]
+        # Convert from List[List[int]] to List[Location].
+        return [Location(index[0], index[1]) for index in path]
 
 
 class Actor(Entity):  # pylint: disable=too-many-instance-attributes

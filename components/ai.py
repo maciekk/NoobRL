@@ -11,6 +11,7 @@ import numpy as np  # pylint: disable=import-error
 import color
 import tile_types
 from exceptions import Impossible
+from location import Location
 from actions import (
     Action,
     BumpAction,
@@ -204,7 +205,7 @@ class HostileEnemy(BaseAI):
             else:
                 MeleeAction(self.entity, dx, dy).perform()
             return True
-        self.path = self.entity.get_path_to(target.x, target.y)
+        self.path = self.entity.get_path_to(target.location)
         return False
 
     def perform(self) -> None:
@@ -236,14 +237,14 @@ class HostileEnemy(BaseAI):
                 self.investigate_target = None
                 self.path = []
             else:
-                self.path = self.entity.get_path_to(ix, iy)
+                self.path = self.entity.get_path_to(Location(ix, iy))
 
         elif self.last_known_target:
             if (self.entity.x, self.entity.y) == self.last_known_target:
                 self.last_known_target = None
                 self.path = []
             else:
-                self.path = self.entity.get_path_to(*self.last_known_target)
+                self.path = self.entity.get_path_to(self.last_known_target)
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)
@@ -304,7 +305,7 @@ class PatrollingEnemy(BaseAI):
             else:
                 MeleeAction(self.entity, dx, dy).perform()
             return
-        self.path = self.entity.get_path_to(target.x, target.y)
+        self.path = self.entity.get_path_to(target.location)
         if self.path:
             dest_x, dest_y = self.path.pop(0)
             MovementAction(
@@ -320,7 +321,7 @@ class PatrollingEnemy(BaseAI):
             self.investigate_target = None
             self.path = []
             return
-        self.path = self.entity.get_path_to(ix, iy)
+        self.path = self.entity.get_path_to(Location(ix, iy))
         if self.path:
             dest_x, dest_y = self.path.pop(0)
             MovementAction(
@@ -377,7 +378,7 @@ class PatrollingEnemy(BaseAI):
                 return
 
             if not self.path:
-                self.path = self.entity.get_path_to(tx, ty)
+                self.path = self.entity.get_path_to(Location(tx, ty))
 
             if self.path:
                 dest_x, dest_y = self.path.pop(0)

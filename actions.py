@@ -12,6 +12,7 @@ import tcod  # pylint: disable=import-error
 
 import color
 import dice
+from location import Location
 import sounds
 from sound_travel import SoundTravel
 from components.effect import (
@@ -637,7 +638,7 @@ class TargetMovementAction(Action):
         super().__init__(entity)
         self.x = x
         self.y = y
-        self.path = self.entity.get_path_to(x, y)
+        self.path = self.entity.get_path_to(Location(x, y))
 
     def perform(self):
         if not self.path:
