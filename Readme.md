@@ -6,7 +6,6 @@ generated dungeons, component-based entities, JSON-driven monster and item
 definitions, equipment, consumables, a leveling system, and full save/load
 support.
 
-![Screenshot](pics/screenshot2.png)
 ![Gameplay](pics/gameplay.gif)
 
 ## Design Choices
