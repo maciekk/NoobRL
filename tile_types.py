@@ -39,6 +39,9 @@ def new_tile(
 # SHROUD represents unexplored, unseen tiles
 SHROUD = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)
 
+# OUT_OF_BOUNDS represents areas beyond the map edge
+OUT_OF_BOUNDS = np.array((ord("X"), (20, 20, 20), (0, 0, 0)), dtype=graphic_dt)
+
 floor = new_tile(
     walkable=True,
     transparent=True,

@@ -43,6 +43,55 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
         self._pending_sounds: list[tuple[tuple[int, int], int]] = []  # (location, radius)
+        self.camera_x: int = 0
+        self.camera_y: int = 0
+
+    def __getattr__(self, name: str):
+        if name in ("camera_x", "camera_y"):
+            return 0
+        raise AttributeError(name)
+
+    @property
+    def viewport_width(self) -> int:
+        """Width of the visible map area in tiles."""
+        return options.n_cols
+
+    @property
+    def viewport_height(self) -> int:
+        """Height of the visible map area in tiles."""
+        return options.n_rows - 7
+
+    def clamp_camera(self) -> None:
+        """Clamp camera so at most one SHROUD border tile is visible at each edge."""
+        vp_w, vp_h = self.viewport_width, self.viewport_height
+        self.camera_x = max(-1, min(self.camera_x, self.game_map.width - vp_w + 1))
+        self.camera_y = max(-1, min(self.camera_y, self.game_map.height - vp_h + 1))
+
+    def center_camera_on_player(self) -> None:
+        """Reposition camera so the player is centered in the viewport."""
+        vp_w, vp_h = self.viewport_width, self.viewport_height
+        self.camera_x = self.player.x - vp_w // 2
+        self.camera_y = self.player.y - vp_h // 2
+        self.clamp_camera()
+
+    def world_to_screen(self, wx: int, wy: int) -> tuple[int, int]:
+        """Convert world coordinates to screen (console) coordinates."""
+        return wx - self.camera_x, wy - self.camera_y
+
+    def screen_to_world(self, sx: int, sy: int) -> tuple[int, int]:
+        """Convert screen (console) coordinates to world coordinates."""
+        return sx + self.camera_x, sy + self.camera_y
+
+    def on_screen(self, wx: int, wy: int) -> bool:
+        """Return True if world position (wx, wy) is within the current viewport."""
+        sx, sy = self.world_to_screen(wx, wy)
+        return 0 <= sx < self.viewport_width and 0 <= sy < self.viewport_height
+
+    def print_at_world(self, console: Console, wx: int, wy: int, **kwargs) -> None:
+        """Print to console at world coords, converting to screen coords. No-op if off-screen."""
+        sx, sy = self.world_to_screen(wx, wy)
+        if 0 <= sx < self.viewport_width and 0 <= sy < self.viewport_height:
+            console.print(x=sx, y=sy, **kwargs)
 
     def initialize_scroll_aliases(self) -> None:
         """Assign a random fake name to each scroll type for this game run."""
@@ -132,7 +181,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """Render the game map, UI bars, and message log to the console."""
         self.game_map.render(console)
 
-        panel_y = self.game_map.height
+        panel_y = self.viewport_height
         self.message_log.render(
             console=console, x=21, y=panel_y + 1, width=console.width - 21, height=5
         )
@@ -257,6 +306,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         if self._bonus_actions > 0:
             self._bonus_actions -= 1
             self.update_fov()
+            self.center_camera_on_player()
             return
         self.apply_timed_effects()
         self.handle_enemy_turns()
@@ -264,3 +314,4 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.update_fov()
         self.turn += 1
         self._bonus_actions = (self.player.speed // 100) - 1
+        self.center_camera_on_player()

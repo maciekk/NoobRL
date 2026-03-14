@@ -75,6 +75,8 @@ CONFIRM_KEYS = {
     tcod.event.KeySym.KP_ENTER,
 }
 
+SCROLL_SPEED = 5
+
 MIN_FRAME_INTERVAL = 0.025
 
 # Set by main.py so handle_action can render between repeated steps.
@@ -222,9 +224,12 @@ class EventHandler(BaseEventHandler):
         return True
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion) -> None:
-        """Track mouse position within map bounds."""
-        if self.engine.game_map.in_bounds(event.tile.x, event.tile.y):
-            self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
+        """Track mouse position, converting screen coords to world coords."""
+        sx, sy = event.tile.x, event.tile.y
+        if 0 <= sx < self.engine.viewport_width and 0 <= sy < self.engine.viewport_height:
+            wx, wy = self.engine.screen_to_world(sx, sy)
+            if self.engine.game_map.in_bounds(wx, wy):
+                self.engine.mouse_location = wx, wy
 
     def ev_quit(self, event: tcod.event.Quit) -> Optional[Action]:
         """Handle window close by raising SystemExit."""
@@ -1353,9 +1358,11 @@ class SelectIndexHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
-        x, y = self.engine.mouse_location
-        console.rgb["bg"][x, y] = color.white
-        console.rgb["fg"][x, y] = color.black
+        wx, wy = self.engine.mouse_location
+        sx, sy = self.engine.world_to_screen(wx, wy)
+        if 0 <= sx < console.width and 0 <= sy < self.engine.viewport_height:
+            console.rgb["bg"][sx, sy] = color.white
+            console.rgb["fg"][sx, sy] = color.black
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         """Check for key movement or confirmation keys."""
@@ -1386,9 +1393,12 @@ class SelectIndexHandler(AskUserEventHandler):
         self, event: tcod.event.MouseButtonDown
     ) -> Optional[ActionOrHandler]:
         """Left click confirms a selection."""
-        if self.engine.game_map.in_bounds(*event.tile):
+        sx, sy = event.tile
+        if 0 <= sx < self.engine.viewport_width and 0 <= sy < self.engine.viewport_height:
             if event.button == 1:
-                return self.on_index_selected(*event.tile)
+                wx, wy = self.engine.screen_to_world(sx, sy)
+                if self.engine.game_map.in_bounds(wx, wy):
+                    return self.on_index_selected(wx, wy)
         return super().ev_mousebuttondown(event)
 
     def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
@@ -1676,13 +1686,15 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         """Highlight the tiles within the blast circle."""
         super().on_render(console)
 
-        x, y = self.engine.mouse_location
+        x, y = self.engine.mouse_location  # world coords
 
         for tx in range(x - self.radius, x + self.radius + 1):
             for ty in range(y - self.radius, y + self.radius + 1):
                 if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
-                    if 0 <= tx < console.width and 0 <= ty < console.height:
-                        console.bg[tx, ty] = color.red
+                    if self.engine.game_map.in_bounds(tx, ty):
+                        sx, sy = self.engine.world_to_screen(tx, ty)
+                        if 0 <= sx < console.width and 0 <= sy < self.engine.viewport_height:
+                            console.rgb["bg"][sx, sy] = color.red
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
@@ -1761,7 +1773,7 @@ class LightningRayTargetHandler(SelectIndexHandler):
         super().on_render(console)
         ray_char = self._ray_char()
         for tx, ty in self._get_ray_path():
-            console.print(x=tx, y=ty, string=ray_char, fg=(80, 160, 255))
+            self.engine.print_at_world(console, tx, ty, string=ray_char, fg=(80, 160, 255))
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
@@ -1824,11 +1836,8 @@ class DiggingRayTargetHandler(SelectIndexHandler):
         ray_char = self._ray_char()
         gm = self.engine.game_map
         for tx, ty in self._get_ray_path():
-            if gm.tiles["walkable"][tx, ty]:
-                fg = (180, 120, 60)
-            else:
-                fg = (220, 160, 50)
-            console.print(x=tx, y=ty, string=ray_char, fg=fg)
+            fg = (180, 120, 60) if gm.tiles["walkable"][tx, ty] else (220, 160, 50)
+            self.engine.print_at_world(console, tx, ty, string=ray_char, fg=fg)
 
     def on_index_selected(self, x: int, y: int) -> Optional[Action]:
         return self.callback((x, y))
@@ -1877,6 +1886,13 @@ class MainGameEventHandler(EventHandler):
 
         if is_shifted(event, tcod.event.KeySym.COMMA):
             return actions.TakeUpStairsAction(player)
+
+        if key in MOVE_KEYS and has_alt(modifier):
+            dx, dy = MOVE_KEYS[key]
+            self.engine.camera_x += dx * SCROLL_SPEED
+            self.engine.camera_y += dy * SCROLL_SPEED
+            self.engine.clamp_camera()
+            return None  # no action, no turn consumed
 
         if key in MOVE_KEYS:
             dx, dy = MOVE_KEYS[key]

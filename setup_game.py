@@ -34,12 +34,13 @@ def _init_audio():
 
 def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
-    map_width = options.n_cols
-    map_height = options.n_rows - 7
+    map_width = options.map_width
+    map_height = options.map_height
 
     room_max_size = 10
     room_min_size = 6
-    max_rooms = 30
+    # Scale room count with map area (30 rooms per 80×27 baseline).
+    max_room_attempts = max(30, (map_width * map_height * 30) // (80 * 27))
 
     engine = Engine()
     engine.initialize_scroll_aliases()
@@ -47,7 +48,7 @@ def new_game() -> Engine:
 
     engine.game_world = GameWorld(
         engine=engine,
-        max_rooms=max_rooms,
+        max_room_attempts=max_room_attempts,
         room_min_size=room_min_size,
         room_max_size=room_max_size,
         map_width=map_width,
@@ -55,6 +56,7 @@ def new_game() -> Engine:
     )
     engine.game_world.generate_floor()
     engine.update_fov()
+    engine.center_camera_on_player()
 
     engine.message_log.add_message(
         "Hello and welcome, adventurer, to yet another dungeon!",

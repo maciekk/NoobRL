@@ -108,20 +108,28 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:
-        """Render the map to the console using visibility, exploration, and clairvoyance states."""
-        console.rgb[0 : self.width, 0 : self.height] = np.select(
-            condlist=[self.visible, self.explored, self.revealed],
-            choicelist=[
-                self.tiles["light"],
-                self.tiles["dark"],
-                self.tiles["revealed"],
-            ],
-            default=tile_types.SHROUD,
-        )
+        """Render the map viewport to the console using visibility, exploration, and clairvoyance states."""
+        engine = self.engine
+        cx, cy = engine.camera_x, engine.camera_y
+        vp_w, vp_h = engine.viewport_width, engine.viewport_height
 
-        entities_sorted_for_rendering = sorted(
-            self.entities, key=lambda x: x.render_order.value
-        )
+        # Map slice bounds — clamp to valid map indices
+        mx1 = max(0, cx)
+        my1 = max(0, cy)
+        mx2 = min(self.width, cx + vp_w)
+        my2 = min(self.height, cy + vp_h)
+        # Console destination offset (non-zero when camera is past map edge)
+        dx, dy = mx1 - cx, my1 - cy
+
+        # Fill entire viewport with OUT_OF_BOUNDS first, then paint the map slice on top
+        console.rgb[0:vp_w, 0:vp_h] = tile_types.OUT_OF_BOUNDS
+        if mx2 > mx1 and my2 > my1:
+            sw, sh = mx2 - mx1, my2 - my1
+            console.rgb[dx:dx + sw, dy:dy + sh] = np.select(
+                condlist=[self.visible[mx1:mx2, my1:my2], self.explored[mx1:mx2, my1:my2], self.revealed[mx1:mx2, my1:my2]],
+                choicelist=[self.tiles["light"][mx1:mx2, my1:my2], self.tiles["dark"][mx1:mx2, my1:my2], self.tiles["revealed"][mx1:mx2, my1:my2]],
+                default=tile_types.SHROUD,
+            )
 
         # Track tiles with multiple items for pile display
         item_counts: dict[tuple[int, int], int] = {}
@@ -130,27 +138,30 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
                 pos = (entity.x, entity.y)
                 item_counts[pos] = item_counts.get(pos, 0) + 1
 
-        for entity in entities_sorted_for_rendering:
+        for entity in sorted(self.entities, key=lambda x: x.render_order.value):
+            sx, sy = engine.world_to_screen(entity.x, entity.y)
+            if not (0 <= sx < vp_w and 0 <= sy < vp_h):
+                continue
             # Render if visible, or if detecting monsters and entity is a non-player Actor
             should_render = self.visible[entity.x, entity.y]
             if (
                 not should_render
-                and self.engine.player.is_detecting_monsters
+                and engine.player.is_detecting_monsters
                 and isinstance(entity, Actor)
-                and entity is not self.engine.player
+                and entity is not engine.player
             ):
                 should_render = True
 
             if should_render:
                 fg = entity.display_color if isinstance(entity, Item) else entity.color
-                if entity is self.engine.player and entity.is_invisible:
+                if entity is engine.player and entity.is_invisible:
                     fg = (100, 100, 100)
-                console.print(x=entity.x, y=entity.y, string=entity.char, fg=fg)
+                console.print(x=sx, y=sy, string=entity.char, fg=fg)
 
         # Draw pile symbol on top of tiles with 2+ items (but not if an actor is there)
-        for (x, y), count in item_counts.items():
-            if count >= 2 and self.get_actor_at_location(x, y) is None:
-                console.print(x=x, y=y, string="&", fg=(255, 255, 255))
+        for (wx, wy), count in item_counts.items():
+            if count >= 2 and self.get_actor_at_location(wx, wy) is None:
+                engine.print_at_world(console, wx, wy, string="&", fg=(255, 255, 255))
 
 
 class GameWorld:  # pylint: disable=too-few-public-methods
@@ -164,7 +175,7 @@ class GameWorld:  # pylint: disable=too-few-public-methods
         engine: Engine,
         map_width: int,
         map_height: int,
-        max_rooms: int,
+        max_room_attempts: int,
         room_min_size: int,
         room_max_size: int,
         current_floor: int = 0,
@@ -174,7 +185,7 @@ class GameWorld:  # pylint: disable=too-few-public-methods
         self.map_width = map_width
         self.map_height = map_height
 
-        self.max_rooms = max_rooms
+        self.max_room_attempts = max_room_attempts
 
         self.room_min_size = room_min_size
         self.room_max_size = room_max_size
@@ -188,7 +199,7 @@ class GameWorld:  # pylint: disable=too-few-public-methods
         self.current_floor += direction
 
         self.engine.game_map = generate_dungeon(
-            max_rooms=self.max_rooms,
+            max_room_attempts=self.max_room_attempts,
             room_min_size=self.room_min_size,
             room_max_size=self.room_max_size,
             map_width=self.map_width,

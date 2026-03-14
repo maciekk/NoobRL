@@ -374,7 +374,7 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
 
 
 def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches
-    max_rooms: int,
+    max_room_attempts: int,
     room_min_size: int,
     room_max_size: int,
     map_width: int,
@@ -392,7 +392,7 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
     center_of_last_room = (0, 0)
     center_of_first_room = (0, 0)
 
-    for _ in range(max_rooms):
+    for _ in range(max_room_attempts):
         room_width = random.randint(room_min_size, room_max_size)
         room_height = random.randint(room_min_size, room_max_size)
 

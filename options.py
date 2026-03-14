@@ -21,3 +21,7 @@ show_sound = True
 # Terminal size in tiles. Larger values give more visible world.
 n_cols = 80
 n_rows = 34
+
+# World map dimensions. Can be larger than the viewport (n_cols × (n_rows-7)).
+map_width = 160
+map_height = 54

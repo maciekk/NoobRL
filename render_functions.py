@@ -169,7 +169,7 @@ def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional
         for tx, ty in tiles:
             d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
             heat = 1.0 - (f / 4) * 0.7 - (d / r) * 0.3
-            console.print(x=tx, y=ty, string=char, fg=_explosion_color(heat))
+            engine.print_at_world(console, tx, ty, string=char, fg=_explosion_color(heat))
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.08)
 
@@ -201,7 +201,7 @@ def animate_grass_growth(
             d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
             intensity = int(80 + 150 * (1.0 - f / 3) * (1.0 - d / r * 0.5))
             intensity = max(30, min(255, intensity))
-            console.print(x=tx, y=ty, string=";", fg=(0, intensity, 0))
+            engine.print_at_world(console, tx, ty, string=";", fg=(0, intensity, 0))
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.08)
 
@@ -233,7 +233,7 @@ def animate_lightning_ray(
         engine.render(console)
         for j, (tx, ty) in enumerate(visible_path[:i]):
             clr = tip_color if j == i - 1 else trail_color
-            console.print(x=tx, y=ty, string=ray_char, fg=clr)
+            engine.print_at_world(console, tx, ty, string=ray_char, fg=clr)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.025)
 
@@ -246,7 +246,7 @@ def animate_lightning_ray(
         console.clear()
         engine.render(console)
         for tx, ty in visible_path:
-            console.print(x=tx, y=ty, string=flicker_char, fg=clr)
+            engine.print_at_world(console, tx, ty, string=flicker_char, fg=clr)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.04)
 
@@ -271,7 +271,7 @@ def animate_digging_ray(
         for j, (tx, ty) in enumerate(path[:i]):
             if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
                 clr = tip_color if j == i - 1 else trail_color
-                console.print(x=tx, y=ty, string=ray_char, fg=clr)
+                engine.print_at_world(console, tx, ty, string=ray_char, fg=clr)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.025)
 
@@ -303,7 +303,7 @@ def animate_sound_wave(
         console.clear()
         engine.render(console)
         for tx, ty in visible_ring:
-            console.print(x=tx, y=ty, string=wave_char, fg=wave_color)
+            engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(0.03)
         rendered_any = True
@@ -330,6 +330,6 @@ def animate_projectile(
             continue
         console.clear()
         engine.render(console)
-        console.print(x=x, y=y, string=char, fg=fg)
+        engine.print_at_world(console, x, y, string=char, fg=fg)
         context.present(console, keep_aspect=True, integer_scaling=False)
         time.sleep(frame_delay)
