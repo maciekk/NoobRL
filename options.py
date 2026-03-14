@@ -19,5 +19,5 @@ grass_patch_chance = 0.1
 show_sound = True
 
 # Terminal size in tiles. Larger values give more visible world.
-n_cols = 120
-n_rows = 50
+n_cols = 80
+n_rows = 34

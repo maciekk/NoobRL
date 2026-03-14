@@ -16,6 +16,7 @@ import color
 from engine import Engine
 from game_map import GameWorld
 import input_handlers
+import options
 import sounds
 
 # Load the background image and remove the alpha channel.
@@ -33,8 +34,8 @@ def _init_audio():
 
 def new_game() -> Engine:
     """Return a brand new game session as an Engine instance."""
-    map_width = 120
-    map_height = 43
+    map_width = options.n_cols
+    map_height = options.n_rows - 7
 
     room_max_size = 10
     room_min_size = 6

@@ -132,7 +132,10 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """Render the game map, UI bars, and message log to the console."""
         self.game_map.render(console)
 
-        self.message_log.render(console=console, x=21, y=45, width=99, height=5)
+        panel_y = self.game_map.height
+        self.message_log.render(
+            console=console, x=21, y=panel_y + 1, width=console.width - 21, height=5
+        )
 
         render_functions.render_bar(
             console=console,
@@ -142,7 +145,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             color_fg=color.hp_bar_filled,
             color_bg=color.hp_bar_empty,
             x=0,
-            y=45,
+            y=panel_y + 1,
             total_width=20,
         )
         render_functions.render_bar(
@@ -153,18 +156,18 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             color_fg=color.xp_bar_filled,
             color_bg=color.xp_bar_empty,
             x=0,
-            y=46,
+            y=panel_y + 2,
             total_width=20,
         )
         render_functions.render_dungeon_level(
             console=console,
             dungeon_level=self.game_world.current_floor,
-            location=(1, 47),
+            location=(1, panel_y + 3),
         )
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=44, engine=self
+            console=console, x=21, y=panel_y, engine=self
         )
-        y = 48
+        y = panel_y + 4
         console.print(x=1, y=y, string=f"Turn: {self.turn}")
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
         console.print(x=1, y=y + 1, string=s)
