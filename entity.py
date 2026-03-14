@@ -269,8 +269,14 @@ class Chest(Entity):
             )
 
 
+_TRAP_COLORS = {
+    "trapdoor": (139, 90, 43),
+    "squeaky_board": (180, 140, 60),
+}
+
+
 class Trap(Entity):
-    """A hidden trap that activates when the player steps on it."""
+    """A hidden trap that activates when stepped on."""
 
     def __init__(
         self,
@@ -283,17 +289,18 @@ class Trap(Entity):
             x=x,
             y=y,
             char="^",
-            color=(139, 90, 43),
-            name=f"{trap_type} trap",
+            color=_TRAP_COLORS.get(trap_type, (139, 90, 43)),
+            name=f"{trap_type.replace('_', ' ')} trap",
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
         self.trap_type = trap_type
         self.is_revealed = False
 
-    def trigger(self, engine) -> None:
+    def trigger(self, engine, triggering_entity=None) -> None:
         """Reveal and activate this trap."""
         import color as _color  # pylint: disable=import-outside-toplevel
+        from sound_travel import SoundTravel  # pylint: disable=import-outside-toplevel
 
         self.is_revealed = True
 
@@ -308,6 +315,23 @@ class Trap(Entity):
                 f"You land on dungeon level {engine.game_world.current_floor}.",
                 _color.descend,
             )
+
+        elif self.trap_type == "squeaky_board":
+            if triggering_entity is engine.player:
+                engine.message_log.add_message(
+                    "You step on a squeaky board! *CREAK*", _color.white
+                )
+            else:
+                visible = (
+                    triggering_entity is not None
+                    and engine.game_map.visible[triggering_entity.x, triggering_entity.y]
+                )
+                if visible:
+                    msg = f"The {triggering_entity.name} steps on a squeaky board! *CREAK*"
+                else:
+                    msg = "Someone steps on a squeaky board! *CREAK*"
+                engine.message_log.add_message(msg, _color.white)
+            engine.emit_sound((self.x, self.y), SoundTravel.SQUEAKY_BOARD)
 
 
 class Item(Entity):

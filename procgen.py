@@ -181,6 +181,13 @@ def place_entities(  # pylint: disable=too-many-locals
         if not any(e.x == x and e.y == y for e in dungeon.entities):
             Trap(trap_type="trapdoor").spawn(dungeon, x, y)
 
+    # 20% chance to place a squeaky board trap in the room.
+    if random.random() < 0.20:
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        if not any(e.x == x and e.y == y for e in dungeon.entities):
+            Trap(trap_type="squeaky_board").spawn(dungeon, x, y)
+
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
         x = random.randint(room.x1 + 1, room.x2 - 1)
