@@ -609,7 +609,7 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         direction = self._direction
         dist2 = self._dist2
         monsters = sorted(
-            (dist2(px, py, a.x, a.y), a.name, direction(px, py, a.x, a.y))
+            (dist2(px, py, a.x, a.y), a.name, direction(px, py, a.x, a.y), a.is_asleep)
             for a in game_map.actors
             if a is not self.engine.player and visible[a.x, a.y]
         )
@@ -639,7 +639,9 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         lines: list[str] = []
         if monsters:
             lines.append("Monsters:")
-            lines.extend(f"  {name} {d}" for _, name, d in monsters)
+            for _, name, d, asleep in monsters:
+                suffix = " (S)" if asleep else ""
+                lines.append(f"  {name}{suffix} {d}")
         if corpses:
             if lines:
                 lines.append("")

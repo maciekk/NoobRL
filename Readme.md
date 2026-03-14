@@ -44,7 +44,7 @@ Ideas & efforts under way.
 - [ ] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
 - [ ] do kobolds or other fast movers move through closed doors??
 - [ ] does a popper explosion clear tall grass, like bombs?
-- [ ] the 'V' view command should ideally show status of each enemy (e.g., asleep)
+- [x] the 'V' view command should ideally show status of each enemy (e.g., asleep)
 - [ ] armour should have additoinal status possible
   - [ ] blessing or just +1 or +2 for defense conferred
   - [ ] rarely be armor of clairvoyance, monster detection, etc when worn
