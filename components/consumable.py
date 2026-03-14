@@ -693,7 +693,7 @@ class BombConsumable(Consumable):
         for tx in range(x - self.radius, x + self.radius + 1):
             for ty in range(y - self.radius, y + self.radius + 1):
                 if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
-                    if (game_map.in_bounds(tx, ty) and 
+                    if (game_map.in_bounds(tx, ty) and
                             game_map.tiles[tx, ty] == tile_types.tall_grass):
                         game_map.tiles[tx, ty] = tile_types.floor
                         grass_burned += 1

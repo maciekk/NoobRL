@@ -1,0 +1,259 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: bash -l
+  
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /home/maciek/src/NoobRL
+  
+  # Export additional ENV variables
+  env:
+    recording: true
+  
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 99
+  
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 49
+  
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+  
+  # Quality
+  # 1 - 100
+  quality: 100
+  
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+  
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: 2000
+  
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: Terminalizer
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+  
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+  
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+  
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+  
+  # The size of the font
+  fontSize: 12
+  
+  # The height of lines
+  lineHeight: 1
+  
+  # The spacing between letters
+  letterSpacing: 0
+  
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 219
+    content: "\e]133;A;cl=m;aid=77055\a\e]7;file://sovereign/home/maciek/src/NoobRL\e\\"
+  - delay: 8
+    content: "\e]3008;start=a0289098-d850-44e5-b4ea-f910486f76ad;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=shell;cwd=/home/maciek/src/NoobRL\e\\\e]0;maciek@sovereign:~/src/NoobRL\a\e[?2004h\r\n\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m \r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m "
+  - delay: 653
+    content: p
+  - delay: 161
+    content: 'y'
+  - delay: 95
+    content: t
+  - delay: 42
+    content: h
+  - delay: 69
+    content: o
+  - delay: 86
+    content: 'n'
+  - delay: 127
+    content: '3'
+  - delay: 142
+    content: ' '
+  - delay: 200
+    content: d
+  - delay: 115
+    content: a
+  - delay: 293
+    content: "\b\e[K"
+  - delay: 191
+    content: "\b\e[K"
+  - delay: 129
+    content: m
+  - delay: 101
+    content: a
+  - delay: 65
+    content: i
+  - delay: 72
+    content: 'n'
+  - delay: 158
+    content: .
+  - delay: 83
+    content: p
+  - delay: 202
+    content: 'y'
+  - delay: 217
+    content: "\r\n\e[?2004l\r\e]3008;start=925a64ab-bdf1-43e8-a12b-e389d0b43e59;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=command;cwd=/home/maciek/src/NoobRL\e\\"
+  - delay: 21
+    content: "Traceback (most recent call last):\r\n  File \e[35m\"/home/maciek/src/NoobRL/main.py\"\e[0m, line \e[35m5\e[0m, in \e[35m<module>\e[0m\r\n    \e[1;31mimport tcod\e[0m  # pylint: disable=import-error\r\n    \e[1;31m^^^^^^^^^^^\e[0m\r\n\e[1;35mModuleNotFoundError\e[0m: \e[35mNo module named 'tcod'\e[0m\r\n\e]133;D;1;aid=77055\a\e]133;A;cl=m;aid=77055\a\e]7;file://sovereign/home/maciek/src/NoobRL\e\\"
+  - delay: 11
+    content: "\e]3008;end=925a64ab-bdf1-43e8-a12b-e389d0b43e59;exit=failure;status=1\e\\\e]3008;start=a0289098-d850-44e5-b4ea-f910486f76ad;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=shell;cwd=/home/maciek/src/NoobRL\e\\\e]0;maciek@sovereign:~/src/NoobRL\a\e[?2004h\r\n\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m✗\e[0m \r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m✗\e[0m "
+  - delay: 5096
+    content: v
+  - delay: 93
+    content: e
+  - delay: 120
+    content: 'n'
+  - delay: 537
+    content: v
+  - delay: 336
+    content: /
+  - delay: 394
+    content: "\b\e[K"
+  - delay: 215
+    content: "\b\e[K"
+  - delay: 160
+    content: "\b\e[K"
+  - delay: 164
+    content: "\b\e[K"
+  - delay: 155
+    content: "\b\e[K\r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m✗\e[0m "
+  - delay: 146
+    content: s
+  - delay: 140
+    content: o
+  - delay: 67
+    content: u
+  - delay: 54
+    content: r
+  - delay: 67
+    content: c
+  - delay: 94
+    content: e
+  - delay: 159
+    content: ' '
+  - delay: 225
+    content: v
+  - delay: 96
+    content: e
+  - delay: 125
+    content: 'n'
+  - delay: 186
+    content: v
+  - delay: 252
+    content: /
+  - delay: 2955
+    content: b
+  - delay: 67
+    content: i
+  - delay: 55
+    content: 'n'
+  - delay: 178
+    content: /
+  - delay: 113
+    content: a
+  - delay: 52
+    content: c
+  - delay: 191
+    content: t
+  - delay: 88
+    content: i
+  - delay: 111
+    content: v
+  - delay: 125
+    content: a
+  - delay: 122
+    content: t
+  - delay: 63
+    content: e
+  - delay: 160
+    content: "\r\n\e[?2004l\r\e]3008;start=212671d1-25c9-4805-807d-5502b2efa05b;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=command;cwd=/home/maciek/src/NoobRL\e\\\e]133;C;\a\e]133;D;1;aid=77055\a\e]133;A;cl=m;aid=77055\a\e]7;file://sovereign/home/maciek/src/NoobRL\e\\"
+  - delay: 12
+    content: "\e]3008;end=212671d1-25c9-4805-807d-5502b2efa05b;exit=failure;status=1\e\\\e]3008;start=a0289098-d850-44e5-b4ea-f910486f76ad;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=shell;cwd=/home/maciek/src/NoobRL\e\\\e]0;maciek@sovereign:~/src/NoobRL\a\e[?2004h\r\n\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m✗\e[0m \r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m✗\e[0m "
+  - delay: 774
+    content: source venv/bin/activate
+  - delay: 272
+    content: "\r\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[C\e[9Ppython3 main.py"
+  - delay: 831
+    content: "\r\n\e[?2004l\r\e]3008;start=21036176-1c1e-4e25-a553-fd34584785f1;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=command;cwd=/home/maciek/src/NoobRL\e\\\e]133;C;\a"
+  - delay: 92
+    content: "<frozen importlib._bootstrap>:491: RuntimeWarning: Your system is avx2 capable but pygame was not built with support for it. The performance of some of your blits could be adversely affected. Consider enabling compile time detection with environment variables like PYGAME_DETECT_AVX2=1 if you are compiling without cross compilation.\r\n"
+  - delay: 6
+    content: "pygame 2.6.1 (SDL 2.32.64, Python 3.14.3)\r\nHello from the pygame community. https://www.pygame.org/contribute.html\r\n"
+  - delay: 49
+    content: "SYSTEM:App name: SDL Application\r\nSYSTEM:App version: <unspecified>\r\nSYSTEM:App ID: <unspecified>\r\nSYSTEM:SDL revision: SDL3-3.2.16-release-3.2.16\r\n"
+  - delay: 133
+    content: "RENDER:OpenGL shaders: ENABLED\r\nRENDER:Created renderer: opengl\r\n"
+  - delay: 28363
+    content: "Game saved.\r\n"
+  - delay: 178
+    content: "\e]133;D;0;aid=77055\a\e]133;A;cl=m;aid=77055\a\e]7;file://sovereign/home/maciek/src/NoobRL\e\\"
+  - delay: 13
+    content: "\e]3008;end=21036176-1c1e-4e25-a553-fd34584785f1;exit=success\e\\\e]3008;start=a0289098-d850-44e5-b4ea-f910486f76ad;machineid=baf0214b103747c3ab2beb8c72115342;user=maciek;hostname=sovereign;bootid=1622fc71-bb37-4079-b55d-19e66e723c8f;pid=00000000000000077055;type=shell;cwd=/home/maciek/src/NoobRL\e\\\e]0;maciek@sovereign:~/src/NoobRL\a\e[?2004h\r\n\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m \r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m "
+  - delay: 2434
+    content: "\a\r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m "
+  - delay: 365
+    content: "\a\r\e[1;36mNoobRL\e[0m \e[3;36mmaster\e[0m \e[36m? \e[1m❯\e[0m "
+  - delay: 2826
+    content: "\e[?2004l\r\r\nlogout\r\n"
