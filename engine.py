@@ -183,7 +183,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
 
         panel_y = self.viewport_height
         self.message_log.render(
-            console=console, x=21, y=panel_y + 1, width=console.width - 21, height=5
+            console=console, x=30, y=panel_y + 1, width=console.width - 30, height=5
         )
 
         render_functions.render_bar(
@@ -214,10 +214,18 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             location=(1, panel_y + 3),
         )
         render_functions.render_names_at_mouse_location(
-            console=console, x=21, y=panel_y, engine=self
+            console=console, x=30, y=panel_y, engine=self
         )
         y = panel_y + 4
-        console.print(x=1, y=y, string=f"Turn: {self.turn}")
+        p = self.player
+        stats = (
+            f"T:{self.turn}"
+            f" L:{p.level.current_level}"
+            f" P:{p.fighter.power}"
+            f" D:{p.fighter.defense}"
+            f" S:{p.base_speed}"
+        )
+        console.print(x=0, y=y, string=stats)
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
         console.print(x=1, y=y + 1, string=s)
 
