@@ -208,26 +208,27 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             y=panel_y + 2,
             total_width=20,
         )
-        render_functions.render_dungeon_level(
-            console=console,
-            dungeon_level=self.game_world.current_floor,
-            location=(1, panel_y + 3),
+        p = self.player
+        console.print(
+            x=1,
+            y=panel_y + 3,
+            string=f"DLv:{self.game_world.current_floor} PLv:{p.level.current_level} T:{self.turn}",
         )
         render_functions.render_names_at_mouse_location(
             console=console, x=30, y=panel_y, engine=self
         )
         y = panel_y + 4
-        p = self.player
         stats = (
-            f"T:{self.turn}"
-            f" L:{p.level.current_level}"
-            f" P:{p.fighter.power}"
+            f"P:{p.fighter.power}"
             f" D:{p.fighter.defense}"
             f" S:{p.base_speed}"
         )
-        console.print(x=0, y=y, string=stats)
+        console.print(x=1, y=y, string=stats)
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
         console.print(x=1, y=y + 1, string=s)
+        if options.show_viewport_offset:
+            label = f"({self.camera_x},{self.camera_y})"
+            console.print(x=console.width - len(label), y=0, string=label)
 
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""

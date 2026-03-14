@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import time
-from typing import Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import color
 import tile_types
@@ -93,17 +93,6 @@ def render_bar(  # pylint: disable=too-many-arguments,too-many-positional-argume
         string=f"{name}: {current_value}/{maximum_value}",
         fg=color.bar_text,
     )
-
-
-def render_dungeon_level(
-    console: Console, dungeon_level: int, location: Tuple[int, int]
-) -> None:
-    """
-    Render the level the player is currently on, at the given location.
-    """
-    x, y = location
-
-    console.print(x=x, y=y, string=f"Dungeon level: {dungeon_level}")
 
 
 def render_names_at_mouse_location(

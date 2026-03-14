@@ -25,3 +25,6 @@ n_rows = 34
 # World map dimensions. Can be larger than the viewport (n_cols × (n_rows-7)).
 map_width = 160
 map_height = 54
+
+# Overlay camera offset (x,y) in the upper-right corner of the dungeon display.
+show_viewport_offset = True
