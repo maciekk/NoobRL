@@ -41,18 +41,18 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
-- [ ] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
+- [x] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
 - [ ] do kobolds or other fast movers move through closed doors??
-- [ ] does a popper explosion clear tall grass, like bombs?
+- [x] does a popper explosion clear tall grass, like bombs?
 - [x] the 'V' view command should ideally show status of each enemy (e.g., asleep)
-- [ ] armour should have additoinal status possible
+- [ ] armour should have additional status possible
   - [ ] blessing or just +1 or +2 for defense conferred
   - [ ] rarely be armor of clairvoyance, monster detection, etc when worn
   - [ ] rarely increase a stat when worn
 - [ ] balance the level up stat gain mechanics
-- [ ] JSON-ify weapons; stats should not be in code
+- [x] JSON-ify weapons; stats should not be in code
 - [ ] ideally explosion animation should happen while sfx is playing
-- [ ] explosions should burn off tall grass
+- [x] explosions should burn off tall grass
 - [ ] slow down the digging wand ray animation?
 - [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
 - [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
@@ -67,12 +67,12 @@ Ideas & efforts under way.
 - [ ] track how many of a monster SEEN in a run? (if don't kill everything you see)
 - [ ] incremental monster knowledge (scales w/# killed)
 - [ ] maybe later add max stack size for consumables
-- [ ] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
+- [x] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
 
 ### Dungeon
 - [ ] locked doors (requiring keys or lockpicking)
-- [ ] scrollable map (i.e., map larger than rendered window) #next
+- [x] scrollable map (i.e., map larger than rendered window) #next
 - [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 
@@ -80,7 +80,7 @@ Ideas & efforts under way.
 - [ ] add: Popper - like Puffball, but smaller, low HP, low damage, small explosion (3 turns?)... spawn in packs `#next`
 - [ ] add: Banshee (do not attack, but if seen, will scream and alert within a huge radius, e.g., 100 squares)
 - [ ] enemy special powers (Ex: speed, strength, invisibility, etc...)
-- [ ] enemies should sometimes drop loot when killed (is corpse part of drop?)
+- [ ] enemies should sometimes drop loot when killed (is corpse part of drop?); gold coins?
 - [ ] find something useful to do with monster corpses (food? crafting?)
 
 ### Weapons & Armour
@@ -109,12 +109,14 @@ Ideas & efforts under way.
 
 ### UI
 - [ ] use different, appropriate sfx for wizard attack
+- [ ] sfx needed: fall through trap door
+- [ ] sfx needed: squeaky board
 
 ### Miscellaneous
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 - [ ] JSON-ify: spells?
-- [ ] JSON-ify: loot drop tables?
+- [x] JSON-ify: loot drop tables?
 - [ ] JSON-ify: tile_types.py
 - [x] balance game, avoid becoming god too early; levels ups should occur exponentially further
 
