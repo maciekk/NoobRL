@@ -41,6 +41,14 @@ Perhaps this could be like a race trait that player could choose at start.
 Ideas & efforts under way.
 
 ### FIXES
+- [ ] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
+- [ ] do kobolds or other fast movers move through closed doors??
+- [ ] does a popper explosion clear tall grass, like bombs?
+- [ ] the 'V' view command should ideally show status of each enemy (e.g., asleep)
+- [ ] armour should have additoinal status possible
+  - [ ] blessing or just +1 or +2 for defense conferred
+  - [ ] rarely be armor of clairvoyance, monster detection, etc when worn
+  - [ ] rarely increase a stat when worn
 - [ ] balance the level up stat gain mechanics
 - [ ] JSON-ify weapons; stats should not be in code
 - [ ] ideally explosion animation should happen while sfx is playing
@@ -64,7 +72,7 @@ Ideas & efforts under way.
 
 ### Dungeon
 - [ ] locked doors (requiring keys or lockpicking)
-- [ ] scrollable map (i.e., map larger than rendered window)
+- [ ] scrollable map (i.e., map larger than rendered window) #next
 - [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 
