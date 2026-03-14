@@ -215,3 +215,53 @@ class GameWorld:  # pylint: disable=too-few-public-methods
             from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
 
             apply_clairvoyance(self.engine)
+
+
+def apply_explosion(
+    engine: "Engine",
+    x: int,
+    y: int,
+    radius: int,
+    damage: int,
+    exclude=None,
+    hit_message=None,
+    hit_color=None,
+) -> tuple:
+    """Apply an explosion at (x, y): animate, damage actors, clear tall grass.
+
+    exclude: collection of actors to skip (e.g. the exploding entity itself).
+    hit_message: callable(actor_name: str) -> str for per-actor log messages.
+    hit_color: color for hit messages (defaults to white).
+
+    Returns (actors_hit: int, grass_burned: int).
+    """
+    import input_handlers as _ih  # pylint: disable=import-outside-toplevel
+    if _ih.context is not None and _ih.root_console is not None:
+        from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
+        animate_explosion(engine, x, y, radius, _ih.root_console, _ih.context)
+
+    import color as _color  # pylint: disable=import-outside-toplevel
+    if hit_color is None:
+        hit_color = _color.white
+    exclude = set(exclude) if exclude else set()
+
+    game_map = engine.game_map
+    actors_hit = 0
+    for actor in list(game_map.actors):
+        if actor in exclude:
+            continue
+        if actor.distance(x, y) <= radius:
+            if hit_message is not None:
+                engine.message_log.add_message(hit_message(actor.name), hit_color)
+            actor.fighter.take_damage(damage)
+            actors_hit += 1
+
+    grass_burned = 0
+    for tx in range(x - radius, x + radius + 1):
+        for ty in range(y - radius, y + radius + 1):
+            if (tx - x) ** 2 + (ty - y) ** 2 <= radius ** 2:
+                if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.tall_grass:
+                    game_map.tiles[tx, ty] = tile_types.floor
+                    grass_burned += 1
+
+    return actors_hit, grass_burned

@@ -512,26 +512,17 @@ class FireballDamageConsumable(Consumable):
         )
 
     def activate(self, action: actions.ItemAction) -> None:
+        from game_map import apply_explosion  # pylint: disable=import-outside-toplevel
         target_xy = action.target_xy
-
-        for actor in self.engine.game_map.actors:
-            if actor.distance(*target_xy) <= self.radius:
-                self.engine.message_log.add_message(
-                    f"The {actor.name} is engulfed in a fiery explosion,"
-                    f" taking {self.damage} damage!"
-                )
-                actor.fighter.take_damage(self.damage)
-
         x, y = target_xy
-        game_map = self.engine.game_map
-        grass_burned = 0
-        for tx in range(x - self.radius, x + self.radius + 1):
-            for ty in range(y - self.radius, y + self.radius + 1):
-                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
-                    if (game_map.in_bounds(tx, ty) and
-                            game_map.tiles[tx, ty] == tile_types.tall_grass):
-                        game_map.tiles[tx, ty] = tile_types.floor
-                        grass_burned += 1
+        damage = self.damage
+
+        _, grass_burned = apply_explosion(
+            self.engine, x, y, self.radius, damage,
+            hit_message=lambda name: (
+                f"The {name} is engulfed in a fiery explosion, taking {damage} damage!"
+            ),
+        )
         if grass_burned > 0:
             self.engine.message_log.add_message(
                 "The flames scorch the vegetation!", color.player_atk
@@ -674,36 +665,21 @@ class BombConsumable(Consumable):
 
     def explode(self, x: int, y: int, game_map, engine) -> None:
         """Explode at the given location, damaging all actors in radius."""
-        import input_handlers as _ih
-        if _ih.context is not None and _ih.root_console is not None:
-            animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
-
-        targets_hit = False
-        for actor in game_map.actors:
-            if actor.distance(x, y) <= self.radius:
-                engine.message_log.add_message(
-                    f"The {actor.name} is caught in the blast,"
-                    f" suffering {self.damage} damage!",
-                    color.player_atk,
-                )
-                actor.fighter.take_damage(self.damage)
-                targets_hit = True
-
-        grass_burned = 0
-        for tx in range(x - self.radius, x + self.radius + 1):
-            for ty in range(y - self.radius, y + self.radius + 1):
-                if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
-                    if (game_map.in_bounds(tx, ty) and
-                            game_map.tiles[tx, ty] == tile_types.tall_grass):
-                        game_map.tiles[tx, ty] = tile_types.floor
-                        grass_burned += 1
-
+        from game_map import apply_explosion  # pylint: disable=import-outside-toplevel
+        damage = self.damage
+        actors_hit, grass_burned = apply_explosion(
+            engine, x, y, self.radius, damage,
+            hit_message=lambda name: (
+                f"The {name} is caught in the blast, suffering {damage} damage!"
+            ),
+            hit_color=color.player_atk,
+        )
         engine.emit_sound((x, y), SoundTravel.BOMB)
         if grass_burned > 0:
             engine.message_log.add_message(
                 "The blast scorches the vegetation!", color.player_atk
             )
-        if not targets_hit and grass_burned == 0:
+        if not actors_hit and not grass_burned:
             engine.message_log.add_message(
                 "The bomb explodes, but no one is caught in the blast!",
                 color.white,

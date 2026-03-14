@@ -118,37 +118,31 @@ class ExplodingCorpseAI(BaseAI):
 
     def explode(self) -> None:
         """Explode, damaging all nearby actors and removing the corpse from the map."""
+        from game_map import apply_explosion  # pylint: disable=import-outside-toplevel
         engine = self.engine
-        gamemap = engine.game_map
         x, y = self.entity.x, self.entity.y
 
         # Defuse self first to prevent re-triggering during chain reactions
         self.entity.ai = None
-
-        import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-        if _ih.context is not None and _ih.root_console is not None:
-            from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
-            animate_explosion(engine, x, y, self.radius, _ih.root_console, _ih.context)
 
         engine.message_log.add_message("BOOM!", color.enemy_atk)
         engine.message_log.add_message(
             f"The {self.entity.name} explodes!", color.enemy_atk
         )
 
-        # Damage all actors in radius (including player), excluding self
-        for actor in set(gamemap.actors) | {engine.player}:
-            if actor is self.entity:
-                continue
-            if actor.distance(x, y) <= self.radius:
-                engine.message_log.add_message(
-                    f"The {actor.name} is hit by the explosion for {self.damage} damage!",
-                    color.enemy_atk,
-                )
-                actor.fighter.take_damage(self.damage)
+        damage = self.damage
+        _, grass_burned = apply_explosion(
+            engine, x, y, self.radius, damage,
+            exclude={self.entity},
+            hit_message=lambda name: f"The {name} is hit by the explosion for {damage} damage!",
+            hit_color=color.enemy_atk,
+        )
+        if grass_burned:
+            engine.message_log.add_message("The explosion burns away the grass!", color.enemy_atk)
 
         # Remove the corpse from the map
-        if self.entity in gamemap.entities:
-            gamemap.entities.remove(self.entity)
+        if self.entity in engine.game_map.entities:
+            engine.game_map.entities.remove(self.entity)
 
 
 class HostileEnemy(BaseAI):
