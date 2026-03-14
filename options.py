@@ -17,3 +17,7 @@ grass_patch_chance = 0.1
 
 # Show the sound wave ripple animation when a noise is made.
 show_sound = True
+
+# Terminal size in tiles. Larger values give more visible world.
+n_cols = 120
+n_rows = 50

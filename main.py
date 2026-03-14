@@ -21,8 +21,8 @@ def save_game(handler: input_handlers.BaseEventHandler, filename: str) -> None:
 
 def main() -> None:
     """Run the main game loop."""
-    n_cols = 120
-    n_rows = 50
+    n_cols = options.n_cols
+    n_rows = options.n_rows
 
     # Set to '2' (for small tileset on high-res monitors).
     scale_factor = 1
