@@ -431,6 +431,18 @@ class MovementAction(ActionWithDirection):
 
         self.entity.move(self.dx, self.dy)
 
+        # Check for traps at new position (player only)
+        if self.entity is self.engine.player:
+            new_x, new_y = self.entity.x, self.entity.y
+            for ent in list(self.engine.game_map.entities):
+                if (
+                    hasattr(ent, "trap_type")
+                    and ent.x == new_x
+                    and ent.y == new_y
+                ):
+                    ent.trigger(self.engine)
+                    break
+
 
 class BumpAction(ActionWithDirection):
     """Context-sensitive action: attack if actor present, else move."""

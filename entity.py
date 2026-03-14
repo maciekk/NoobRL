@@ -269,6 +269,47 @@ class Chest(Entity):
             )
 
 
+class Trap(Entity):
+    """A hidden trap that activates when the player steps on it."""
+
+    def __init__(
+        self,
+        *,
+        x: int = 0,
+        y: int = 0,
+        trap_type: str = "trapdoor",
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            char="^",
+            color=(139, 90, 43),
+            name=f"{trap_type} trap",
+            blocks_movement=False,
+            render_order=RenderOrder.ITEM,
+        )
+        self.trap_type = trap_type
+        self.is_revealed = False
+
+    def trigger(self, engine) -> None:
+        """Reveal and activate this trap."""
+        import color as _color  # pylint: disable=import-outside-toplevel
+
+        self.is_revealed = True
+
+        if self.trap_type == "trapdoor":
+            floors = random.randint(1, 3)
+            engine.message_log.add_message(
+                "You fall through a trapdoor!", _color.descend
+            )
+            engine.game_world.current_floor += floors
+            engine.game_world.generate_floor(direction=0, trapdoor=True)
+            engine.message_log.add_message(
+                f"You land on dungeon level {engine.game_world.current_floor}.",
+                _color.descend,
+            )
+
+
 class Item(Entity):
     """An item entity that can be picked up, used, or equipped."""
 

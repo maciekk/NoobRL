@@ -152,7 +152,9 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
             ):
                 should_render = True
 
-            if should_render:
+            if should_render and not (
+                hasattr(entity, "is_revealed") and not entity.is_revealed
+            ):
                 fg = entity.display_color if isinstance(entity, Item) else entity.color
                 if entity is engine.player and entity.is_invisible:
                     fg = (100, 100, 100)
@@ -192,7 +194,7 @@ class GameWorld:  # pylint: disable=too-few-public-methods
 
         self.current_floor = current_floor
 
-    def generate_floor(self, direction: int = 1) -> None:
+    def generate_floor(self, direction: int = 1, trapdoor: bool = False) -> None:
         """Generate a new dungeon floor and apply any persistent map effects."""
         from procgen import generate_dungeon  # pylint: disable=import-outside-toplevel
 
@@ -206,6 +208,7 @@ class GameWorld:  # pylint: disable=too-few-public-methods
             map_height=self.map_height,
             engine=self.engine,
             ascending=direction < 0,
+            trapdoor=trapdoor,
         )
 
         from components.equippable import AmuletOfClairvoyance  # pylint: disable=import-outside-toplevel

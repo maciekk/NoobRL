@@ -608,6 +608,36 @@ class LightningDamageConsumable(Consumable):
             raise Impossible("No enemy is close enough to strike.")
 
 
+class DetectTrapsConsumable(Consumable):
+    """Reveals all traps within the player's line of sight."""
+
+    def get_description(self) -> list[str]:
+        return ["Reveals traps in line of sight"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        from entity import Trap  # pylint: disable=import-outside-toplevel
+
+        engine = self.engine
+        game_map = engine.game_map
+        player = engine.player
+        found = 0
+        for entity in game_map.entities:
+            if isinstance(entity, Trap) and not entity.is_revealed:
+                if game_map.visible[entity.x, entity.y]:
+                    entity.is_revealed = True
+                    found += 1
+        if found:
+            engine.message_log.add_message(
+                f"You sense {found} trap{'s' if found != 1 else ''} nearby!",
+                color.status_effect_applied,
+            )
+        else:
+            engine.message_log.add_message(
+                "You sense no traps nearby.", color.status_effect_applied
+            )
+        self.consume()
+
+
 class DetectMonsterConsumable(Consumable):
     """Reveals all monsters on the map for a set duration."""
 

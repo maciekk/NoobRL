@@ -70,6 +70,19 @@
         }
     },
     {
+        "id": "s_detect_traps",
+        "name": "scroll of Detect Traps",
+        "char": "?",
+        "color": [
+            139,
+            90,
+            43
+        ],
+        "consumable": {
+            "name": "DetectTrapsConsumable"
+        }
+    },
+    {
         "id": "s_identify",
         "name": "scroll of Identification",
         "char": "?",

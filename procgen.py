@@ -14,7 +14,7 @@ import options
 import tile_types
 from components.effect import SleepEffect
 from dice import roll
-from entity import Actor, Chest
+from entity import Actor, Chest, Trap
 from game_map import GameMap
 
 if TYPE_CHECKING:
@@ -173,6 +173,13 @@ def place_entities(  # pylint: disable=too-many-locals
                     spawned.effects.append(eff)
                     eff.parent = spawned
                     eff.activate()
+
+    # 15% chance to place a trapdoor trap in the room.
+    if random.random() < 0.15:
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        if not any(e.x == x and e.y == y for e in dungeon.entities):
+            Trap(trap_type="trapdoor").spawn(dungeon, x, y)
 
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
@@ -381,6 +388,7 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
     map_height: int,
     engine: Engine,
     ascending: bool = False,
+    trapdoor: bool = False,
 ) -> GameMap:
     """Generate a new dungeon map."""
     player = engine.player
@@ -447,6 +455,18 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
         if engine.game_world.current_floor > 1:
             dungeon.tiles[center_of_last_room] = tile_types.up_stairs
             dungeon.upstairs_location = center_of_last_room
+    elif trapdoor:
+        # Fell through trapdoor: downstairs at far end, upstairs in a random
+        # room that is NOT the first room (where the player lands).
+        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
+        dungeon.downstairs_location = center_of_last_room
+        if engine.game_world.current_floor > 1:
+            other_rooms = rooms[1:] if len(rooms) > 1 else rooms
+            # Prefer not putting upstairs in the last room (has downstairs) if avoidable
+            candidates = other_rooms[:-1] if len(other_rooms) > 1 else other_rooms
+            up_room = random.choice(candidates)
+            dungeon.tiles[up_room.center] = tile_types.up_stairs
+            dungeon.upstairs_location = up_room.center
     else:
         # Came from above (or initial): downstairs at far end, upstairs at spawn.
         dungeon.tiles[center_of_last_room] = tile_types.down_stairs

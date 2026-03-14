@@ -1,6 +1,6 @@
 {
   "0": [["p_heal", 35], ["dart", 20], ["leather_armor", 8], ["dagger", 5]],
-  "2": [["s_confusion", 10], ["s_identify", 15], ["s_blink", 15]],
+  "2": [["s_confusion", 10], ["s_identify", 15], ["s_blink", 15], ["s_detect_traps", 12]],
   "3": [["p_damage", 1], ["p_invisibility", 5], ["p_speed", 5], ["s_teleport", 12], ["bomb", 10], ["fertilizer_bomb", 8]],
   "4": [["s_lightning", 25], ["sword", 5], ["p_clairvoyance", 5], ["wand_lightning", 8], ["wand_digging", 10]],
   "5": [["long_sword", 3], ["p_damage", 3], ["amulet_clairvoyance", 5], ["amulet_detect_monster", 5]],

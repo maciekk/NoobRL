@@ -19,6 +19,7 @@ from input_handlers import (
 )
 
 CHEST_OF_WONDER_ID = "__chest_of_wonder__"
+TRAPDOOR_ID = "__trapdoor__"
 
 _POTIONS = [
     "p_heal", "p_damage", "p_clairvoyance", "p_invisibility",
@@ -148,6 +149,16 @@ def find_cluster_positions(
     return positions
 
 
+def spawn_trapdoor(game_map: GameMap, x: int, y: int) -> None:
+    """Spawn a trapdoor trap at the given location."""
+    from entity import Trap  # pylint: disable=import-outside-toplevel
+
+    trap = Trap(trap_type="trapdoor")
+    trap.spawn(game_map, x, y)
+    sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+    game_map.engine.message_log.add_message("A trapdoor trap appears!")
+
+
 def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
     """Clone entity by ID, adding items to inventory or placing monsters on the map."""
     if entity_id in game_map.engine.item_manager.items:
@@ -181,6 +192,8 @@ def find_matches(engine: Engine, query: str) -> List[Tuple[str, str]]:
             matches.append((entity_id, monster.name))
     if q in "chest of wonder":
         matches.append((CHEST_OF_WONDER_ID, "Chest of Wonder"))
+    if q in "trapdoor trap":
+        matches.append((TRAPDOOR_ID, "Trapdoor Trap"))
     return sorted(matches, key=lambda x: x[1])
 
 
@@ -231,6 +244,8 @@ class DebugHandler(AskUserEventHandler):
                 if entity_id == CHEST_OF_WONDER_ID:
                     spawn_chest_of_wonder(self.engine.game_map)
                     return MainGameEventHandler(self.engine)
+                if entity_id == TRAPDOOR_ID:
+                    return DebugPlaceTrapHandler(self.engine)
                 if entity_id in self.engine.monster_manager.monsters:
                     return DebugPlaceMonsterHandler(self.engine, entity_id, name, count)
                 label = f"{count}x {name}" if count > 1 else name
@@ -281,6 +296,8 @@ class DebugSelectHandler(ListSelectionHandler):
         if entity_id == CHEST_OF_WONDER_ID:
             spawn_chest_of_wonder(self.engine.game_map)
             return MainGameEventHandler(self.engine)
+        if entity_id == TRAPDOOR_ID:
+            return DebugPlaceTrapHandler(self.engine)
         if entity_id in self.engine.monster_manager.monsters:
             return DebugPlaceMonsterHandler(self.engine, entity_id, name, self.count)
         label = f"{self.count}x {name}" if self.count > 1 else name
@@ -316,4 +333,16 @@ class DebugPlaceMonsterHandler(SelectIndexHandler):
         self.engine.message_log.add_message(f"Spawning {label}.")
         for px, py in positions:
             spawn_entity(self.entity_id, self.engine.game_map, px, py)
+        return MainGameEventHandler(self.engine)
+
+
+class DebugPlaceTrapHandler(SelectIndexHandler):
+    """Lets the user choose where to place a debug-spawned trap."""
+
+    def __init__(self, engine: Engine):
+        super().__init__(engine)
+        engine.message_log.add_message("Where do you want to place the trapdoor trap?")
+
+    def on_index_selected(self, x: int, y: int):
+        spawn_trapdoor(self.engine.game_map, x, y)
         return MainGameEventHandler(self.engine)

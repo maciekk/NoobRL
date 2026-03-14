@@ -35,6 +35,7 @@ CONSUMABLE_MAP = {
     "FertilizerBombConsumable": consumable.FertilizerBombConsumable,
     "BlindnessConsumable": consumable.BlindnessConsumable,
     "IdentificationConsumable": consumable.IdentificationConsumable,
+    "DetectTrapsConsumable": consumable.DetectTrapsConsumable,
 }
 EQUIPPABLE_MAP = {
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
