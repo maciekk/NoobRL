@@ -26,6 +26,7 @@ from actions import (
 )
 import color
 import exceptions
+import recorder as recorder_module
 import tile_types
 from entity import Actor, Item
 from equipment_types import EquipmentType
@@ -181,6 +182,15 @@ class EventHandler(BaseEventHandler):
 
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle events and dispatch actions; check for death and level-up conditions."""
+        # Record keystrokes (exclude debug handlers and the @ key that opens them)
+        if (
+            isinstance(event, tcod.event.KeyDown)
+            and recorder_module.active_recorder is not None
+            and type(self).__module__ != "debug"
+            and not (event.sym == tcod.event.KeySym.N2
+                     and event.mod & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT))
+        ):
+            recorder_module.active_recorder.record_key(event.sym, event.mod)
         try:
             action_or_state = self.dispatch(event)
         except exceptions.Impossible as exc:

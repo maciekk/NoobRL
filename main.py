@@ -7,6 +7,7 @@ import tcod  # pylint: disable=import-error
 import color
 import exceptions
 import input_handlers
+import recorder as recorder_module
 import options
 import setup_game
 import tilesets
@@ -49,11 +50,27 @@ def main() -> None:
                 context.present(root_console, keep_aspect=True, integer_scaling=False)
 
                 try:
-                    for event in tcod.event.wait():
-                        # Populates TILE-based coords into the event, based on
-                        # extant PIXEL-based ones.
-                        context.convert_event(event)
-                        handler = handler.handle_events(event)
+                    if recorder_module.playback_active:
+                        import time  # pylint: disable=import-outside-toplevel
+                        delay = getattr(handler, "playback_delay", 0.1)
+                        time.sleep(delay)
+                        # Poll for real input (non-blocking) so Escape can abort
+                        for event in tcod.event.get():
+                            context.convert_event(event)
+                            if (
+                                isinstance(event, tcod.event.KeyDown)
+                                and event.sym == tcod.event.KeySym.ESCAPE
+                            ):
+                                handler = handler.handle_events(event)
+                                break
+                        else:
+                            handler = handler.handle_events(None)
+                    else:
+                        for event in tcod.event.wait():
+                            # Populates TILE-based coords into the event, based on
+                            # extant PIXEL-based ones.
+                            context.convert_event(event)
+                            handler = handler.handle_events(event)
                 except Exception:  # pylint: disable=broad-exception-caught  # Handle exceptions in game.
                     traceback.print_exc()  # Print error to stderr.
                     # Then print the error to the message log.

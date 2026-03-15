@@ -15,6 +15,7 @@ from location import Location
 from managers import ItemManager, MonsterManager
 import exceptions
 import options
+import recorder as recorder_module
 from message_log import MessageLog
 import render_functions
 
@@ -153,7 +154,10 @@ class Engine:  # pylint: disable=too-many-instance-attributes
 
     def handle_enemy_turns(self) -> None:
         """Process AI actions for all non-player actors."""
-        for entity in set(self.game_map.actors) - {self.player}:
+        for entity in sorted(
+            (e for e in self.game_map.actors if e is not self.player),
+            key=lambda e: (e.x, e.y, e.name),
+        ):
             if entity.ai:
                 entity.energy += entity.speed
                 while entity.energy >= 100 and entity.ai:
@@ -229,6 +233,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         if options.show_viewport_offset:
             label = f"({self.camera_x},{self.camera_y})"
             console.print(x=console.width - len(label), y=0, string=label)
+        recorder_module.render_overlay(console)
 
     def save_as(self, filename: str) -> None:
         """Save this Engine instance as a compressed file."""
@@ -306,7 +311,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
 
     def apply_timed_effects(self) -> None:
         """Apply per-turn logic for all active timed effects on actors."""
-        for entity in set(self.game_map.actors):
+        for entity in sorted(self.game_map.actors, key=lambda e: (e.x, e.y, e.name)):
             for eff in entity.effects:
                 eff.apply_turn()
 

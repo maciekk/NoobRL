@@ -7,12 +7,19 @@ from typing import List, Tuple
 
 import tcod  # pylint: disable=import-error
 
+import actions
 import color
+import exceptions
+import recorder as recorder_module
 import sounds
 from engine import Engine
 from game_map import GameMap
 from input_handlers import (
     AskUserEventHandler,
+    BaseEventHandler,
+    EventHandler,
+    GameOverEventHandler,
+    LevelUpEventHandler,
     ListSelectionHandler,
     MainGameEventHandler,
     SelectIndexHandler,
@@ -216,7 +223,8 @@ class DebugHandler(AskUserEventHandler):
             x = 0
 
         y = 0
-        width = 38
+        prompt = f"Enter entity to spawn: {self.buffer}"
+        width = max(38, len(prompt) + 3)
 
         console.draw_frame(
             x=x,
@@ -228,13 +236,18 @@ class DebugHandler(AskUserEventHandler):
             fg=(255, 255, 255),
             bg=(0, 0, 0),
         )
-        console.print(x=x + 1, y=y + 1, string=f"Enter entity to spawn: {self.buffer}")
+        console.print(x=x + 1, y=y + 1, string=prompt)
 
     def ev_keydown(  # pylint: disable=too-many-return-statements,too-many-branches
         self, event: tcod.event.KeyDown
     ):
         key = event.sym
         if key == tcod.event.KeySym.RETURN:
+            # Handle record commands before entity spawning.
+            buf = self.buffer.strip()
+            if buf.startswith("record "):
+                return self._handle_record_command(buf)
+
             query, count = parse_query(self.buffer)
             if not query:
                 return MainGameEventHandler(self.engine)
@@ -273,11 +286,131 @@ class DebugHandler(AskUserEventHandler):
         else:
             try:
                 c = chr(key)
-                if c.isalnum() or c == "_":
+                if c.isalnum() or c in "_./":
                     self.buffer += c
             except (ValueError, OverflowError):
                 pass
         return None
+
+    def _handle_record_command(self, buf: str):
+        """Process 'record start/stop/play' debug commands."""
+        parts = buf.split(None, 2)
+        subcmd = parts[1] if len(parts) > 1 else ""
+
+        if subcmd == "start":
+            filename = parts[2] if len(parts) > 2 else "recording.rec"
+            if recorder_module.active_recorder is not None:
+                self.engine.message_log.add_message(
+                    "Previous recording discarded."
+                )
+            recorder_module.active_recorder = recorder_module.Recorder(
+                self.engine, filename
+            )
+            self.engine.message_log.add_message(
+                f"Recording started → {filename}"
+            )
+            return MainGameEventHandler(self.engine)
+
+        if subcmd == "stop":
+            rec = recorder_module.active_recorder
+            if rec is None:
+                self.engine.message_log.add_message("No active recording.")
+                return MainGameEventHandler(self.engine)
+            rec.save()
+            recorder_module.active_recorder = None
+            self.engine.message_log.add_message(
+                f"Recording saved → {rec.filename}"
+            )
+            return MainGameEventHandler(self.engine)
+
+        if subcmd == "play":
+            filename = parts[2] if len(parts) > 2 else "recording.rec"
+            try:
+                engine, rand_state, keystrokes = recorder_module.load_recording(
+                    filename
+                )
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                self.engine.message_log.add_message(f"Load failed: {exc}")
+                return MainGameEventHandler(self.engine)
+            import random as rand_mod  # pylint: disable=import-outside-toplevel
+            rand_mod.setstate(rand_state)
+            recorder_module.playback_active = True
+            engine.message_log.add_message(
+                f"Playing back {len(keystrokes)} keystrokes from {filename}"
+            )
+            return PlaybackHandler(engine, keystrokes)
+
+        self.engine.message_log.add_message(
+            "Usage: record start|stop|play [filename]"
+        )
+        return MainGameEventHandler(self.engine)
+
+
+class PlaybackHandler(EventHandler):
+    """Replays recorded keystrokes, delegating to the wrapped handler."""
+
+    DELAY_NORMAL = 0.1
+    DELAY_MENU = 1.0
+
+    def __init__(self, engine: Engine, keystrokes: List[Tuple[int, int]]):
+        super().__init__(engine)
+        self.keystrokes = keystrokes
+        self.index = 0
+        self.current_handler = MainGameEventHandler(engine)
+
+    @property
+    def playback_delay(self) -> float:
+        """Return a longer delay when a menu/dialog is on screen."""
+        if isinstance(self.current_handler, AskUserEventHandler):
+            return self.DELAY_MENU
+        return self.DELAY_NORMAL
+
+    def handle_events(self, event) -> "BaseEventHandler":
+        """Ignore real input (except Escape); feed next recorded keystroke."""
+        # Allow aborting playback with Escape
+        if (
+            event is not None
+            and isinstance(event, tcod.event.KeyDown)
+            and event.sym == tcod.event.KeySym.ESCAPE
+        ):
+            recorder_module.playback_active = False
+            self.engine.message_log.add_message("Playback aborted.")
+            return MainGameEventHandler(self.engine)
+
+        if self.index >= len(self.keystrokes):
+            recorder_module.playback_active = False
+            self.engine.message_log.add_message("Playback complete.")
+            return MainGameEventHandler(self.engine)
+
+        sym, mod = self.keystrokes[self.index]
+        self.index += 1
+        synthetic = recorder_module.SyntheticKeyDown(sym=sym, mod=mod)
+
+        # Call ev_keydown directly (tcod dispatch routes by class name,
+        # which won't match our SyntheticKeyDown dataclass).
+        handler = self.current_handler
+        try:
+            action_or_state = handler.ev_keydown(synthetic)
+        except exceptions.Impossible:
+            return self
+        if isinstance(action_or_state, BaseEventHandler):
+            self.current_handler = action_or_state
+        elif isinstance(action_or_state, actions.Action):
+            handler.handle_action(action_or_state)
+            # Check for death / level-up like EventHandler.handle_events does
+            if not self.engine.player.is_alive:
+                recorder_module.playback_active = False
+                return GameOverEventHandler(self.engine)
+            if self.engine.player.level.requires_level_up:
+                self.engine.message_log.add_message("You leveled up!", stack=False)
+                self.current_handler = LevelUpEventHandler(self.engine)
+            else:
+                self.current_handler = MainGameEventHandler(self.engine)
+        return self
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Delegate rendering to the current wrapped handler."""
+        self.current_handler.on_render(console)
 
 
 class DebugSelectHandler(ListSelectionHandler):
