@@ -25,9 +25,6 @@ def main() -> None:
     n_cols = options.n_cols
     n_rows = options.n_rows
 
-    # Set to '2' (for small tileset on high-res monitors).
-    scale_factor = 1
-
     tileset, scale_factor, _ = tilesets.load_sheet(options.tileset)
 
     handler = setup_game.MainMenu()
@@ -45,6 +42,20 @@ def main() -> None:
         input_handlers.root_console = root_console
         try:
             while True:
+                # Adjust columns to match window aspect ratio (keeps n_rows fixed).
+                try:
+                    rec_cols, rec_rows = context.recommended_console_size()
+                    if rec_rows > 0:
+                        new_cols = max(n_cols, int(rec_cols * n_rows / rec_rows))
+                    else:
+                        new_cols = n_cols
+                    if new_cols != root_console.width:
+                        root_console = tcod.console.Console(new_cols, n_rows, order="F")
+                        input_handlers.root_console = root_console
+                        options.n_cols = new_cols
+                except Exception:  # pylint: disable=broad-exception-caught
+                    pass
+
                 root_console.clear()
                 handler.on_render(console=root_console)
                 context.present(root_console, keep_aspect=True, integer_scaling=False)
