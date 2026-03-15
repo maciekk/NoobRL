@@ -231,8 +231,8 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
         console.print(x=1, y=y + 1, string=s)
         if options.show_viewport_offset:
-            label = f"({self.camera_x},{self.camera_y})"
-            console.print(x=console.width - len(label), y=0, string=label)
+            label = f"\u2192{self.camera_x} \u2193{self.camera_y}"
+            console.print(x=console.width - len(label), y=0, string=label, fg=(255, 255, 255), bg=(0, 0, 0))
         recorder_module.render_overlay(console)
 
     def save_as(self, filename: str) -> None:
