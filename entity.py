@@ -193,6 +193,7 @@ class Actor(Entity):  # pylint: disable=too-many-instance-attributes
         self.energy = 0
         self.is_hasted = False
         self.is_detecting_monsters = False
+        self.is_detecting_traps = False
         self.death_explosion = death_explosion
         self.sight_range = sight_range
 
@@ -240,6 +241,9 @@ class Chest(Entity):
         )
         self.opened = False
         self.stored_item_ids: List[str] = []
+        # Parallel list of (enchantment, enchantment_name) for each stored_item_id.
+        # None entries mean no enchantment.
+        self.stored_enchantment_data: List[Optional[Tuple[int, Optional[str]]]] = []
 
     def open(self, _opener: Actor) -> None:
         """Open the chest and spawn its pre-determined items."""
@@ -249,11 +253,16 @@ class Chest(Entity):
             raise exceptions.Impossible("This chest is already open.")
 
         names = []
-        for item_id in self.stored_item_ids:
+        for i, item_id in enumerate(self.stored_item_ids):
             template = self.gamemap.engine.item_manager.items.get(item_id)
             if template is None:
                 continue
             item = template.spawn(self.gamemap, self.x, self.y)
+            if i < len(self.stored_enchantment_data) and self.stored_enchantment_data[i] is not None:
+                enchantment, enchantment_name = self.stored_enchantment_data[i]
+                if item.equippable is not None:
+                    item.equippable.enchantment = enchantment
+                    item.equippable.enchantment_name = enchantment_name
             names.append(item.display_name)
 
         self.char = "_"
@@ -376,18 +385,33 @@ class Item(Entity):
     def display_name(self) -> str:
         """Return the anonymized name if unidentified, otherwise the true name."""
         if not self.item_id:
-            return self.name
-        gamemap = self.gamemap
-        if gamemap is None:
-            return self.name
-        engine = gamemap.engine
-        if self.item_id in engine.identified_items:
-            return self.name
-        if self.item_id in engine.scroll_aliases:
-            return f"scroll of {engine.scroll_aliases[self.item_id]}"
-        if self.item_id in engine.potion_aliases:
-            return f"{engine.potion_aliases[self.item_id]} potion"
-        return self.name
+            base_name = self.name
+        else:
+            gamemap = self.gamemap
+            if gamemap is None:
+                base_name = self.name
+            else:
+                engine = gamemap.engine
+                if self.item_id in engine.identified_items:
+                    base_name = self.name
+                elif self.item_id in engine.scroll_aliases:
+                    return f"scroll of {engine.scroll_aliases[self.item_id]}"
+                elif self.item_id in engine.potion_aliases:
+                    return f"{engine.potion_aliases[self.item_id]} potion"
+                else:
+                    base_name = self.name
+
+        if self.equippable:
+            _ENCHANTMENT_LABELS = {"clairvoyance": "Clairvoyance", "detect_monster": "Detect Monster", "trap_detection": "Trap Detection"}
+            name = base_name
+            if self.equippable.enchantment > 0:
+                name = f"+{self.equippable.enchantment} {name}"
+            if self.equippable.enchantment_name:
+                label = _ENCHANTMENT_LABELS.get(self.equippable.enchantment_name, self.equippable.enchantment_name)
+                name = f"{name} of {label}"
+            return name
+
+        return base_name
 
     @property
     def display_color(self) -> Tuple[int, int, int]:

@@ -35,6 +35,7 @@ class Equipment(BaseComponent):
 
         if self.armor is not None and self.armor.equippable is not None:
             bonus += self.armor.equippable.defense_bonus
+            bonus += self.armor.equippable.enchantment
 
         if self.amulet is not None and self.amulet.equippable is not None:
             bonus += self.amulet.equippable.defense_bonus
@@ -91,7 +92,7 @@ class Equipment(BaseComponent):
         setattr(self, slot, item)
 
         if add_message:
-            self.equip_message(item.name)
+            self.equip_message(item.display_name)
 
         if item.equippable:
             item.equippable.on_equip()
@@ -101,7 +102,7 @@ class Equipment(BaseComponent):
         current_item = getattr(self, slot)
 
         if add_message:
-            self.unequip_message(current_item.name)
+            self.unequip_message(current_item.display_name)
 
         if current_item and current_item.equippable:
             current_item.equippable.on_unequip()

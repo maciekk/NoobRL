@@ -350,6 +350,8 @@ class MeleeAction(ActionWithDirection):
             equippable = self.entity.equipment.weapon.equippable
             if equippable and equippable.damage_dice:
                 weapon_roll = dice.roll(equippable.damage_dice)
+            if equippable:
+                weapon_roll += equippable.enchantment
         attack_power = base_power + weapon_roll
         damage, is_crit = compute_damage(
             attack_power,
@@ -667,14 +669,15 @@ class ThrowAction(Action):
 
     def _compute_damage(self, item: Item) -> int:
         if item.equippable:
+            enchantment = item.equippable.enchantment
             if item.equippable.equipment_type == EquipmentType.THROWN:
                 if item.equippable.damage_dice:
-                    return dice.roll(item.equippable.damage_dice)
-                return item.equippable.power_bonus
+                    return dice.roll(item.equippable.damage_dice) + enchantment
+                return item.equippable.power_bonus + enchantment
             if item.equippable.equipment_type == EquipmentType.WEAPON:
                 if item.equippable.damage_dice:
-                    return max(1, dice.roll(item.equippable.damage_dice) // 2)
-                return max(1, item.equippable.power_bonus // 2)
+                    return max(1, dice.roll(item.equippable.damage_dice) // 2 + enchantment)
+                return max(1, item.equippable.power_bonus // 2 + enchantment)
         return 1
 
     def _apply_consumable_effect(

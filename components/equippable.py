@@ -21,18 +21,53 @@ class Equippable(BaseComponent):
         power_bonus: int = 0,
         defense_bonus: int = 0,
         damage_dice: str = "",
+        enchantment: int = 0,
+        enchantment_name: "str | None" = None,
     ):
         self.equipment_type = equipment_type
 
         self.power_bonus = power_bonus
         self.defense_bonus = defense_bonus
         self.damage_dice = damage_dice
+        self.enchantment = enchantment
+        self.enchantment_name = enchantment_name
 
     def on_equip(self) -> None:
         """Called when this equippable is equipped; can be overridden for special effects."""
+        if self.enchantment_name == "clairvoyance":
+            from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
+            apply_clairvoyance(self.engine)
+        elif self.enchantment_name == "detect_monster":
+            actor = self.parent.parent.parent
+            actor.is_detecting_monsters = True
+            self.engine.message_log.add_message(
+                "You sense the presence of monsters!",
+                (0xC0, 0xC0, 0xFF),
+            )
+        elif self.enchantment_name == "trap_detection":
+            actor = self.parent.parent.parent
+            actor.is_detecting_traps = True
+            self.engine.message_log.add_message(
+                "You feel aware of hidden dangers.",
+                (0xFF, 0xD7, 0x00),
+            )
 
     def on_unequip(self) -> None:
         """Called when this equippable is unequipped; can be overridden to reverse effects."""
+        if self.enchantment_name == "detect_monster":
+            actor = self.parent.parent.parent
+            actor.is_detecting_monsters = False
+            self.engine.message_log.add_message(
+                "Your monster sense fades.",
+                (0x80, 0x80, 0x80),
+            )
+        elif self.enchantment_name == "trap_detection":
+            actor = self.parent.parent.parent
+            actor.is_detecting_traps = False
+            self.engine.message_log.add_message(
+                "Your trap sense fades.",
+                (0x80, 0x80, 0x80),
+            )
 
 
 class AmuletOfClairvoyance(Equippable):

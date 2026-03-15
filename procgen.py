@@ -51,6 +51,23 @@ item_chances: SpawnTable = _load_chances("loot_table.json")
 enemy_chances: SpawnTable = _load_chances("enemy_table.json")
 
 
+def _maybe_enchant_item(item: "Entity", floor: int) -> None:
+    """Randomly apply +1/+2 enchantment and a rare special power to a spawned equippable."""
+    from equipment_types import EquipmentType  # pylint: disable=import-outside-toplevel
+    eq = getattr(item, "equippable", None)
+    if eq is None or eq.equipment_type not in (EquipmentType.WEAPON, EquipmentType.ARMOR):
+        return
+    p2 = min(0.10, max(0.0, (floor - 2) * 0.015))
+    p1 = 0.15
+    roll = random.random()
+    if roll < p2:
+        eq.enchantment = 2
+    elif roll < p2 + p1:
+        eq.enchantment = 1
+    if eq.equipment_type == EquipmentType.ARMOR and floor >= 4 and random.random() < 0.03:
+        eq.enchantment_name = random.choice(["clairvoyance", "detect_monster", "trap_detection"])
+
+
 def get_max_value_for_floor(
     max_value_by_floor: List[FloorThreshold], floor: int
 ) -> int:
@@ -166,6 +183,9 @@ def place_entities(  # pylint: disable=too-many-locals
                 continue
             spawned = entity.spawn(dungeon, x, y)
 
+            if entity in items:
+                _maybe_enchant_item(spawned, floor_number)
+
             # 20% chance for monsters to spawn asleep
             if entity in monsters and random.random() < 0.20:
                 if isinstance(spawned, Actor):
@@ -196,9 +216,20 @@ def place_entities(  # pylint: disable=too-many-locals
             num_items = roll("1d3") + 1
             floor = dungeon.engine.game_world.current_floor
             chosen = get_entities_at_random(dungeon.engine, item_chances, num_items, floor)
-            item_ids = [t.item_id for t in chosen if t is not None and hasattr(t, "item_id")]
+            item_ids = []
+            enchantment_data = []
+            for t in chosen:
+                if t is not None and hasattr(t, "item_id"):
+                    item_ids.append(t.item_id)
+                    _maybe_enchant_item(t, floor)
+                    eq = getattr(t, "equippable", None)
+                    if eq is not None:
+                        enchantment_data.append((eq.enchantment, eq.enchantment_name))
+                    else:
+                        enchantment_data.append(None)
             chest = Chest()
             chest.stored_item_ids = item_ids
+            chest.stored_enchantment_data = enchantment_data
             chest.spawn(dungeon, x, y)
 
 

@@ -152,8 +152,13 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
             ):
                 should_render = True
 
+            detecting_this_trap = (
+                engine.player.is_detecting_traps
+                and hasattr(entity, "trap_type")
+            )
             if should_render and not (
                 hasattr(entity, "is_revealed") and not entity.is_revealed
+                and not detecting_this_trap
             ):
                 fg = entity.display_color if isinstance(entity, Item) else entity.color
                 if entity is engine.player and entity.is_invisible:

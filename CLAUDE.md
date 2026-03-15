@@ -116,7 +116,7 @@ Engine is also the unit of **save/load** — the entire instance is pickled + lz
 Entity (x, y, char, color, name)
 ├── Actor — living beings (player, monsters)
 │     has: Fighter, AI, Inventory, Equipment, Level, effects[]
-│     has: base_speed, energy (speed system), is_invisible, is_hasted
+│     has: base_speed, energy (speed system), is_invisible, is_hasted, is_detecting_monsters, is_detecting_traps
 └── Item — objects
       has: Consumable OR Equippable, stack_count
 ```
@@ -133,7 +133,7 @@ All components inherit **`BaseComponent`**, which provides a `parent` reference 
 | **AI** | `HostileEnemy` (pathfinding, range-based melee/ranged), `ConfusedEnemy` (temporary random walk wrapper) |
 | **Inventory** | Item list, stack merging, capacity limit |
 | **Equipment** | Weapon/armor/amulet slots, computed power/defense bonuses from all equipped items |
-| **Equippable** | Per-item stats (power_bonus, defense_bonus), `on_equip()` hooks |
+| **Equippable** | Per-item stats (power_bonus, defense_bonus), plus `enchantment` (int, +1/+2 bonus) and `enchantment_name` (str, named power). `on_equip()`/`on_unequip()` apply/remove enchantment effects. |
 | **Consumable** | `get_action()` (may return a targeting handler), `activate()` (apply the effect), `consume()` (decrement stack). Subclasses: healing, fireball, confusion, lightning, rage, invisibility, speed, wishing |
 | **Level** | XP tracking, level-up thresholds, stat increase methods |
 | **TimedEffect** | Duration-based buffs: `activate()` → `apply_turn()` each turn → `expire()`. Subclasses toggle Actor flags (`is_invisible`, `is_hasted`) |
@@ -175,7 +175,8 @@ Rendering flows: `Engine.render()` → `GameMap.render()` (tiles via `np.select`
 - **Item stack_count in JSON**: Set `stack_count` in `data/items.json` to control initial charges for consumables (e.g., Wand of Wishing has 3). Defaults to 1 if omitted.
 - **Energy-based speed system**: Each `Actor` has `base_speed` (default 100), `energy` accumulator, and `speed` property. Each turn, monsters gain `speed` energy; they act once per 100 energy spent. Crawler/Kobold have speed 200 (2 actions/turn), Troll/Dragon/Hydra/Ender Dragon have speed 50 (1 action every 2 turns). Player bonus actions are computed as `(speed // 100) - 1` after each full turn.
 - **Standalone tools** (`tools/`): Scripts that analyze game data without importing the full game engine. They add the repo root to `sys.path` and use Python's `ast` module to parse spawn tables directly from `procgen.py` source (avoiding the tcod/numpy import chain). `tools/balance_report.py` detects balance issues: weapon/armor tier conflicts, items missing from spawn tables, monster DPS spikes by floor. Run with `python tools/balance_report.py [--max-floor N]`.
-- **Actor boolean flags**: `is_invisible` and `is_hasted` are simple bools on `Actor`, toggled by their respective `TimedEffect` subclasses (`InvisibilityEffect`, `SpeedEffect`). The `speed` property uses `is_hasted` to double `base_speed`. To add a new flag-based buff: add the bool to `Actor.__init__`, create a `TimedEffect` subclass that sets/clears it, and a `Consumable` subclass that creates and activates the effect.
+- **Actor boolean flags**: `is_invisible` and `is_hasted` are simple bools on `Actor`, toggled by their respective `TimedEffect` subclasses (`InvisibilityEffect`, `SpeedEffect`). The `speed` property uses `is_hasted` to double `base_speed`. To add a new flag-based buff: add the bool to `Actor.__init__`, create a `TimedEffect` subclass that sets/clears it, and a `Consumable` subclass that creates and activates the effect. `is_detecting_monsters` and `is_detecting_traps` are also Actor bools, but toggled by equippable `on_equip`/`on_unequip` instead of timed effects.
+- **Equipment enchantments**: Weapons and armor can have two kinds of enchantment. `enchantment` (int) adds to per-hit damage (weapons) or defense (armor) and is displayed as a `+N` prefix (e.g. `+1 Sword`). `enchantment_name` (str) grants a named power while equipped, displayed as an `of X` suffix (e.g. `Chain Mail of Trap Detection`). Both can appear together. Named enchantments: `"clairvoyance"` (reveals floor layout), `"detect_monster"` (sets `is_detecting_monsters`), `"trap_detection"` (sets `is_detecting_traps`, shows unrevealed traps in FOV). Enchantments are applied at spawn by `_maybe_enchant_item(item, floor)` in `procgen.py`: 15% chance for +1, scaling to 10% for +2 by floor 8; named enchantment on armor only, 3% chance on floor 4+. To add a new named enchantment: add the key/label to `_ENCHANTMENT_LABELS` in `Item.display_name`, add an `elif` branch in `Equippable.on_equip()`/`on_unequip()`, and add it to the `random.choice` list in `procgen._maybe_enchant_item`.
 - **Recording and replay system** (`recorder.py`, `debug.py`): Records gameplay as a snapshot + keystroke log for deterministic replay.
   - **Start/stop recording**: Open debug console (Shift+2), type `record start [filename]` (default: `recording.rec`) or `record stop`. Keystrokes are captured in `input_handlers.py`; debug handler keys and the Shift+2 key itself are excluded.
   - **Play back**: In debug console, type `record play [filename]`. Restores the engine snapshot and random state, then feeds keystrokes via `PlaybackHandler` in `debug.py`. The main loop in `main.py` paces playback with `time.sleep()` (0.1 s per key, 1.0 s in menus). Press Escape to abort.

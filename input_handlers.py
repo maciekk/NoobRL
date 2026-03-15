@@ -505,12 +505,15 @@ class DirectionalSelectionHandler(AskUserEventHandler):
 
 
 def _attack_display(player: "Actor") -> str:
-    """Return a human-readable attack string, e.g. '4+1d4' or '6'."""
+    """Return a human-readable attack string, e.g. '4+1d4+1' or '6'."""
     equipment = player.equipment
     if equipment and equipment.weapon and equipment.weapon.equippable:
         eq = equipment.weapon.equippable
         if eq.damage_dice:
-            return f"{player.fighter.power}+{eq.damage_dice}"
+            base = f"{player.fighter.power}+{eq.damage_dice}"
+            if eq.enchantment > 0:
+                return f"{base}+{eq.enchantment}"
+            return base
     return str(player.fighter.power)
 
 
@@ -988,12 +991,17 @@ def _item_type_and_stat_lines(item: "Item") -> list:  # pylint: disable=too-many
             for desc_line in item.consumable.get_description():
                 lines.append((desc_line, color.white))
     if item.equippable:
-        if item.equippable.damage_dice:
-            lines.append((f"Damage: {item.equippable.damage_dice}", color.white))
-        elif item.equippable.power_bonus:
-            lines.append((f"Attack bonus: +{item.equippable.power_bonus}", color.white))
-        if item.equippable.defense_bonus:
-            lines.append((f"Defense bonus: +{item.equippable.defense_bonus}", color.white))
+        eq = item.equippable
+        if eq.damage_dice:
+            dmg_str = f"Damage: {eq.damage_dice}"
+            if eq.enchantment > 0:
+                dmg_str += f"+{eq.enchantment}"
+            lines.append((dmg_str, color.white))
+        elif eq.power_bonus:
+            lines.append((f"Attack bonus: +{eq.power_bonus}", color.white))
+        total_defense = eq.defense_bonus + eq.enchantment
+        if total_defense:
+            lines.append((f"Defense bonus: +{total_defense}", color.white))
     return lines
 
 
