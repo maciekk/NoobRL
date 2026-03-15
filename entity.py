@@ -311,7 +311,11 @@ class Trap(Entity):
         import color as _color  # pylint: disable=import-outside-toplevel
         from sound_travel import SoundTravel  # pylint: disable=import-outside-toplevel
 
-        self.is_revealed = True
+        if (
+            triggering_entity is engine.player
+            or engine.game_map.visible[self.x, self.y]
+        ):
+            self.is_revealed = True
 
         if self.trap_type == "trapdoor":
             floors = random.randint(1, 3)
