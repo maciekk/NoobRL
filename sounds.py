@@ -9,6 +9,17 @@ import pygame.mixer  # pylint: disable=import-error
 _STAGGER_SECS = 0.1
 _NEXT_PLAY_TIME = 0.0
 
+# Set to True whenever a sound is played; checked by movement repeat logic.
+sound_heard = False
+
+
+def consume_sound_heard() -> bool:
+    """Return True (and reset) if a sound was heard since last call."""
+    global sound_heard  # pylint: disable=global-statement
+    result = sound_heard
+    sound_heard = False
+    return result
+
 _EFFECT_DEFS = [
     (
         "Hello and welcome",
@@ -204,7 +215,7 @@ def init():
 
 def maybe_play_sfx(log_line):
     """Play a matching sound effect if audio is available and a trigger matches."""
-    global _NEXT_PLAY_TIME  # pylint: disable=global-statement
+    global _NEXT_PLAY_TIME, sound_heard  # pylint: disable=global-statement
     if _LOADED_EFFECTS is None:
         return
     for match_str, sfx_options in _LOADED_EFFECTS:
@@ -218,6 +229,7 @@ def maybe_play_sfx(log_line):
             else:
                 threading.Timer(delay, sound.play).start()
             _NEXT_PLAY_TIME = play_at + _STAGGER_SECS
+            sound_heard = True
             return
 
 

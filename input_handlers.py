@@ -224,6 +224,8 @@ class EventHandler(BaseEventHandler):
             self.engine.end_turn()
             if not should_repeat:
                 break
+            if sounds.consume_sound_heard():
+                break
 
             if context is not None and root_console is not None:
                 root_console.clear()

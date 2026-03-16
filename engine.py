@@ -319,6 +319,9 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         if can_animate and (player_by_dist or monster_by_dist or monster_burst_locs):
             from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
             animate_sound_wave(self, player_by_dist, monster_by_dist, monster_burst_locs, _ih.root_console, _ih.context)
+        if monster_burst_locs or monster_by_dist:
+            import sounds as _sounds  # pylint: disable=import-outside-toplevel
+            _sounds.sound_heard = True
         self._notify_alerted_actors(alerted)
         self._pending_sounds.clear()
 
