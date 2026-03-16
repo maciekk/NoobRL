@@ -26,5 +26,5 @@ n_rows = 34
 map_width = 160
 map_height = 54
 
-# Overlay camera offset (x,y) in the upper-right corner of the dungeon display.
+# Overlay hidden-tile counts (left, top, bottom, right) in the upper-right corner.
 show_viewport_offset = True

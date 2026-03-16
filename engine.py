@@ -236,7 +236,13 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         s = " ".join([f"{e.name}:{e.turns_left}" for e in self.player.effects])
         console.print(x=1, y=y + 1, string=s)
         if options.show_viewport_offset:
-            label = f"\u2192{self.camera_x} \u2193{self.camera_y}"
+            mw, mh = self.game_map.width, self.game_map.height
+            vw, vh = self.viewport_width, self.viewport_height
+            left = max(0, self.camera_x)
+            top = max(0, self.camera_y)
+            right = max(0, mw - (self.camera_x + vw))
+            bottom = max(0, mh - (self.camera_y + vh))
+            label = f"\u2190{left} \u2191{top} \u2193{bottom} \u2192{right}"
             console.print(x=console.width - len(label), y=0, string=label, fg=(255, 255, 255), bg=(0, 0, 0))
         recorder_module.render_overlay(console)
 
