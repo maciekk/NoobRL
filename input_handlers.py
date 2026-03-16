@@ -1418,10 +1418,40 @@ class SelectIndexHandler(AskUserEventHandler):
     """Handles asking the user for an index on the map."""
 
     def __init__(self, engine: Engine):
-        """Sets the cursor to the player when this handler is constructed."""
+        """Sets the cursor to the last targeted actor if still valid, else to the player."""
         super().__init__(engine)
-        player = self.engine.player
-        engine.mouse_location = player.x, player.y
+        pos = self._resolve_last_target_pos()
+        if pos:
+            engine.mouse_location = pos
+        else:
+            player = self.engine.player
+            engine.mouse_location = player.x, player.y
+
+    def _resolve_last_target_pos(self) -> Optional[Tuple[int, int]]:
+        """Return the best cursor position for the last targeted actor.
+
+        If the actor is alive and visible, returns its current position.
+        If alive but not visible (or left the map), returns its last known position.
+        If dead or no previous target, returns None.
+        """
+        actor = self.engine.last_target_actor
+        if actor is None:
+            return None
+        if not actor.is_alive:
+            return None
+        game_map = self.engine.game_map
+        if actor in game_map.actors and game_map.visible[actor.x, actor.y]:
+            self.engine.last_target_pos = (actor.x, actor.y)
+            return actor.x, actor.y
+        # Not visible — use last known position.
+        return self.engine.last_target_pos
+
+    def _save_target_actor(self, x: int, y: int) -> None:
+        """Remember the actor at (x, y) for future targeting sessions."""
+        actor = self.engine.game_map.get_actor_at_location(x, y)
+        if actor and actor is not self.engine.player:
+            self.engine.last_target_actor = actor
+            self.engine.last_target_pos = (x, y)
 
     def on_render(self, console: tcod.Console) -> None:
         """Highlight the tile under the cursor."""
@@ -1454,6 +1484,7 @@ class SelectIndexHandler(AskUserEventHandler):
             self.engine.mouse_location = x, y
             return None
         if key in CONFIRM_KEYS:
+            self._save_target_actor(*self.engine.mouse_location)
             return self.on_index_selected(*self.engine.mouse_location)
         return super().ev_keydown(event)
 
@@ -1466,6 +1497,7 @@ class SelectIndexHandler(AskUserEventHandler):
             if event.button == 1:
                 wx, wy = self.engine.screen_to_world(sx, sy)
                 if self.engine.game_map.in_bounds(wx, wy):
+                    self._save_target_actor(wx, wy)
                     return self.on_index_selected(wx, wy)
         return super().ev_mousebuttondown(event)
 
@@ -2342,6 +2374,7 @@ class ThrowTargetHandler(SelectIndexHandler):
             return None
 
         if key in CONFIRM_KEYS:
+            self._save_target_actor(*self.engine.mouse_location)
             return self.on_index_selected(*self.engine.mouse_location)
 
         return super().ev_keydown(event)

@@ -46,10 +46,14 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self._pending_sounds: list[tuple[tuple[int, int], int, bool]] = []  # (location, radius, by_player)
         self.camera_x: int = 0
         self.camera_y: int = 0
+        self.last_target_actor: Optional["Actor"] = None
+        self.last_target_pos: Optional[tuple[int, int]] = None
 
     def __getattr__(self, name: str):
         if name in ("camera_x", "camera_y"):
             return 0
+        if name in ("last_target_actor", "last_target_pos"):
+            return None
         raise AttributeError(name)
 
     @property
