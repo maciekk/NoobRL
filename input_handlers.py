@@ -214,6 +214,7 @@ class EventHandler(BaseEventHandler):
         if action is None:
             return False
 
+        sounds.consume_sound_heard()  # Discard stale sounds from before this action.
         while True:
             try:
                 should_repeat = action.perform()
