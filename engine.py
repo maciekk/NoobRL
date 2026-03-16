@@ -1,6 +1,7 @@
 """Core game engine managing game state, turn cycle, and rendering."""
 from __future__ import annotations
 
+import heapq
 import lzma
 import pickle
 from collections import deque
@@ -256,29 +257,41 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         combined_by_dist: dict,
         alerted: dict,
     ) -> None:
-        """BFS-expand one sound source, accumulating tiles and alerted actors in-place."""
-        walkable = self.game_map.tiles["walkable"]
-        visited: set[Location] = {sound_location}
-        queue: deque[tuple[Location, int]] = deque([(sound_location, 0)])
-        while queue:
-            pos, dist = queue.popleft()
+        """Dijkstra-expand one sound source, accumulating tiles and alerted actors in-place.
+
+        Tall grass tiles cost 2 to traverse (vs 1 for open tiles), dampening sound.
+        """
+        from tile_types import tall_grass  # pylint: disable=import-outside-toplevel
+        gm = self.game_map
+        walkable = gm.tiles["walkable"]
+        tiles = gm.tiles
+        grass_check = tall_grass  # local ref for speed
+        best: dict[Location, int] = {sound_location: 0}
+        heap: list[tuple[int, Location]] = [(0, sound_location)]
+        while heap:
+            dist, pos = heapq.heappop(heap)
+            if dist > best.get(pos, dist):
+                continue
             if dist >= radius:
                 continue
             for ddx, ddy in ALL_DIRS:
                 neighbor = Location(pos.x + ddx, pos.y + ddy)
-                if neighbor in visited:
-                    continue
-                if not self.game_map.in_bounds(neighbor.x, neighbor.y):
+                if not gm.in_bounds(neighbor.x, neighbor.y):
                     continue
                 if not walkable[neighbor.x, neighbor.y]:
                     continue
-                visited.add(neighbor)
-                combined_by_dist.setdefault(dist + 1, set()).add(neighbor)
-                queue.append((neighbor, dist + 1))
-                actor = self.game_map.get_actor_at_location(neighbor.x, neighbor.y)
-                if actor and actor is not self.player and actor.ai:
-                    if hasattr(actor.ai, "on_sound") and actor not in alerted:
-                        alerted[actor] = (neighbor, sound_location)
+                cost = 2 if tiles[neighbor.x, neighbor.y] == grass_check else 1
+                new_dist = dist + cost
+                if new_dist > radius:
+                    continue
+                if new_dist < best.get(neighbor, radius + 1):
+                    best[neighbor] = new_dist
+                    combined_by_dist.setdefault(new_dist, set()).add(neighbor)
+                    heapq.heappush(heap, (new_dist, neighbor))
+                    actor = gm.get_actor_at_location(neighbor.x, neighbor.y)
+                    if actor and actor is not self.player and actor.ai:
+                        if hasattr(actor.ai, "on_sound") and actor not in alerted:
+                            alerted[actor] = (neighbor, sound_location)
 
     def _notify_alerted_actors(self, alerted: dict) -> None:
         """Call on_sound for each alerted actor and emit visible wake/investigate messages."""
