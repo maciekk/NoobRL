@@ -49,6 +49,7 @@ Ideas & efforts under way.
 - [ ] reduce range of door open/close sound
 - [ ] targeting cursor (e.g., for throw, cast) should remember & reuse "last location"
 - [ ] should sound wave move through tall grass? maybe gets attenuated?
+- [ ] when using targeting Handler, and user takes cursor outside of viewport, then viewport should scroll
 - [x] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
 - [ ] do kobolds or other fast movers move through closed doors??
 - [x] does a popper explosion clear tall grass, like bombs?

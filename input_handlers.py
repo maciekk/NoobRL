@@ -621,8 +621,16 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         visible = game_map.visible
         direction = self._direction
         dist2 = self._dist2
+        player = self.engine.player
         monsters = sorted(
-            (dist2(px, py, a.x, a.y), a.name, direction(px, py, a.x, a.y), a.is_asleep)
+            (
+                dist2(px, py, a.x, a.y),
+                a.name,
+                direction(px, py, a.x, a.y),
+                a.is_asleep,
+                max(abs(a.x - px), abs(a.y - py)) <= a.sight_range and not player.is_invisible,
+                bool(getattr(a.ai, "investigate_target", None)) or a.noticed_player,
+            )
             for a in game_map.actors
             if a is not self.engine.player and visible[a.x, a.y]
         )
@@ -651,13 +659,31 @@ class ViewSurroundingsHandler(AskUserEventHandler):
 
     @staticmethod
     def _build_display_lines(monsters, corpses, items_sorted, features) -> list:
-        """Build display strings from sorted entity and feature collections."""
-        lines: list[str] = []
+        """Build display strings from sorted entity and feature collections.
+
+        Each item is either a plain str or a list of (text, color) segments
+        where color is an RGB tuple or None for default white.
+        """
+        lines: list = []
         if monsters:
             lines.append("Monsters:")
-            for _, name, d, asleep in monsters:
-                suffix = " (S)" if asleep else ""
-                lines.append(f"  {name}{suffix} {d}")
+            for _, name, d, asleep, noticed, investigating in monsters:
+                if asleep:
+                    lines.append(f"  {name} (S) {d}")
+                elif noticed:
+                    lines.append([
+                        (f"  {name} (", None),
+                        ("!", (255, 80, 80)),
+                        (f") {d}", None),
+                    ])
+                elif investigating:
+                    lines.append([
+                        (f"  {name} (", None),
+                        ("!", (255, 220, 0)),
+                        (f") {d}", None),
+                    ])
+                else:
+                    lines.append(f"  {name} {d}")
         if corpses:
             if lines:
                 lines.append("")
@@ -686,14 +712,26 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         x = 40 if self.engine.player.x <= 30 else 0
         y = 0
         height = len(lines) + 2
-        max_line_width = max(len(s) for s in lines)
+        def _line_width(line):
+            if isinstance(line, str):
+                return len(line)
+            return sum(len(t) for t, _ in line)
+
+        max_line_width = max(_line_width(s) for s in lines)
         width = max(len(self.TITLE) + 4, max_line_width + 2)
         console.draw_frame(
             x=x, y=y, width=width, height=height, title=self.TITLE,
             clear=True, fg=(255, 255, 255), bg=(0, 0, 0),
         )
         for i, line in enumerate(lines):
-            console.print(x=x + 1, y=y + 1 + i, string=line)
+            if isinstance(line, str):
+                console.print(x=x + 1, y=y + 1 + i, string=line)
+            else:
+                cx = x + 1
+                for text, fg in line:
+                    kw = {"fg": fg} if fg is not None else {}
+                    console.print(x=cx, y=y + 1 + i, string=text, **kw)
+                    cx += len(text)
 
 
 class LevelUpEventHandler(AskUserEventHandler):
