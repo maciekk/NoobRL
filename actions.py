@@ -237,7 +237,7 @@ class OpenDoorAction(Action):
         if tile == tile_types.door_closed:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
             self.engine.message_log.add_message("You open the door.", color.white)
-            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR)
+            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
         else:
             raise exceptions.Impossible("There is no closed door there.")
 
@@ -263,7 +263,7 @@ class CloseDoorAction(Action):
         if tile == tile_types.door_open:
             self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
             self.engine.message_log.add_message("You close the door.", color.white)
-            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR)
+            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
         else:
             raise exceptions.Impossible("There is no open door there.")
 
@@ -383,7 +383,7 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} but does no damage.",
                 attack_color,
             )
-        self.engine.emit_sound(self.dest_xy, SoundTravel.MELEE)
+        self.engine.emit_sound(self.dest_xy, SoundTravel.MELEE, by_player=self.entity is self.engine.player)
 
 
 class RangedAttackAction(ActionWithDirection):

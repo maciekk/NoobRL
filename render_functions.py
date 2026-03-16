@@ -267,37 +267,75 @@ def animate_digging_ray(
 
 def animate_sound_wave(
     engine,
-    tiles_by_dist: dict[int, "list | set"],
+    player_by_dist: dict[int, "set"],
+    monster_by_dist: dict[int, "set"],
+    monster_burst_locs: list,
     console,
     context,
 ) -> None:
-    """Animate an expanding sound wave ripple on visible tiles.
+    """Animate sound with three distinct modes:
 
-    Shows the wave front ring-by-ring outward from the source, skipping
-    distances where no tiles fall within the player's FOV. Does not mutate
-    game state.
+    Player sounds: dark gray trail on ALL tiles (ignores FOV) + wave front on visible tiles only.
+    Monster sounds (visible source): wave front on visible tiles only, no trail.
+    Monster sounds (invisible source): brief spherical burst of radius 3, ignores FOV.
     """
     wave_color = (255, 255, 255)
     wave_char = ","
-    max_dist = max(tiles_by_dist) if tiles_by_dist else 0
+    trail_bg = (40, 40, 40)
+
+    # --- Expanding wave (player + monster visible) ---
+    all_dists = set(player_by_dist) | set(monster_by_dist)
+    trail_visited: list[tuple[int, int]] = []
     rendered_any = False
-    for dist in range(1, max_dist + 1):
-        visible_ring = [
-            (x, y)
-            for x, y in tiles_by_dist.get(dist, [])
-            if engine.game_map.visible[x, y]
-        ]
-        if not visible_ring:
-            continue
+    if all_dists:
+        max_dist = max(all_dists)
+        for dist in range(1, max_dist + 1):
+            player_ring = list(player_by_dist.get(dist, []))
+            monster_ring = list(monster_by_dist.get(dist, []))
+            if not player_ring and not monster_ring:
+                continue
+            console.clear()
+            engine.render(console)
+            # Trail: paint dark bg on all previously visited player tiles
+            for tx, ty in trail_visited:
+                sx, sy = engine.world_to_screen(tx, ty)
+                if 0 <= sx < engine.viewport_width and 0 <= sy < engine.viewport_height:
+                    console.rgb[sx, sy]["bg"] = trail_bg
+            # Wavefront: visible tiles only, from both player and monster rings
+            for tx, ty in player_ring + monster_ring:
+                if engine.game_map.visible[tx, ty]:
+                    engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color, bg=trail_bg)
+            context.present(console, keep_aspect=True, integer_scaling=False)
+            time.sleep(0.03)
+            trail_visited.extend(player_ring)
+            rendered_any = True
+        if rendered_any:
+            time.sleep(0.12)
+        # Erase trail
+        if trail_visited:
+            console.clear()
+            engine.render(console)
+            context.present(console, keep_aspect=True, integer_scaling=False)
+
+    # --- Burst animation for invisible monster sounds (ring-by-ring, radius 3, no trail) ---
+    if monster_burst_locs:
+        for dist in range(1, 5):
+            console.clear()
+            engine.render(console)
+            for loc in monster_burst_locs:
+                for dx in range(-dist, dist + 1):
+                    for dy in range(-dist, dist + 1):
+                        d2 = dx * dx + dy * dy
+                        if (dist - 1) * (dist - 1) < d2 <= dist * dist:
+                            tx, ty = loc.x + dx, loc.y + dy
+                            if engine.game_map.in_bounds(tx, ty):
+                                engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color)
+            context.present(console, keep_aspect=True, integer_scaling=False)
+            time.sleep(0.025)
+        time.sleep(0.05)
         console.clear()
         engine.render(console)
-        for tx, ty in visible_ring:
-            engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color)
         context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.03)
-        rendered_any = True
-    if rendered_any:
-        time.sleep(0.23)
 
 
 def animate_projectile(

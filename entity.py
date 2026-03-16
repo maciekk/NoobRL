@@ -309,7 +309,7 @@ class Trap(Entity):
     def trigger(self, engine, triggering_entity=None) -> None:
         """Reveal and activate this trap."""
         import color as _color  # pylint: disable=import-outside-toplevel
-        from sound_travel import SoundTravel  # pylint: disable=import-outside-toplevel
+        from sound_travel import SoundTravel, SOUND_ANIM_MAX_DIST  # pylint: disable=import-outside-toplevel
 
         if (
             triggering_entity is engine.player
@@ -335,16 +335,18 @@ class Trap(Entity):
                     "You step on a squeaky board! *CREAK*", _color.white
                 )
             else:
-                visible = (
-                    triggering_entity is not None
-                    and engine.game_map.visible[triggering_entity.x, triggering_entity.y]
-                )
-                if visible:
-                    msg = f"The {triggering_entity.name} steps on a squeaky board! *CREAK*"
-                else:
-                    msg = "Someone steps on a squeaky board! *CREAK*"
-                engine.message_log.add_message(msg, _color.white)
-            engine.emit_sound((self.x, self.y), SoundTravel.SQUEAKY_BOARD)
+                dist = abs(self.x - engine.player.x) + abs(self.y - engine.player.y)
+                if dist <= SOUND_ANIM_MAX_DIST:
+                    visible = (
+                        triggering_entity is not None
+                        and engine.game_map.visible[triggering_entity.x, triggering_entity.y]
+                    )
+                    if visible:
+                        msg = f"The {triggering_entity.name} steps on a squeaky board! *CREAK*"
+                    else:
+                        msg = "Someone steps on a squeaky board! *CREAK*"
+                    engine.message_log.add_message(msg, _color.white)
+            engine.emit_sound((self.x, self.y), SoundTravel.SQUEAKY_BOARD, by_player=triggering_entity is engine.player)
 
 
 class Item(Entity):

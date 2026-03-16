@@ -43,7 +43,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.potion_aliases: dict[str, str] = {}
         self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
-        self._pending_sounds: list[tuple[tuple[int, int], int]] = []  # (location, radius)
+        self._pending_sounds: list[tuple[tuple[int, int], int, bool]] = []  # (location, radius, by_player)
         self.camera_x: int = 0
         self.camera_y: int = 0
 
@@ -241,9 +241,9 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         with open(filename, "wb") as f:
             f.write(save_data)
 
-    def emit_sound(self, location: Location, radius: int) -> None:
+    def emit_sound(self, location: Location, radius: int, by_player: bool = False) -> None:
         """Queue a sound event to be processed at the start of the next turn cycle."""
-        self._pending_sounds.append((Location(*location), radius))
+        self._pending_sounds.append((Location(*location), radius, by_player))
 
     def _bfs_sound(
         self,
@@ -299,13 +299,26 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             return
         import input_handlers as _ih  # pylint: disable=import-outside-toplevel
         combined_by_dist: dict[int, set[Location]] = {}
+        player_by_dist: dict[int, set[Location]] = {}
+        monster_by_dist: dict[int, set[Location]] = {}
+        monster_burst_locs: list[Location] = []
         # actor → (actor_loc, source_loc) — keep only first source that reaches each actor
         alerted: dict[object, tuple[Location, Location]] = {}
-        for location, radius in self._pending_sounds:
+        for location, radius, by_player in self._pending_sounds:
             self._bfs_sound(location, radius, combined_by_dist, alerted)
-        if _ih.context is not None and _ih.root_console is not None and options.show_sound:
+            if by_player:
+                self._bfs_sound(location, radius, player_by_dist, {})
+            else:
+                if self.game_map.visible[location.x, location.y]:
+                    self._bfs_sound(location, radius, monster_by_dist, {})
+                else:
+                    from sound_travel import SOUND_ANIM_MAX_DIST  # pylint: disable=import-outside-toplevel
+                    if abs(location.x - self.player.x) + abs(location.y - self.player.y) <= SOUND_ANIM_MAX_DIST:
+                        monster_burst_locs.append(location)
+        can_animate = _ih.context is not None and _ih.root_console is not None and options.show_sound
+        if can_animate and (player_by_dist or monster_by_dist or monster_burst_locs):
             from render_functions import animate_sound_wave  # pylint: disable=import-outside-toplevel
-            animate_sound_wave(self, combined_by_dist, _ih.root_console, _ih.context)
+            animate_sound_wave(self, player_by_dist, monster_by_dist, monster_burst_locs, _ih.root_console, _ih.context)
         self._notify_alerted_actors(alerted)
         self._pending_sounds.clear()
 
