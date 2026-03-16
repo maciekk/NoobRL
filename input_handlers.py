@@ -672,7 +672,11 @@ class ViewSurroundingsHandler(AskUserEventHandler):
             lines.append("Monsters:")
             for _, name, d, asleep, noticed, investigating in monsters:
                 if asleep:
-                    lines.append(f"  {name} (S) {d}")
+                    lines.append([
+                        (f"  {name} (", None),
+                        ("S", (80, 255, 80)),
+                        (f") {d}", None),
+                    ])
                 elif noticed:
                     lines.append([
                         (f"  {name} (", None),
