@@ -3,11 +3,6 @@
         "id": "s_confusion",
         "name": "scroll of Confusion",
         "char": "?",
-        "color": [
-            207,
-            63,
-            255
-        ],
         "consumable": {
             "name": "ConfusionConsumable",
             "number_of_turns": 10
@@ -17,11 +12,6 @@
         "id": "s_fireball",
         "name": "scroll of Fireball",
         "char": "?",
-        "color": [
-            255,
-            0,
-            0
-        ],
         "consumable": {
             "name": "FireballDamageConsumable",
             "damage": 12,
@@ -32,11 +22,6 @@
         "id": "s_blink",
         "name": "scroll of Blink",
         "char": "?",
-        "color": [
-            128,
-            0,
-            255
-        ],
         "consumable": {
             "name": "BlinkConsumable"
         }
@@ -45,11 +30,6 @@
         "id": "s_teleport",
         "name": "scroll of Teleportation",
         "char": "?",
-        "color": [
-            0,
-            200,
-            255
-        ],
         "consumable": {
             "name": "TeleportConsumable"
         }
@@ -58,11 +38,6 @@
         "id": "s_lightning",
         "name": "scroll of Lightning",
         "char": "?",
-        "color": [
-            32,
-            64,
-            255
-        ],
         "consumable": {
             "name": "LightningDamageConsumable",
             "damage": 20,
@@ -73,11 +48,6 @@
         "id": "s_detect_traps",
         "name": "scroll of Detect Traps",
         "char": "?",
-        "color": [
-            139,
-            90,
-            43
-        ],
         "consumable": {
             "name": "DetectTrapsConsumable"
         }
@@ -86,11 +56,6 @@
         "id": "s_identify",
         "name": "scroll of Identification",
         "char": "?",
-        "color": [
-            255,
-            255,
-            255
-        ],
         "consumable": {
             "name": "IdentificationConsumable"
         }
@@ -371,7 +336,6 @@
         "id": "s_enchant_weapon",
         "name": "scroll of Enchant Weapon",
         "char": "?",
-        "color": [255, 100, 100],
         "consumable": {
             "name": "EnchantWeaponConsumable"
         }
@@ -380,7 +344,6 @@
         "id": "s_enchant_armour",
         "name": "scroll of Enchant Armour",
         "char": "?",
-        "color": [100, 100, 255],
         "consumable": {
             "name": "EnchantArmourConsumable"
         }

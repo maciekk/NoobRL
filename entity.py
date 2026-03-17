@@ -421,11 +421,13 @@ class Item(Entity):
 
     @property
     def display_color(self) -> Tuple[int, int, int]:
-        """Return the alias color for potions (always), otherwise the true color."""
+        """Return the alias color for scrolls/potions, otherwise the true color."""
         if self.item_id:
             gamemap = self.gamemap
             if gamemap is not None:
                 engine = gamemap.engine
+                if self.item_id in engine.scroll_alias_colors:
+                    return engine.scroll_alias_colors[self.item_id]
                 if self.item_id in engine.potion_alias_colors:
                     return engine.potion_alias_colors[self.item_id]
                 alias = engine.potion_aliases.get(self.item_id, "")

@@ -64,7 +64,6 @@ Ideas & efforts under way.
 - [x] explosions should burn off tall grass
 - [ ] slow down the digging wand ray animation?
 - [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
-- [ ] scrolls should have no colours, or randomly selected (not from data/items.json) `#next`
 - [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
 - [x] add "fertilizer bomb" which causes a tall grass patch to grow at point of impact
 
@@ -127,5 +126,6 @@ Ideas & efforts under way.
 - [ ] JSON-ify: spells?
 - [x] JSON-ify: loot drop tables?
 - [ ] JSON-ify: tile_types.py
+- [x] scrolls should have no colours, or randomly selected (not from data/items.json)
 - [x] balance game, avoid becoming god too early; levels ups should occur exponentially further
 

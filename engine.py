@@ -41,6 +41,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         self.kill_counts: dict[str, int] = {}
         self._bonus_actions = 0
         self.scroll_aliases: dict[str, str] = {}
+        self.scroll_alias_colors: dict[str, tuple] = {}
         self.potion_aliases: dict[str, str] = {}
         self.potion_alias_colors: dict[str, tuple] = {}
         self.identified_items: set[str] = set()
@@ -100,17 +101,28 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             console.print(x=sx, y=sy, **kwargs)
 
     def initialize_scroll_aliases(self) -> None:
-        """Assign a random fake name to each scroll type for this game run."""
+        """Assign a random fake name and color to each scroll type for this game run."""
         import random  # pylint: disable=import-outside-toplevel
         with open("data/scroll_names.txt", encoding="utf-8") as f:
             names = [line.strip() for line in f if line.strip()]
+        with open("data/scroll_colors.txt", encoding="utf-8") as f:
+            color_entries = []
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = [p.strip() for p in line.split(",")]
+                rgb = (int(parts[1]), int(parts[2]), int(parts[3]))
+                color_entries.append(rgb)
         scroll_ids = [
             item_id for item_id, item in self.item_manager.items.items()
             if item.char == "?"
         ]
         random.shuffle(names)
+        random.shuffle(color_entries)
         for i, item_id in enumerate(scroll_ids):
             self.scroll_aliases[item_id] = names[i % len(names)]
+            self.scroll_alias_colors[item_id] = color_entries[i % len(color_entries)]
 
     def initialize_potion_aliases(self) -> None:
         """Assign a random appearance to each potion type for this game run."""
