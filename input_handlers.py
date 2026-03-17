@@ -643,7 +643,7 @@ class ViewSurroundingsHandler(AskUserEventHandler):
             if isinstance(e, Actor) and not e.is_alive and visible[e.x, e.y]
         )
         items_sorted = sorted(
-            (dist2(px, py, it.x, it.y), it.name, direction(px, py, it.x, it.y))
+            (dist2(px, py, it.x, it.y), it.display_name, direction(px, py, it.x, it.y))
             for it in game_map.items
             if visible[it.x, it.y]
         )
