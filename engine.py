@@ -197,6 +197,17 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             )
             # If a tile is "visible" it should be added to "explored".
             self.game_map.explored |= self.game_map.visible
+            if self.player.is_detecting_traps:
+                for entity in self.game_map.entities:
+                    if (
+                        hasattr(entity, "trap_type")
+                        and not entity.is_revealed
+                        and self.game_map.visible[entity.x, entity.y]
+                    ):
+                        entity.is_revealed = True
+                        self.message_log.add_message(
+                            f"You sense a {entity.name}!", (255, 215, 0)
+                        )
 
     def render(self, console: Console) -> None:
         """Render the game map, UI bars, and message log to the console."""
