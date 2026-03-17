@@ -4,7 +4,7 @@
         "label": "Clairvoyance",
         "effect": "clairvoyance",
         "applies_to": {
-            "ARMOR": { "min_floor": 4, "chance": 0.01 }
+            "ARMOR": { "min_floor": 4, "chance": 0.05 }
         },
         "equip_message": null,
         "unequip_message": null
@@ -14,7 +14,7 @@
         "label": "Detect Monster",
         "effect": "detect_monster",
         "applies_to": {
-            "ARMOR": { "min_floor": 4, "chance": 0.01 }
+            "ARMOR": { "min_floor": 4, "chance": 0.05 }
         },
         "equip_message": ["You sense the presence of monsters!", [192, 192, 255]],
         "unequip_message": ["Your monster sense fades.", [128, 128, 128]]
@@ -24,7 +24,7 @@
         "label": "Trap Detection",
         "effect": "trap_detection",
         "applies_to": {
-            "ARMOR": { "min_floor": 4, "chance": 0.01 }
+            "ARMOR": { "min_floor": 4, "chance": 0.05 }
         },
         "equip_message": ["You feel aware of hidden dangers.", [255, 215, 0]],
         "unequip_message": ["Your trap sense fades.", [128, 128, 128]]

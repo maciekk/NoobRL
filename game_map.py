@@ -216,13 +216,10 @@ class GameWorld:  # pylint: disable=too-few-public-methods
             trapdoor=trapdoor,
         )
 
-        from components.equippable import AmuletOfClairvoyance  # pylint: disable=import-outside-toplevel
-
-        amulet = self.engine.player.equipment.amulet
-        if amulet and isinstance(amulet.equippable, AmuletOfClairvoyance):
-            from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
-
-            apply_clairvoyance(self.engine)
+        equipment = self.engine.player.equipment
+        for item in (equipment.weapon, equipment.armor, equipment.amulet):
+            if item is not None:
+                item.equippable.on_floor_change()
 
 
 def apply_explosion(

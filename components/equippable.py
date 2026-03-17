@@ -22,11 +22,12 @@ def _flag_effect(attr: str):
     return equip, unequip
 
 
-# Maps effect id -> (on_equip_fn, on_unequip_fn). Either can be None.
+# Maps effect id -> (on_equip_fn, on_unequip_fn, on_floor_change_fn).
+# Any element can be None.
 _EFFECT_REGISTRY = {
-    "clairvoyance": (lambda eq: apply_clairvoyance(eq.engine), None),
-    "detect_monster": _flag_effect("is_detecting_monsters"),
-    "trap_detection": _flag_effect("is_detecting_traps"),
+    "clairvoyance": (lambda eq: apply_clairvoyance(eq.engine), None, lambda eq: apply_clairvoyance(eq.engine)),
+    "detect_monster": (*_flag_effect("is_detecting_monsters"), None),
+    "trap_detection": (*_flag_effect("is_detecting_traps"), None),
 }
 
 
@@ -80,6 +81,17 @@ class Equippable(BaseComponent):
         """Called when this equippable is unequipped; can be overridden to reverse effects."""
         self._apply_enchantment("unequip")
 
+    def on_floor_change(self) -> None:
+        """Called when the player changes floors. Re-applies one-shot enchantment effects."""
+        if not self.enchantment_name:
+            return
+        entry = enchantment_data.get(self.enchantment_name)
+        if entry is None:
+            return
+        fns = _EFFECT_REGISTRY.get(entry["effect"])
+        if fns and fns[2] is not None:
+            fns[2](self)
+
 
 class AmuletOfClairvoyance(Equippable):
     """An amulet that reveals the dungeon layout when equipped."""
@@ -88,6 +100,9 @@ class AmuletOfClairvoyance(Equippable):
         super().__init__(equipment_type=EquipmentType.AMULET)
 
     def on_equip(self) -> None:
+        apply_clairvoyance(self.engine)
+
+    def on_floor_change(self) -> None:
         apply_clairvoyance(self.engine)
 
 

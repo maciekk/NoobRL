@@ -9,6 +9,7 @@ import tcod  # pylint: disable=import-error
 
 import actions
 import color
+import enchantment_data
 import exceptions
 import recorder as recorder_module
 import sounds
@@ -247,6 +248,8 @@ class DebugHandler(AskUserEventHandler):
             buf = self.buffer.strip()
             if buf.startswith("record "):
                 return self._handle_record_command(buf)
+            if buf == "enchant":
+                return DebugEnchantItemHandler(self.engine)
 
             query, count = parse_query(self.buffer)
             if not query:
@@ -342,6 +345,69 @@ class DebugHandler(AskUserEventHandler):
 
         self.engine.message_log.add_message(
             "Usage: record start|stop|play [filename]"
+        )
+        return MainGameEventHandler(self.engine)
+
+class DebugEnchantItemHandler(ListSelectionHandler):
+    """Pick an equipped item to enchant."""
+
+    TITLE = "Enchant which item?"
+    EMPTY_TEXT = "Nothing equipped."
+    use_cursor = True
+
+    def __init__(self, engine: Engine):
+        super().__init__(engine)
+        equipment = engine.player.equipment
+        self._items = []
+        for slot_name, item in [("WEAPON", equipment.weapon), ("ARMOR", equipment.armor)]:
+            if item is not None:
+                self._items.append((slot_name, item))
+
+    def get_items(self) -> list:
+        return self._items
+
+    def get_display_string(self, index: int, item) -> str:
+        slot_name, entity = item
+        return f"{entity.name} ({slot_name.lower()})"
+
+    def on_selection(self, index: int, item):
+        slot_name, entity = item
+        return DebugEnchantPickHandler(self.engine, slot_name, entity)
+
+
+class DebugEnchantPickHandler(ListSelectionHandler):
+    """Pick which enchantment to apply to the selected item."""
+
+    TITLE = "Apply which enchantment?"
+    EMPTY_TEXT = "No enchantments available for this item type."
+    use_cursor = True
+
+    def __init__(self, engine: Engine, slot_name: str, target_item):
+        super().__init__(engine)
+        self.target_item = target_item
+        # Gather all enchantments that apply to this equipment type.
+        if enchantment_data._data is None:
+            enchantment_data._load()
+        self._enchantments = []
+        for entry in enchantment_data._data:
+            if slot_name in entry["applies_to"]:
+                self._enchantments.append(entry)
+
+    def get_items(self) -> list:
+        return self._enchantments
+
+    def get_display_string(self, index: int, item) -> str:
+        return item["label"]
+
+    def on_selection(self, index: int, item):
+        eq = self.target_item.equippable
+        # Remove old named enchantment if present.
+        if eq.enchantment_name:
+            eq._apply_enchantment("unequip")
+        eq.enchantment_name = item["id"]
+        eq._apply_enchantment("equip")
+        self.engine.message_log.add_message(
+            f"Applied '{item['label']}' to {self.target_item.name}."
         )
         return MainGameEventHandler(self.engine)
 
