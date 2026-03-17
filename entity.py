@@ -9,6 +9,7 @@ from typing import Optional, List, Tuple, Type, TypeVar, TYPE_CHECKING, Union
 import numpy as np  # pylint: disable=import-error
 import tcod  # pylint: disable=import-error
 
+import enchantment_data
 from equipment_types import EquipmentType
 from location import Location
 from render_order import RenderOrder
@@ -408,12 +409,11 @@ class Item(Entity):
                     base_name = self.name
 
         if self.equippable:
-            _ENCHANTMENT_LABELS = {"clairvoyance": "Clairvoyance", "detect_monster": "Detect Monster", "trap_detection": "Trap Detection"}
             name = base_name
             if self.equippable.enchantment > 0:
                 name = f"+{self.equippable.enchantment} {name}"
             if self.equippable.enchantment_name:
-                label = _ENCHANTMENT_LABELS.get(self.equippable.enchantment_name, self.equippable.enchantment_name)
+                label = enchantment_data.get_label(self.equippable.enchantment_name)
                 name = f"{name} of {label}"
             return name
 

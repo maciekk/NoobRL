@@ -5,10 +5,29 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from components.base_component import BaseComponent
+from components.consumable import apply_clairvoyance
 from equipment_types import EquipmentType
+import enchantment_data
 
 if TYPE_CHECKING:
-    from entity import Item
+    from entity import Actor, Item
+
+
+def _flag_effect(attr: str):
+    """Return an (on_equip, on_unequip) pair that toggles a boolean Actor flag."""
+    def equip(eq: Equippable) -> None:
+        setattr(eq.actor, attr, True)
+    def unequip(eq: Equippable) -> None:
+        setattr(eq.actor, attr, False)
+    return equip, unequip
+
+
+# Maps effect id -> (on_equip_fn, on_unequip_fn). Either can be None.
+_EFFECT_REGISTRY = {
+    "clairvoyance": (lambda eq: apply_clairvoyance(eq.engine), None),
+    "detect_monster": _flag_effect("is_detecting_monsters"),
+    "trap_detection": _flag_effect("is_detecting_traps"),
+}
 
 
 class Equippable(BaseComponent):
@@ -32,42 +51,34 @@ class Equippable(BaseComponent):
         self.enchantment = enchantment
         self.enchantment_name = enchantment_name
 
+    @property
+    def actor(self) -> Actor:
+        """The actor wearing this item (Item -> Inventory -> Actor)."""
+        return self.parent.parent.parent
+
+    def _apply_enchantment(self, event: str) -> None:
+        """Shared logic for on_equip/on_unequip. event is 'equip' or 'unequip'."""
+        if not self.enchantment_name:
+            return
+        entry = enchantment_data.get(self.enchantment_name)
+        if entry is None:
+            return
+        fns = _EFFECT_REGISTRY.get(entry["effect"])
+        fn = fns[0 if event == "equip" else 1] if fns else None
+        if fn is not None:
+            fn(self)
+        msg = entry[f"{event}_message"]
+        if msg is not None:
+            text, color = msg
+            self.engine.message_log.add_message(text, tuple(color))
+
     def on_equip(self) -> None:
         """Called when this equippable is equipped; can be overridden for special effects."""
-        if self.enchantment_name == "clairvoyance":
-            from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
-            apply_clairvoyance(self.engine)
-        elif self.enchantment_name == "detect_monster":
-            actor = self.parent.parent.parent
-            actor.is_detecting_monsters = True
-            self.engine.message_log.add_message(
-                "You sense the presence of monsters!",
-                (0xC0, 0xC0, 0xFF),
-            )
-        elif self.enchantment_name == "trap_detection":
-            actor = self.parent.parent.parent
-            actor.is_detecting_traps = True
-            self.engine.message_log.add_message(
-                "You feel aware of hidden dangers.",
-                (0xFF, 0xD7, 0x00),
-            )
+        self._apply_enchantment("equip")
 
     def on_unequip(self) -> None:
         """Called when this equippable is unequipped; can be overridden to reverse effects."""
-        if self.enchantment_name == "detect_monster":
-            actor = self.parent.parent.parent
-            actor.is_detecting_monsters = False
-            self.engine.message_log.add_message(
-                "Your monster sense fades.",
-                (0x80, 0x80, 0x80),
-            )
-        elif self.enchantment_name == "trap_detection":
-            actor = self.parent.parent.parent
-            actor.is_detecting_traps = False
-            self.engine.message_log.add_message(
-                "Your trap sense fades.",
-                (0x80, 0x80, 0x80),
-            )
+        self._apply_enchantment("unequip")
 
 
 class AmuletOfClairvoyance(Equippable):
@@ -77,8 +88,6 @@ class AmuletOfClairvoyance(Equippable):
         super().__init__(equipment_type=EquipmentType.AMULET)
 
     def on_equip(self) -> None:
-        from components.consumable import apply_clairvoyance  # pylint: disable=import-outside-toplevel
-
         apply_clairvoyance(self.engine)
 
 
@@ -89,18 +98,14 @@ class AmuletOfDetectMonster(Equippable):
         super().__init__(equipment_type=EquipmentType.AMULET)
 
     def on_equip(self) -> None:
-        # self.parent = Item, Item.parent = Inventory, Inventory.parent = Actor
-        actor = self.parent.parent.parent
-        actor.is_detecting_monsters = True
+        self.actor.is_detecting_monsters = True
         self.engine.message_log.add_message(
             "You sense the presence of monsters!",
             (0xC0, 0xC0, 0xFF),
         )
 
     def on_unequip(self) -> None:
-        # self.parent = Item, Item.parent = Inventory, Inventory.parent = Actor
-        actor = self.parent.parent.parent
-        actor.is_detecting_monsters = False
+        self.actor.is_detecting_monsters = False
         self.engine.message_log.add_message(
             "Your monster sense fades.",
             (0x80, 0x80, 0x80),

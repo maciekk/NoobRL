@@ -10,6 +10,7 @@ from typing import Dict, Iterator, List, Tuple, TYPE_CHECKING
 
 import tcod  # pylint: disable=import-error
 
+import enchantment_data
 import options
 import tile_types
 from components.effect import SleepEffect
@@ -64,8 +65,12 @@ def _maybe_enchant_item(item: "Entity", floor: int) -> None:
         eq.enchantment = 2
     elif roll < p2 + p1:
         eq.enchantment = 1
-    if eq.equipment_type == EquipmentType.ARMOR and floor >= 4 and random.random() < 0.03:
-        eq.enchantment_name = random.choice(["clairvoyance", "detect_monster", "trap_detection"])
+    candidates = enchantment_data.candidates_for(eq.equipment_type.name, floor)
+    if candidates:
+        total_chance = sum(c for _, c in candidates)
+        if random.random() < total_chance:
+            ids, weights = zip(*candidates)
+            eq.enchantment_name = random.choices(ids, weights=weights, k=1)[0]
 
 
 def get_max_value_for_floor(
