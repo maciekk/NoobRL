@@ -271,8 +271,12 @@ class Chest(Entity):
 
         if names:
             self.gamemap.engine.message_log.add_message(
-                f"You open the chest and find: {', '.join(names)}!"
+                "You open the chest and find:", stack=False,
             )
+            for item_name in names:
+                self.gamemap.engine.message_log.add_message(
+                    f"  - {item_name}", stack=False,
+                )
         else:
             self.gamemap.engine.message_log.add_message(
                 "You open the chest, but it's empty."

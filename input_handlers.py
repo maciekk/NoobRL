@@ -28,7 +28,7 @@ import color
 import exceptions
 import recorder as recorder_module
 import tile_types
-from entity import Actor, Item, Trap
+from entity import Actor, Chest, Item, Trap
 from equipment_types import EquipmentType
 
 if TYPE_CHECKING:
@@ -651,6 +651,9 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         for e in game_map.entities:
             if isinstance(e, Trap) and e.is_revealed and visible[e.x, e.y]:
                 features.append((dist2(px, py, e.x, e.y), f"{e.name} {direction(px, py, e.x, e.y)}"))
+            elif isinstance(e, Chest) and visible[e.x, e.y]:
+                label = "chest (opened)" if e.opened else "chest"
+                features.append((dist2(px, py, e.x, e.y), f"{label} {direction(px, py, e.x, e.y)}"))
         sx, sy = game_map.downstairs_location
         if visible[sx, sy]:
             features.append((dist2(px, py, sx, sy), f"Stairs down {direction(px, py, sx, sy)}"))
