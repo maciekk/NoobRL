@@ -746,6 +746,44 @@ class FertilizerBombConsumable(BombConsumable):
             )
 
 
+class EnchantWeaponConsumable(Consumable):
+    """Adds +1 enchantment to the currently equipped weapon."""
+
+    def get_description(self) -> list[str]:
+        return ["Adds +1 enchantment to your weapon"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        if not consumer.equipment or not consumer.equipment.weapon:
+            raise Impossible("You are not wielding a weapon.")
+        weapon = consumer.equipment.weapon
+        weapon.equippable.enchantment += 1
+        self.engine.message_log.add_message(
+            f"Your {weapon.name} glows brightly! It is now +{weapon.equippable.enchantment}.",
+            color.status_effect_applied,
+        )
+        self.consume()
+
+
+class EnchantArmourConsumable(Consumable):
+    """Adds +1 enchantment to the currently equipped armour."""
+
+    def get_description(self) -> list[str]:
+        return ["Adds +1 enchantment to your armour"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        if not consumer.equipment or not consumer.equipment.armor:
+            raise Impossible("You are not wearing armour.")
+        armor = consumer.equipment.armor
+        armor.equippable.enchantment += 1
+        self.engine.message_log.add_message(
+            f"Your {armor.name} glows brightly! It is now +{armor.equippable.enchantment}.",
+            color.status_effect_applied,
+        )
+        self.consume()
+
+
 class BlindnessConsumable(Consumable):
     """Blinds the consumer for a set duration."""
 

@@ -36,6 +36,8 @@ CONSUMABLE_MAP = {
     "BlindnessConsumable": consumable.BlindnessConsumable,
     "IdentificationConsumable": consumable.IdentificationConsumable,
     "DetectTrapsConsumable": consumable.DetectTrapsConsumable,
+    "EnchantWeaponConsumable": consumable.EnchantWeaponConsumable,
+    "EnchantArmourConsumable": consumable.EnchantArmourConsumable,
 }
 EQUIPPABLE_MAP = {
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,

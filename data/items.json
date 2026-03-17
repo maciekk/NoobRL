@@ -368,6 +368,24 @@
         "stack_count": 3
     },
     {
+        "id": "s_enchant_weapon",
+        "name": "scroll of Enchant Weapon",
+        "char": "?",
+        "color": [255, 100, 100],
+        "consumable": {
+            "name": "EnchantWeaponConsumable"
+        }
+    },
+    {
+        "id": "s_enchant_armour",
+        "name": "scroll of Enchant Armour",
+        "char": "?",
+        "color": [100, 100, 255],
+        "consumable": {
+            "name": "EnchantArmourConsumable"
+        }
+    },
+    {
         "id": "p_blindness",
         "name": "Potion of Blindness",
         "char": "!",
