@@ -439,9 +439,7 @@ class MovementAction(ActionWithDirection):
         new_x, new_y = self.entity.x, self.entity.y
         for ent in list(self.engine.game_map.entities):
             if hasattr(ent, "trap_type") and ent.x == new_x and ent.y == new_y:
-                # Trapdoors only affect the player; squeaky boards affect everyone
-                if self.entity is self.engine.player or ent.trap_type != "trapdoor":
-                    ent.trigger(self.engine, self.entity)
+                ent.trigger(self.engine, self.entity)
                 break
 
 

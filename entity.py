@@ -323,16 +323,24 @@ class Trap(Entity):
             self.is_revealed = True
 
         if self.trap_type == "trapdoor":
-            floors = random.randint(1, 3)
-            engine.message_log.add_message(
-                "You fall through a trapdoor!", _color.descend
-            )
-            engine.game_world.current_floor += floors
-            engine.game_world.generate_floor(direction=0, trapdoor=True)
-            engine.message_log.add_message(
-                f"You land on dungeon level {engine.game_world.current_floor}.",
-                _color.descend,
-            )
+            if triggering_entity is engine.player:
+                floors = random.randint(1, 3)
+                engine.message_log.add_message(
+                    "You fall through a trapdoor!", _color.descend
+                )
+                engine.game_world.current_floor += floors
+                engine.game_world.generate_floor(direction=0, trapdoor=True)
+                engine.message_log.add_message(
+                    f"You land on dungeon level {engine.game_world.current_floor}.",
+                    _color.descend,
+                )
+            else:
+                if engine.game_map.visible[self.x, self.y]:
+                    engine.message_log.add_message(
+                        f"The {triggering_entity.name} falls through a trapdoor and disappears!",
+                        _color.enemy_die,
+                    )
+                engine.game_map.entities.discard(triggering_entity)
 
         elif self.trap_type == "squeaky_board":
             if triggering_entity is engine.player:
