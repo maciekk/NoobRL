@@ -1423,12 +1423,14 @@ class SelectIndexHandler(AskUserEventHandler):
     def __init__(self, engine: Engine):
         """Sets the cursor to the last targeted actor if still valid, else to the player."""
         super().__init__(engine)
+        self._saved_camera = (engine.camera_x, engine.camera_y)
         pos = self._resolve_last_target_pos()
         if pos:
             engine.mouse_location = pos
         else:
             player = self.engine.player
             engine.mouse_location = player.x, player.y
+        self._pan_to_cursor()
 
     def _resolve_last_target_pos(self) -> Optional[Tuple[int, int]]:
         """Return the best cursor position for the last targeted actor.
@@ -1448,6 +1450,26 @@ class SelectIndexHandler(AskUserEventHandler):
             return actor.x, actor.y
         # Not visible — use last known position.
         return self.engine.last_target_pos
+
+    def _pan_to_cursor(self) -> None:
+        """Pan the camera so the cursor is visible, with a small margin."""
+        wx, wy = self.engine.mouse_location
+        sx, sy = self.engine.world_to_screen(wx, wy)
+        vw, vh = self.engine.viewport_width, self.engine.viewport_height
+        margin = 3
+        if sx < margin:
+            self.engine.camera_x -= margin - sx
+        elif sx >= vw - margin:
+            self.engine.camera_x += sx - (vw - margin) + 1
+        if sy < margin:
+            self.engine.camera_y -= margin - sy
+        elif sy >= vh - margin:
+            self.engine.camera_y += sy - (vh - margin) + 1
+        self.engine.clamp_camera()
+
+    def _restore_camera(self) -> None:
+        """Restore the camera to the position it was at when targeting started."""
+        self.engine.camera_x, self.engine.camera_y = self._saved_camera
 
     def _save_target_actor(self, x: int, y: int) -> None:
         """Remember the actor at (x, y) for future targeting sessions."""
@@ -1485,9 +1507,11 @@ class SelectIndexHandler(AskUserEventHandler):
             x = max(0, min(x, self.engine.game_map.width - 1))
             y = max(0, min(y, self.engine.game_map.height - 1))
             self.engine.mouse_location = x, y
+            self._pan_to_cursor()
             return None
         if key in CONFIRM_KEYS:
             self._save_target_actor(*self.engine.mouse_location)
+            self._restore_camera()
             return self.on_index_selected(*self.engine.mouse_location)
         return super().ev_keydown(event)
 
@@ -1501,8 +1525,13 @@ class SelectIndexHandler(AskUserEventHandler):
                 wx, wy = self.engine.screen_to_world(sx, sy)
                 if self.engine.game_map.in_bounds(wx, wy):
                     self._save_target_actor(wx, wy)
+                    self._restore_camera()
                     return self.on_index_selected(wx, wy)
         return super().ev_mousebuttondown(event)
+
+    def on_exit(self) -> Optional[ActionOrHandler]:
+        self._restore_camera()
+        return super().on_exit()
 
     def on_index_selected(self, x: int, y: int) -> Optional[ActionOrHandler]:
         """Called when an index is selected."""
@@ -1534,6 +1563,7 @@ class SelectEntityHandler(SelectIndexHandler):
         self.tab_targets = tab_targets
         if initial_xy is not None:
             engine.mouse_location = initial_xy
+            self._pan_to_cursor()
 
     def _tab_entity_list(self) -> list:
         game_map = self.engine.game_map
@@ -1558,6 +1588,7 @@ class SelectEntityHandler(SelectIndexHandler):
                 if entities[0].x == cx and entities[0].y == cy:
                     entities = entities[1:] + entities[:1]
                 self.engine.mouse_location = entities[0].x, entities[0].y
+                self._pan_to_cursor()
             return None
         return super().ev_keydown(event)
 
@@ -2077,16 +2108,20 @@ class MainGameEventHandler(EventHandler):
             def look_callback(xy: Tuple[int, int]) -> Optional[ActionOrHandler]:
                 x, y = xy
                 game_map = self.engine.game_map
-                back = SelectEntityHandler(
-                    self.engine, look_callback, TabTargets.MONSTERS_AND_ITEMS,
-                    initial_xy=(x, y),
-                )
                 if game_map.visible[x, y]:
                     actor = game_map.get_actor_at_location(x, y)
                     if actor and actor is not self.engine.player and actor.is_alive:
+                        back = SelectEntityHandler(
+                            self.engine, look_callback, TabTargets.MONSTERS_AND_ITEMS,
+                            initial_xy=(x, y),
+                        )
                         return MonsterDetailHandler(self.engine, actor, back)
                     items_here = [i for i in game_map.items if i.x == x and i.y == y]
                     if items_here:
+                        back = SelectEntityHandler(
+                            self.engine, look_callback, TabTargets.MONSTERS_AND_ITEMS,
+                            initial_xy=(x, y),
+                        )
                         if len(items_here) == 1:
                             return FloorItemDetailHandler(self.engine, items_here[0], back)
                         return FloorItemListHandler(self.engine, items_here, back)
