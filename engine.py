@@ -169,6 +169,52 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         item.place(self.player.x, self.player.y, self.game_map)
         return item, False
 
+    def maybe_spawn_monster_from_stairs(self) -> None:
+        """Occasionally spawn a monster from a staircase, simulating inter-floor movement.
+
+        5% chance per turn. Picks a random staircase (up or down), determines
+        the source floor (current ± 1), and spawns a floor-appropriate monster
+        if the tile is unoccupied and not visible to the player.
+        """
+        import random  # pylint: disable=import-outside-toplevel
+        from procgen import enemy_chances, get_entities_at_random  # pylint: disable=import-outside-toplevel
+        import tile_types  # pylint: disable=import-outside-toplevel
+
+        if random.random() >= 0.05:
+            return
+
+        gm = self.game_map
+        candidates = []
+        # Upstairs: monster comes from the floor above (current_floor - 1)
+        ux, uy = gm.upstairs_location
+        if gm.tiles[ux, uy] == tile_types.up_stairs:
+            candidates.append((ux, uy, self.game_world.current_floor - 1))
+        # Downstairs: monster comes from the floor below (current_floor + 1)
+        dx, dy = gm.downstairs_location
+        if gm.tiles[dx, dy] == tile_types.down_stairs:
+            candidates.append((dx, dy, self.game_world.current_floor + 1))
+
+        if not candidates:
+            return
+
+        sx, sy, source_floor = random.choice(candidates)
+        if source_floor < 1:
+            return
+
+        # Don't spawn if the tile is occupied
+        if gm.get_actor_at_location(sx, sy):
+            return
+
+        entities = get_entities_at_random(self, enemy_chances, 1, source_floor)
+        if not entities or entities[0] is None:
+            return
+
+        spawned = entities[0].spawn(gm, sx, sy)
+        if gm.visible[sx, sy]:
+            self.message_log.add_message(
+                f"A {spawned.name} emerges from the stairs!"
+            )
+
     def handle_enemy_turns(self) -> None:
         """Process AI actions for all non-player actors."""
         for entity in sorted(
@@ -386,6 +432,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
             return
         self.apply_timed_effects()
         self.handle_enemy_turns()
+        self.maybe_spawn_monster_from_stairs()
         self._process_sounds()
         self.update_fov()
         self.turn += 1

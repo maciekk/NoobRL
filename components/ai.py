@@ -39,6 +39,32 @@ class BaseAI(Action):
         except Impossible:
             pass
 
+    def _maybe_use_stairs(self) -> bool:
+        """If standing on stairs and can't see the player, 20% chance to leave the floor.
+
+        Returns True if the monster used the stairs (and was removed from the map).
+        """
+        entity = self.entity
+        game_map = self.engine.game_map
+        tile = game_map.tiles[entity.x, entity.y]
+        if tile != tile_types.down_stairs and tile != tile_types.up_stairs:
+            return False
+        # Don't leave if the player is visible
+        player = self.engine.player
+        dx = player.x - entity.x
+        dy = player.y - entity.y
+        distance = max(abs(dx), abs(dy))
+        if (
+            game_map.visible[entity.x, entity.y]
+            and not player.is_invisible
+            and distance <= entity.sight_range
+        ):
+            return False
+        if random.random() < 0.20:
+            game_map.entities.discard(entity)
+            return True
+        return False
+
 
 class ConfusedEnemy(BaseAI):
     """A confused enemy stumbles aimlessly for a set number of turns,
@@ -227,10 +253,13 @@ class HostileEnemy(BaseAI):
                 dest_x - self.entity.x,
                 dest_y - self.entity.y,
             ).perform()
+            if self._maybe_use_stairs():
+                return
             return
 
         # No path and not aware of player: wander randomly
         self._wander_randomly()
+        self._maybe_use_stairs()
 
 
 class PatrollingEnemy(BaseAI):
@@ -333,6 +362,7 @@ class PatrollingEnemy(BaseAI):
         if self.wander_turns > 0:
             self.wander_turns -= 1
             self._wander_randomly()
+            self._maybe_use_stairs()
             return
 
         # Pick a new patrol target if we don't have one
@@ -346,6 +376,7 @@ class PatrollingEnemy(BaseAI):
                 self.patrol_target = None
                 self.wander_turns = self.WANDER_TURNS
                 self._wander_randomly()
+                self._maybe_use_stairs()
                 return
 
             if not self.path:
@@ -358,9 +389,12 @@ class PatrollingEnemy(BaseAI):
                     dest_x - self.entity.x,
                     dest_y - self.entity.y,
                 ).perform()
+                if self._maybe_use_stairs():
+                    return
                 return
 
             # Can't reach target; pick a new one next turn
             self.patrol_target = None
 
         self._wander_randomly()
+        self._maybe_use_stairs()
