@@ -10,6 +10,7 @@ import numpy as np  # pylint: disable=import-error
 
 import color
 import tile_types
+from constants import ALL_DIRS
 from exceptions import Impossible
 from location import Location
 from actions import (
@@ -32,18 +33,7 @@ class BaseAI(Action):
 
     def _wander_randomly(self) -> None:
         """Move in a random direction (Brownian motion). Just moves; doesn't attack."""
-        direction_x, direction_y = random.choice(
-            [
-                (-1, -1),  # Northwest
-                (0, -1),   # North
-                (1, -1),   # Northeast
-                (-1, 0),   # West
-                (1, 0),    # East
-                (-1, 1),   # Southwest
-                (0, 1),    # South
-                (1, 1),    # Southeast
-            ]
-        )
+        direction_x, direction_y = random.choice(ALL_DIRS)
         try:
             MovementAction(self.entity, direction_x, direction_y).perform()
         except Impossible:
@@ -76,18 +66,7 @@ class ConfusedEnemy(BaseAI):
             self.entity.ai = self.previous_ai
         else:
             # Pick a random direction
-            direction_x, direction_y = random.choice(
-                [
-                    (-1, -1),  # Northwest
-                    (0, -1),  # North
-                    (1, -1),  # Northeast
-                    (-1, 0),  # West
-                    (1, 0),  # East
-                    (-1, 1),  # Southwest
-                    (0, 1),  # South
-                    (1, 1),  # Southeast
-                ]
-            )
+            direction_x, direction_y = random.choice(ALL_DIRS)
 
             self.turns_remaining -= 1
 

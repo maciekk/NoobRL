@@ -218,10 +218,7 @@ class DebugHandler(AskUserEventHandler):
     def on_render(self, console: tcod.console.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
         prompt = f"Enter entity to spawn: {self.buffer}"

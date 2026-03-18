@@ -49,11 +49,25 @@ AI_MAP = {
 }
 
 
-class ItemManager:
+class BaseManager:
+    """Base for template managers with a shared clone method."""
+
+    def __init__(self):
+        self._templates: dict = {}
+
+    def clone(self, name: Optional[string]):
+        """Return a deep copy of a template by name, or None."""
+        if name is None or name not in self._templates:
+            return None
+        return copy.deepcopy(self._templates[name])
+
+
+class ItemManager(BaseManager):
     """Loads and manages item templates from a JSON file."""
 
     def __init__(self, fname: string):
-        self.items = {}
+        super().__init__()
+        self.items = self._templates
         self.load(fname)
 
     def load(self, fname: string) -> None:
@@ -79,20 +93,13 @@ class ItemManager:
                         item["equippable"] = equippable.Equippable(equipment_type=eq_type, **d)
                 self.items[entity_id] = Item(**item)
 
-    def clone(self, name: Optional[string]) -> Optional[Item]:
-        """Return a deep copy of an item template by name."""
-        if name is None:
-            return None
-        if name not in self.items:
-            return None
-        return copy.deepcopy(self.items[name])
 
-
-class MonsterManager:
+class MonsterManager(BaseManager):
     """Loads and manages actor (monster) templates from a JSON file."""
 
     def __init__(self, fname: string, item_manager: ItemManager):
-        self.monsters = {}
+        super().__init__()
+        self.monsters = self._templates
         self.item_manager = item_manager
         self.load(fname)
 
@@ -118,11 +125,3 @@ class MonsterManager:
                 if d:
                     item["level"] = components.level.Level(**d)
                 self.monsters[entity_id] = Actor(**item)
-
-    def clone(self, name: string) -> Actor:
-        """Return a deep copy of an actor template by name."""
-        if name is None:
-            return None
-        if name not in self.monsters:
-            return None
-        return copy.deepcopy(self.monsters[name])

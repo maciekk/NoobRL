@@ -180,6 +180,11 @@ class EventHandler(BaseEventHandler):
         super().__init__()
         self.engine = engine
 
+    @property
+    def menu_x(self) -> int:
+        """Return x for a popup menu opposite the player's screen position."""
+        return 40 if self.engine.player.x <= 30 else 0
+
     def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
         """Handle events and dispatch actions; check for death and level-up conditions."""
         # Record keystrokes (exclude debug handlers and the @ key that opens them)
@@ -344,10 +349,7 @@ class ListSelectionHandler(AskUserEventHandler):
         num_items = len(items)
         height = max(num_items + 2, 3)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
 
@@ -459,7 +461,7 @@ class DirectionalSelectionHandler(AskUserEventHandler):
         super().on_render(console)
 
         items = self.get_directional_items()
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = self.menu_x
         y = 0
         item_strings = self._build_direction_strings(items)
         height = max(len(item_strings) + 2, 3)
@@ -528,10 +530,7 @@ class CharacterScreenEventHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:  # pylint: disable=too-many-locals
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
 
@@ -719,7 +718,7 @@ class ViewSurroundingsHandler(AskUserEventHandler):
         px, py = self.engine.player.x, self.engine.player.y
         monsters, corpses, items_sorted, features = self._collect_surroundings(game_map, px, py)
         lines = self._build_display_lines(monsters, corpses, items_sorted, features)
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = self.menu_x
         y = 0
         height = len(lines) + 2
         def _line_width(line):
@@ -752,10 +751,7 @@ class LevelUpEventHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         console.draw_frame(
             x=x,
@@ -905,7 +901,7 @@ class InventoryEventHandler(ListSelectionHandler):
         max_str_width = max((len(b) + len(s) for b, s in row_data), default=0)
         width = max(len(self.TITLE) + 4, max_str_width + 2)
 
-        x = 40 if self.engine.player.x <= 30 else 0
+        x = self.menu_x
         y = 0
 
         console.draw_frame(
@@ -1097,10 +1093,7 @@ class ItemDetailHandler(AskUserEventHandler):
         lines.append(("(d) Drop", color.white))
         lines.append(("(Esc) Back", color.white))
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
         max_line_width = max(len(text) for text, _ in lines)
@@ -1166,10 +1159,7 @@ class DropQuantityHandler(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         prompt = f"Drop how many {self.item.display_name}? (1-{self.item.stack_count})"
         max_digits = len(str(self.item.stack_count))
@@ -1639,10 +1629,7 @@ class MonsterDetailHandler(AskUserEventHandler):
         lines.append(("", color.white))
         lines.append(("(Esc) Back", color.white))
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
         max_line_width = max(len(text) for text, _ in lines)
@@ -1725,10 +1712,7 @@ class FloorItemDetailHandler(AskUserEventHandler):
         lines.append(("", color.white))
         lines.append(("(Esc) Back", color.white))
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
         max_line_width = max(len(text) for text, _ in lines)
@@ -2297,10 +2281,7 @@ class ViewKeybinds(AskUserEventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
-        if self.engine.player.x <= 30:
-            x = 40
-        else:
-            x = 0
+        x = self.menu_x
 
         y = 0
 

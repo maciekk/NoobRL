@@ -14,11 +14,11 @@ if TYPE_CHECKING:
 class TimedEffect(BaseComponent):
     """Base class for temporary effects that tick down each turn and can expire."""
     parent: Actor
+    name = "<unknown>"
 
     def __init__(self, engine: "Engine"):  # pylint: disable=unused-argument
         self.max_turns = 0
         self.turns_left = 0
-        self.name = "<unknown>"
 
     def activate(self) -> None:
         """Start the effect by setting the remaining turns to the maximum."""
@@ -31,105 +31,88 @@ class TimedEffect(BaseComponent):
             self.expire()
 
     def expire(self) -> None:
-        """Called when the effect's duration expires; can be overridden for cleanup."""
+        """Remove this effect from the parent. Subclasses should clean up before calling super."""
+        self.parent.effects.remove(self)
+
+
+class FlagEffect(TimedEffect):
+    """Timed effect that toggles a boolean flag on the parent actor.
+
+    Subclasses set ``flag_name`` and ``name`` as class attributes.
+    Override ``expire()`` to add a message, calling ``super().expire()`` first.
+    """
+    flag_name: str  # Subclass must set
+
+    def __init__(self, engine: "Engine", duration: int):
+        super().__init__(engine)
+        self.max_turns = duration
+
+    def activate(self) -> None:
+        super().activate()
+        setattr(self.parent, self.flag_name, True)
+
+    def expire(self) -> None:
+        setattr(self.parent, self.flag_name, False)
+        super().expire()
 
 
 class RageEffect(TimedEffect):
     """Increases damage output for a limited duration."""
+    name = "Rage"
+
     def __init__(self, engine: "Engine", dmg_mult: float, duration: int):
         super().__init__(engine)
         self.max_turns = duration
         self.dmg_mult = dmg_mult
-        self.name = "Rage"
 
-    def activate(self):
+    def activate(self) -> None:
         super().activate()
         self.parent.fighter.base_power *= self.dmg_mult
 
-    def expire(self):
-        super().expire()
+    def expire(self) -> None:
         self.parent.fighter.base_power = round(
             self.parent.fighter.base_power / self.dmg_mult
         )
-        self.parent.effects.remove(self)
+        super().expire()
 
 
-class InvisibilityEffect(TimedEffect):
+class InvisibilityEffect(FlagEffect):
     """Makes the actor invisible to enemies while active."""
-
-    def __init__(self, engine: "Engine", duration: int):
-        super().__init__(engine)
-        self.max_turns = duration
-        self.name = "Invisible"
-
-    def activate(self):
-        super().activate()
-        self.parent.is_invisible = True
-
-    def expire(self):
-        super().expire()
-        self.parent.is_invisible = False
-        self.parent.effects.remove(self)
+    name = "Invisible"
+    flag_name = "is_invisible"
 
 
-class SpeedEffect(TimedEffect):
+class SpeedEffect(FlagEffect):
     """Doubles the actor's movement and action speed."""
+    name = "Haste"
+    flag_name = "is_hasted"
 
-    def __init__(self, engine: "Engine", duration: int):
-        super().__init__(engine)
-        self.max_turns = duration
-        self.name = "Haste"
-
-    def activate(self):
-        super().activate()
-        self.parent.is_hasted = True
-
-    def expire(self):
+    def expire(self) -> None:
         super().expire()
-        self.parent.is_hasted = False
-        self.parent.effects.remove(self)
         self.engine.message_log.add_message(
             "You feel yourself slowing down.", (0x80, 0x80, 0x80)
         )
 
 
-class DetectMonsterEffect(TimedEffect):
+class DetectMonsterEffect(FlagEffect):
     """Reveals the location of all monsters on the map."""
+    name = "Detect Monster"
+    flag_name = "is_detecting_monsters"
 
-    def __init__(self, engine: "Engine", duration: int):
-        super().__init__(engine)
-        self.max_turns = duration
-        self.name = "Detect Monster"
-
-    def activate(self):
-        super().activate()
-        self.parent.is_detecting_monsters = True
-
-    def expire(self):
+    def expire(self) -> None:
         super().expire()
-        self.parent.is_detecting_monsters = False
-        self.parent.effects.remove(self)
         self.engine.message_log.add_message(
             "Your monster sense fades.", (0x80, 0x80, 0x80)
         )
 
 
-class SleepEffect(TimedEffect):
+class SleepEffect(FlagEffect):
     """Puts the actor to sleep for a duration; wakes up if attacked."""
+    name = "Sleep"
+    flag_name = "is_asleep"
 
-    def __init__(self, engine: "Engine", duration: int):
-        super().__init__(engine)
-        self.max_turns = duration
-        self.name = "Sleep"
-
-    def activate(self):
-        super().activate()
-        self.parent.is_asleep = True
-
-    def expire(self):
+    def expire(self) -> None:
         super().expire()
-        self.parent.is_asleep = False
-        self.parent.effects.remove(self)
         if self.parent is self.engine.player:
             self.engine.message_log.add_message(
                 "You wake up!", (0xFF, 0xFF, 0xFF)
@@ -140,22 +123,13 @@ class SleepEffect(TimedEffect):
             )
 
 
-class BlindnessEffect(TimedEffect):
+class BlindnessEffect(FlagEffect):
     """Blinds the actor, preventing them from seeing."""
+    name = "Blindness"
+    flag_name = "is_blind"
 
-    def __init__(self, engine: "Engine", duration: int):
-        super().__init__(engine)
-        self.max_turns = duration
-        self.name = "Blindness"
-
-    def activate(self):
-        super().activate()
-        self.parent.is_blind = True
-
-    def expire(self):
+    def expire(self) -> None:
         super().expire()
-        self.parent.is_blind = False
-        self.parent.effects.remove(self)
         if self.parent is self.engine.player:
             self.engine.message_log.add_message(
                 "You can see again!", (0xFF, 0xFF, 0xFF)

@@ -54,6 +54,14 @@ class Consumable(BaseComponent):
         """Return description lines for the item detail screen."""
         return []
 
+    def _apply_effect(self, consumer, effect, message, msg_color=color.status_effect_applied):
+        """Attach a timed effect to the consumer, log a message, and consume the item."""
+        consumer.effects.append(effect)
+        effect.parent = consumer
+        self.engine.message_log.add_message(message, msg_color)
+        effect.activate()
+        self.consume()
+
     def consume(self) -> None:
         """Decrement stack count; remove when it reaches 0."""
         entity = self.parent
@@ -373,14 +381,11 @@ class RageConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = RageEffect(engine=self.engine, dmg_mult=self.amount, duration=10)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        self.engine.message_log.add_message(
+        self._apply_effect(
+            consumer, eff,
             "You are filled in with rage! (Damage increased by +1)",
             color.damage_increased,
         )
-        eff.activate()
-        self.consume()
 
 
 class InvisibilityConsumable(Consumable):
@@ -395,14 +400,7 @@ class InvisibilityConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = InvisibilityEffect(engine=self.engine, duration=self.duration)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        self.engine.message_log.add_message(
-            "You fade from sight!",
-            color.status_effect_applied,
-        )
-        eff.activate()
-        self.consume()
+        self._apply_effect(consumer, eff, "You fade from sight!")
 
 
 class SpeedConsumable(Consumable):
@@ -417,14 +415,7 @@ class SpeedConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = SpeedEffect(engine=self.engine, duration=self.duration)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        self.engine.message_log.add_message(
-            "You feel yourself moving faster!",
-            color.status_effect_applied,
-        )
-        eff.activate()
-        self.consume()
+        self._apply_effect(consumer, eff, "You feel yourself moving faster!")
 
 
 class BlinkConsumable(Consumable):
@@ -650,14 +641,7 @@ class DetectMonsterConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = DetectMonsterEffect(engine=self.engine, duration=self.duration)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        self.engine.message_log.add_message(
-            "You sense the presence of monsters!",
-            color.status_effect_applied,
-        )
-        eff.activate()
-        self.consume()
+        self._apply_effect(consumer, eff, "You sense the presence of monsters!")
 
 
 class SleepConsumable(Consumable):
@@ -671,15 +655,8 @@ class SleepConsumable(Consumable):
 
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
-        self.engine.message_log.add_message(
-            f"The {consumer.name} falls asleep!",
-            color.status_effect_applied,
-        )
         eff = SleepEffect(engine=self.engine, duration=self.number_of_turns)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        eff.activate()
-        self.consume()
+        self._apply_effect(consumer, eff, f"The {consumer.name} falls asleep!")
 
 
 class BombConsumable(Consumable):
@@ -796,11 +773,4 @@ class BlindnessConsumable(Consumable):
     def activate(self, action: actions.ItemAction) -> None:
         consumer = action.entity
         eff = BlindnessEffect(engine=self.engine, duration=self.duration)
-        consumer.effects.append(eff)
-        eff.parent = consumer
-        self.engine.message_log.add_message(
-            "You are blinded!",
-            color.status_effect_applied,
-        )
-        eff.activate()
-        self.consume()
+        self._apply_effect(consumer, eff, "You are blinded!")

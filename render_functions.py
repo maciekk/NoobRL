@@ -108,6 +108,18 @@ def render_names_at_mouse_location(
     console.print(x=x, y=y, string=names_at_mouse_location)
 
 
+def _begin_frame(engine, console) -> None:
+    """Clear the console and re-render the game state for a new animation frame."""
+    console.clear()
+    engine.render(console)
+
+
+def _end_frame(console, context, delay: float) -> None:
+    """Present the current console contents and pause for one animation frame."""
+    context.present(console, keep_aspect=True, integer_scaling=False)
+    time.sleep(delay)
+
+
 def _explosion_color(heat: float) -> tuple:
     """Map heat [0.0, 1.0] to a color: dark-red (cold) → red → orange → yellow → white (hot)."""
     stops = [
@@ -153,14 +165,12 @@ def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional
         return
     r = max(radius, 1)
     for f, char in enumerate(chars):
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         for tx, ty in tiles:
             d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
             heat = 1.0 - (f / 4) * 0.7 - (d / r) * 0.3
             engine.print_at_world(console, tx, ty, string=char, fg=_explosion_color(heat))
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.08)
+        _end_frame(console, context, 0.08)
 
 
 def animate_grass_growth(
@@ -184,15 +194,13 @@ def animate_grass_growth(
         return
     r = max(radius, 1)
     for f in range(4):
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         for tx, ty in tiles:
             d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
             intensity = int(80 + 150 * (1.0 - f / 3) * (1.0 - d / r * 0.5))
             intensity = max(30, min(255, intensity))
             engine.print_at_world(console, tx, ty, string=";", fg=(0, intensity, 0))
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.08)
+        _end_frame(console, context, 0.08)
 
 
 def animate_lightning_ray(
@@ -218,13 +226,11 @@ def animate_lightning_ray(
 
     # Growing animation: each frame adds one more tile
     for i in range(1, len(visible_path) + 1):
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         for j, (tx, ty) in enumerate(visible_path[:i]):
             clr = tip_color if j == i - 1 else trail_color
             engine.print_at_world(console, tx, ty, string=ray_char, fg=clr)
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.025)
+        _end_frame(console, context, 0.025)
 
     # Flicker at full extension
     for flicker_char, clr in [
@@ -232,12 +238,10 @@ def animate_lightning_ray(
         (ray_char, (160, 220, 255)),
         ("*", (255, 255, 200)),
     ]:
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         for tx, ty in visible_path:
             engine.print_at_world(console, tx, ty, string=flicker_char, fg=clr)
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.04)
+        _end_frame(console, context, 0.04)
 
 
 def animate_digging_ray(
@@ -255,14 +259,12 @@ def animate_digging_ray(
         return
 
     for i in range(1, len(path) + 1):
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         for j, (tx, ty) in enumerate(path[:i]):
             if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
                 clr = tip_color if j == i - 1 else trail_color
                 engine.print_at_world(console, tx, ty, string=ray_char, fg=clr)
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(0.025)
+        _end_frame(console, context, 0.025)
 
 
 def animate_sound_wave(
@@ -294,8 +296,7 @@ def animate_sound_wave(
             monster_ring = list(monster_by_dist.get(dist, []))
             if not player_ring and not monster_ring:
                 continue
-            console.clear()
-            engine.render(console)
+            _begin_frame(engine, console)
             # Trail: paint dark bg on all previously visited player tiles
             for tx, ty in trail_visited:
                 sx, sy = engine.world_to_screen(tx, ty)
@@ -305,23 +306,20 @@ def animate_sound_wave(
             for tx, ty in player_ring + monster_ring:
                 if engine.game_map.visible[tx, ty]:
                     engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color, bg=trail_bg)
-            context.present(console, keep_aspect=True, integer_scaling=False)
-            time.sleep(0.03)
+            _end_frame(console, context, 0.03)
             trail_visited.extend(player_ring)
             rendered_any = True
         if rendered_any:
             time.sleep(0.12)
         # Erase trail
         if trail_visited:
-            console.clear()
-            engine.render(console)
-            context.present(console, keep_aspect=True, integer_scaling=False)
+            _begin_frame(engine, console)
+            _end_frame(console, context, 0)
 
     # --- Burst animation for invisible monster sounds (ring-by-ring, radius 3, no trail) ---
     if monster_burst_locs:
         for dist in range(1, 5):
-            console.clear()
-            engine.render(console)
+            _begin_frame(engine, console)
             for loc in monster_burst_locs:
                 for dx in range(-dist, dist + 1):
                     for dy in range(-dist, dist + 1):
@@ -330,12 +328,10 @@ def animate_sound_wave(
                             tx, ty = loc.x + dx, loc.y + dy
                             if engine.game_map.in_bounds(tx, ty):
                                 engine.print_at_world(console, tx, ty, string=wave_char, fg=wave_color)
-            context.present(console, keep_aspect=True, integer_scaling=False)
-            time.sleep(0.025)
+            _end_frame(console, context, 0.025)
         time.sleep(0.05)
-        console.clear()
-        engine.render(console)
-        context.present(console, keep_aspect=True, integer_scaling=False)
+        _begin_frame(engine, console)
+        _end_frame(console, context, 0)
 
 
 def animate_projectile(
@@ -355,8 +351,6 @@ def animate_projectile(
             continue
         if not engine.game_map.visible[x, y]:
             continue
-        console.clear()
-        engine.render(console)
+        _begin_frame(engine, console)
         engine.print_at_world(console, x, y, string=char, fg=fg)
-        context.present(console, keep_aspect=True, integer_scaling=False)
-        time.sleep(frame_delay)
+        _end_frame(console, context, frame_delay)
