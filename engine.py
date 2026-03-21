@@ -321,9 +321,9 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         with open(filename, "wb") as f:
             f.write(save_data)
 
-    def emit_sound(self, location: Location, radius: int, by_player: bool = False) -> None:
+    def emit_sound(self, location: Location, radius: int, by_player: bool = False, animate: bool = True) -> None:
         """Queue a sound event to be processed at the start of the next turn cycle."""
-        self._pending_sounds.append((Location(*location), radius, by_player))
+        self._pending_sounds.append((Location(*location), radius, by_player, animate))
 
     def _bfs_sound(
         self,
@@ -396,8 +396,10 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         monster_burst_locs: list[Location] = []
         # actor → (actor_loc, source_loc) — keep only first source that reaches each actor
         alerted: dict[object, tuple[Location, Location]] = {}
-        for location, radius, by_player in self._pending_sounds:
+        for location, radius, by_player, animate in self._pending_sounds:
             self._bfs_sound(location, radius, combined_by_dist, alerted)
+            if not animate:
+                continue
             if by_player:
                 self._bfs_sound(location, radius, player_by_dist, {})
             else:

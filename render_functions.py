@@ -120,6 +120,72 @@ def _end_frame(console, context, delay: float) -> None:
     time.sleep(delay)
 
 
+# ---------------------------------------------------------------------------
+# Animation compositing
+# ---------------------------------------------------------------------------
+#
+# A render op is a tuple describing one tile to draw in a frame:
+#   (x, y, char, fg)            — print char with foreground color
+#   (x, y, char, fg, bg)        — print char with foreground and background
+#   (x, y, None, None, bg)      — set background only (keep existing char)
+#
+# A frame is a list of render ops.
+# An animation layer is (delay, frames) where delay is the number of frames
+# to wait before starting, and frames is an iterable of frame lists.
+# Later layers overwrite earlier ones on overlapping tiles.
+
+
+def composite_animations(engine, layers, console, context, frame_delay=0.04):
+    """Play multiple animation layers composited together.
+
+    Args:
+        engine: the Engine (for rendering and world-to-screen conversion).
+        layers: list of (delay, frames) tuples.
+            delay: number of global frames to skip before this layer starts.
+            frames: iterable of frame lists (each frame is a list of render ops).
+        console: tcod console to draw on.
+        context: tcod context to present.
+        frame_delay: seconds between frames.
+
+    Render ops are processed in layer order — later layers paint over earlier
+    ones on the same tile, giving predictable compositing.
+    """
+    # Materialize all layers so we can index by frame number.
+    materialized = [(delay, list(frames)) for delay, frames in layers]
+
+    total = max(
+        (delay + len(frames) for delay, frames in materialized),
+        default=0,
+    )
+
+    for frame_idx in range(total):
+        _begin_frame(engine, console)
+        for delay, frames in materialized:
+            local = frame_idx - delay
+            if local < 0 or local >= len(frames):
+                continue
+            for op in frames[local]:
+                x, y = op[0], op[1]
+                if not engine.game_map.in_bounds(x, y):
+                    continue
+                if not engine.game_map.visible[x, y]:
+                    continue
+                char = op[2]
+                fg = op[3]
+                bg = op[4] if len(op) > 4 else None
+                if char is None:
+                    # Background-only op
+                    if bg is not None:
+                        sx, sy = engine.world_to_screen(x, y)
+                        if 0 <= sx < engine.viewport_width and 0 <= sy < engine.viewport_height:
+                            console.rgb[sx, sy]["bg"] = bg
+                elif bg is not None:
+                    engine.print_at_world(console, x, y, string=char, fg=fg, bg=bg)
+                else:
+                    engine.print_at_world(console, x, y, string=char, fg=fg)
+        _end_frame(console, context, frame_delay)
+
+
 def _explosion_color(heat: float) -> tuple:
     """Map heat [0.0, 1.0] to a color: dark-red (cold) → red → orange → yellow → white (hot)."""
     stops = [
@@ -137,6 +203,73 @@ def _explosion_color(heat: float) -> tuple:
             t = (heat - h0) / (h1 - h0)
             return tuple(int(c0[j] + t * (c1[j] - c0[j])) for j in range(3))
     return stops[-1][1]
+
+
+# ---------------------------------------------------------------------------
+# Frame generators — produce frame lists for use with composite_animations
+# ---------------------------------------------------------------------------
+
+
+def explosion_frames(engine, x, y, radius):
+    """Generate explosion frame data: 5 frames of expanding/cooling blast."""
+    chars = ["*", "x", "+", "-", "."]
+    tiles = [
+        (tx, ty)
+        for tx in range(x - radius, x + radius + 1)
+        for ty in range(y - radius, y + radius + 1)
+        if (tx - x) ** 2 + (ty - y) ** 2 <= radius ** 2
+        and engine.game_map.in_bounds(tx, ty)
+    ]
+    r = max(radius, 1)
+    frames = []
+    for f, char in enumerate(chars):
+        frame = []
+        for tx, ty in tiles:
+            d = ((tx - x) ** 2 + (ty - y) ** 2) ** 0.5
+            heat = 1.0 - (f / 4) * 0.7 - (d / r) * 0.3
+            frame.append((tx, ty, char, _explosion_color(heat)))
+        frames.append(frame)
+    return frames
+
+
+def projectile_frames(path, trail_color=(255, 140, 0), tip_color=(255, 255, 100)):
+    """Generate projectile travel frame data: one frame per path tile."""
+    frames = []
+    for i, (px, py) in enumerate(path):
+        frame = []
+        for tx, ty in path[:i]:
+            frame.append((tx, ty, ".", trail_color))
+        frame.append((px, py, "*", tip_color))
+        frames.append(frame)
+    return frames
+
+
+def sound_wave_frames(engine, player_by_dist, monster_by_dist):
+    """Generate sound wave frame data from BFS distance dicts."""
+    wave_color = (255, 255, 255)
+    wave_char = ","
+    trail_bg = (40, 40, 40)
+    all_dists = set(player_by_dist) | set(monster_by_dist)
+    if not all_dists:
+        return []
+    max_dist = max(all_dists)
+    frames = []
+    trail_visited = []
+    for dist in range(1, max_dist + 1):
+        player_ring = list(player_by_dist.get(dist, []))
+        monster_ring = list(monster_by_dist.get(dist, []))
+        if not player_ring and not monster_ring:
+            continue
+        frame = []
+        # Trail: bg-only ops for previously visited player tiles
+        for tx, ty in trail_visited:
+            frame.append((tx, ty, None, None, trail_bg))
+        # Wavefront
+        for tx, ty in player_ring + monster_ring:
+            frame.append((tx, ty, wave_char, wave_color, trail_bg))
+        frames.append(frame)
+        trail_visited.extend(player_ring)
+    return frames
 
 
 def animate_explosion(  # pylint: disable=too-many-arguments,too-many-positional-arguments
@@ -343,20 +476,14 @@ def animate_fireball_projectile(
     console,
     context,
 ) -> None:
-    """Animate a fireball projectile traveling along path, then exploding at impact."""
-    # Projectile travel
-    trail_color = (255, 140, 0)
-    tip_color = (255, 255, 100)
-    for i, (px, py) in enumerate(path):
-        if not engine.game_map.in_bounds(px, py) or not engine.game_map.visible[px, py]:
-            continue
-        _begin_frame(engine, console)
-        # Fading trail behind projectile
-        for j, (tx, ty) in enumerate(path[:i]):
-            if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
-                engine.print_at_world(console, tx, ty, string=".", fg=trail_color)
-        engine.print_at_world(console, px, py, string="*", fg=tip_color)
-        _end_frame(console, context, 0.04)
+    """Animate fireball projectile travel followed by explosion, using the compositor."""
+    proj = projectile_frames(path)
+    expl = explosion_frames(engine, impact_x, impact_y, radius)
+    layers = [
+        (0, proj),                # projectile travels first
+        (len(proj), expl),        # explosion starts when projectile arrives
+    ]
+    composite_animations(engine, layers, console, context, frame_delay=0.04)
 
 
 

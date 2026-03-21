@@ -552,9 +552,14 @@ def _fireball_compute_impact(engine, origin, target):
 
 def _fireball_activate(consumable, action: actions.ItemAction) -> None:
     from game_map import apply_explosion
-    from render_functions import animate_fireball_projectile
+    from render_functions import (
+        composite_animations, projectile_frames, explosion_frames,
+        sound_wave_frames,
+    )
     import input_handlers as _ih
+    import options
 
+    engine = consumable.engine
     consumer = action.entity
     origin = (consumer.x, consumer.y)
     target = action.target_xy
@@ -562,29 +567,48 @@ def _fireball_activate(consumable, action: actions.ItemAction) -> None:
     if target == origin:
         raise Impossible("Choose a direction to fire.")
 
-    path, impact = _fireball_compute_impact(consumable.engine, origin, target)
+    path, impact = _fireball_compute_impact(engine, origin, target)
     ix, iy = impact
     damage = consumable.damage
 
-    # Animate projectile travel + explosion
-    if _ih.context is not None and _ih.root_console is not None:
-        animate_fireball_projectile(
-            consumable.engine, path, ix, iy, consumable.radius,
-            _ih.root_console, _ih.context,
+    # Animate projectile + explosion + sound wave via compositor
+    can_animate = _ih.context is not None and _ih.root_console is not None
+    if can_animate:
+        proj = projectile_frames(path)
+        expl = explosion_frames(engine, ix, iy, consumable.radius)
+        explosion_start = len(proj)
+
+        layers = [
+            (0, proj),
+            (explosion_start + 1, expl),
+        ]
+
+        # Composite sound wave if sound animations are enabled
+        if options.show_sound:
+            from engine import Location
+            sound_by_dist: dict = {}
+            engine._bfs_sound(Location(*impact), int(SoundTravel.FIREBALL), sound_by_dist, {})
+            sw_frames = sound_wave_frames(engine, sound_by_dist, {})
+            if sw_frames:
+                layers.append((explosion_start, sw_frames))
+
+        composite_animations(
+            engine, layers, _ih.root_console, _ih.context, frame_delay=0.04,
         )
 
     _, grass_burned = apply_explosion(
-        consumable.engine, ix, iy, consumable.radius, damage,
+        engine, ix, iy, consumable.radius, damage,
+        animate=False,
         hit_message=lambda name: (
             f"The {name} is engulfed in a fiery explosion, taking {damage} damage!"
         ),
     )
     if grass_burned > 0:
-        consumable.engine.message_log.add_message(
+        engine.message_log.add_message(
             "The flames scorch the vegetation!", color.player_atk
         )
 
-    consumable.engine.emit_sound(impact, SoundTravel.FIREBALL, by_player=True)
+    engine.emit_sound(impact, SoundTravel.FIREBALL, by_player=True, animate=False)
     consumable.consume()
 
 

@@ -231,17 +231,19 @@ def apply_explosion(
     exclude=None,
     hit_message=None,
     hit_color=None,
+    animate=True,
 ) -> tuple:
     """Apply an explosion at (x, y): animate, damage actors, clear tall grass.
 
     exclude: collection of actors to skip (e.g. the exploding entity itself).
     hit_message: callable(actor_name: str) -> str for per-actor log messages.
     hit_color: color for hit messages (defaults to white).
+    animate: if False, skip the built-in explosion animation (caller handles it).
 
     Returns (actors_hit: int, grass_burned: int).
     """
     import input_handlers as _ih  # pylint: disable=import-outside-toplevel
-    if _ih.context is not None and _ih.root_console is not None:
+    if animate and _ih.context is not None and _ih.root_console is not None:
         from render_functions import animate_explosion  # pylint: disable=import-outside-toplevel
         animate_explosion(engine, x, y, radius, _ih.root_console, _ih.context)
 
