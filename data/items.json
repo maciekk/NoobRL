@@ -256,6 +256,22 @@
         }
     },
     {
+        "id": "wand_fireball",
+        "name": "Wand of Fireball",
+        "char": "/",
+        "color": [
+            255,
+            100,
+            50
+        ],
+        "charges": 5,
+        "consumable": {
+            "name": "FireballWandConsumable",
+            "damage": 12,
+            "radius": 3
+        }
+    },
+    {
         "id": "wand_wishing",
         "name": "Wand of Wishing",
         "char": "/",

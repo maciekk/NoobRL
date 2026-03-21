@@ -297,6 +297,24 @@ class DiggingWandConsumable(WandConsumable):
         self.consume()
 
 
+class FireballWandConsumable(WandConsumable):
+    """A wand that fires an area-of-effect fireball, like the scroll."""
+
+    def __init__(self, damage: int, radius: int):
+        self.damage = damage
+        self.radius = radius
+
+    def get_description(self) -> list[str]:
+        return [f"Deals {self.damage} damage in radius {self.radius}"]
+
+    def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
+        self._check_charges()
+        return _fireball_get_action(self, consumer)
+
+    def activate(self, action: actions.ItemAction) -> None:
+        _fireball_activate(self, action)
+
+
 class ConfusionConsumable(Consumable):
     """Confuses a target for a set number of turns."""
 
@@ -481,6 +499,39 @@ class TeleportConsumable(Consumable):
         self.consume()
 
 
+def _fireball_get_action(consumable, consumer: Actor) -> ActionOrHandler:
+    from input_handlers import AreaRangedAttackHandler
+    consumable.engine.message_log.add_message(
+        "Select a target location.", color.needs_target
+    )
+    return AreaRangedAttackHandler(
+        consumable.engine,
+        radius=consumable.radius,
+        callback=lambda xy: actions.ItemAction(consumer, consumable.parent, xy),
+    )
+
+
+def _fireball_activate(consumable, action: actions.ItemAction) -> None:
+    from game_map import apply_explosion
+    target_xy = action.target_xy
+    x, y = target_xy
+    damage = consumable.damage
+
+    _, grass_burned = apply_explosion(
+        consumable.engine, x, y, consumable.radius, damage,
+        hit_message=lambda name: (
+            f"The {name} is engulfed in a fiery explosion, taking {damage} damage!"
+        ),
+    )
+    if grass_burned > 0:
+        consumable.engine.message_log.add_message(
+            "The flames scorch the vegetation!", color.player_atk
+        )
+
+    consumable.engine.emit_sound(target_xy, SoundTravel.FIREBALL, by_player=True)
+    consumable.consume()
+
+
 class FireballDamageConsumable(Consumable):
     """Deals area damage in a radius around a target location."""
 
@@ -492,35 +543,10 @@ class FireballDamageConsumable(Consumable):
         return [f"Deals {self.damage} damage in radius {self.radius}"]
 
     def get_action(self, consumer: Actor) -> Optional[ActionOrHandler]:
-        from input_handlers import AreaRangedAttackHandler
-        self.engine.message_log.add_message(
-            "Select a target location.", color.needs_target
-        )
-        return AreaRangedAttackHandler(
-            self.engine,
-            radius=self.radius,
-            callback=lambda xy: actions.ItemAction(consumer, self.parent, xy),
-        )
+        return _fireball_get_action(self, consumer)
 
     def activate(self, action: actions.ItemAction) -> None:
-        from game_map import apply_explosion  # pylint: disable=import-outside-toplevel
-        target_xy = action.target_xy
-        x, y = target_xy
-        damage = self.damage
-
-        _, grass_burned = apply_explosion(
-            self.engine, x, y, self.radius, damage,
-            hit_message=lambda name: (
-                f"The {name} is engulfed in a fiery explosion, taking {damage} damage!"
-            ),
-        )
-        if grass_burned > 0:
-            self.engine.message_log.add_message(
-                "The flames scorch the vegetation!", color.player_atk
-            )
-
-        self.engine.emit_sound(target_xy, SoundTravel.FIREBALL, by_player=True)
-        self.consume()
+        _fireball_activate(self, action)
 
 
 def apply_clairvoyance(engine) -> None:
