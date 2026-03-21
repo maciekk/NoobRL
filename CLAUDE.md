@@ -152,6 +152,13 @@ Generates dungeons with random non-overlapping rectangular rooms connected by L-
 
 Rendering flows: `Engine.render()` → `GameMap.render()` (tiles via `np.select`, entities sorted by render order) → UI overlays (HP bar, XP bar, dungeon level, turn counter, active effects, message log, entity names under cursor).
 
+**Animation compositing** (`render_functions.py`): `composite_animations(engine, layers, console, context)` plays multiple animation layers composited together, where later layers paint over earlier ones on overlapping tiles. Each layer is a tuple `(delay, frames)` or `(delay, frames, sound_cues)`:
+- `delay` — global frame index at which this layer starts playing (used to synchronize layers, e.g. explosion starts after projectile finishes)
+- `frames` — list of frames, where each frame is a list of render ops: `(x, y, char, fg)`, `(x, y, char, fg, bg)`, or `(x, y, None, None, bg)` for background-only
+- `sound_cues` — optional dict mapping local frame index → `Sfx` enum member, played via `play_sfx()` when that frame is reached
+
+Frame generators produce the `frames` lists: `projectile_frames(path)` (traveling dot with trail), `explosion_frames(engine, x, y, radius)` (5-frame expanding/cooling blast), `sound_wave_frames(engine, player_by_dist, monster_by_dist)` (BFS-based expanding ripple). Standalone animation functions also exist for simpler effects: `animate_lightning_ray`, `animate_grass_growth`, `animate_digging_ray`, `animate_sound_wave`, `animate_projectile`.
+
 ### Other Modules
 
 `color.py` (color constants), `tile_types.py` (NumPy structured arrays for tiles), `sounds.py` (pygame.mixer audio), `dice.py` (D&D dice notation parser, e.g. "5d2"), `tilesets.py`, `debug.py` (debug console handler).

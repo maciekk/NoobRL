@@ -60,7 +60,7 @@ Ideas & efforts under way.
   - [x] rarely be armor of clairvoyance, monster detection, etc when worn
 - [ ] balance the level up stat gain mechanics
 - [x] JSON-ify weapons; stats should not be in code
-- [ ] ideally explosion animation should happen while sfx is playing
+- [x] ideally explosion animation should happen while sfx is playing
 - [x] explosions should burn off tall grass
 - [ ] slow down the digging wand ray animation?
 - [x] bombs should also be listed in WEAPONS section of Inventory, not Other
