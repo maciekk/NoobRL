@@ -1818,6 +1818,68 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         return self.callback((x, y))
 
 
+class FireballProjectileHandler(SelectEntityHandler):
+    """Targeting handler for fireball projectiles.
+
+    Shows the projectile path from the player toward the cursor, stopping at
+    the first wall or actor, plus the explosion radius at the impact point.
+    Inherits Tab-cycling through visible monsters from SelectEntityHandler.
+    """
+
+    def __init__(
+        self,
+        engine: Engine,
+        radius: int,
+        callback: Callable[[Tuple[int, int]], Optional[Action]],
+    ):
+        super().__init__(engine, callback)
+        self.radius = radius
+
+    def _get_projectile_path(self) -> list[tuple[int, int]]:
+        """Trace projectile from player to cursor, stopping early at walls/actors."""
+        player = self.engine.player
+        px, py = player.x, player.y
+        tx, ty = self.engine.mouse_location
+        if (tx, ty) == (px, py):
+            return []
+        gm = self.engine.game_map
+        line = tcod.los.bresenham((px, py), (tx, ty)).tolist()
+        if line and (line[0][0], line[0][1]) == (px, py):
+            line = line[1:]
+        path: list[tuple[int, int]] = []
+        for lx, ly in line:
+            if not gm.in_bounds(lx, ly):
+                break
+            if not gm.tiles["walkable"][lx, ly]:
+                break
+            path.append((lx, ly))
+            actor = gm.get_actor_at_location(lx, ly)
+            if actor and actor is not player:
+                break
+        return path
+
+    def on_render(self, console: tcod.Console) -> None:
+        super().on_render(console)
+        path = self._get_projectile_path()
+        if not path:
+            return
+        # Draw projectile path
+        for tx, ty in path[:-1]:
+            self.engine.print_at_world(console, tx, ty, string=".", fg=(255, 140, 0))
+        # Draw impact point
+        ix, iy = path[-1]
+        self.engine.print_at_world(console, ix, iy, string="*", fg=(255, 255, 100))
+        # Draw explosion radius at impact
+        for tx in range(ix - self.radius, ix + self.radius + 1):
+            for ty in range(iy - self.radius, iy + self.radius + 1):
+                if (tx - ix) ** 2 + (ty - iy) ** 2 <= self.radius ** 2:
+                    if self.engine.game_map.in_bounds(tx, ty):
+                        sx, sy = self.engine.world_to_screen(tx, ty)
+                        if 0 <= sx < console.width and 0 <= sy < self.engine.viewport_height:
+                            console.rgb["bg"][sx, sy] = color.red
+
+
+
 class TeleportTargetHandler(SelectIndexHandler):
     """Handles selecting a destination tile for the Teleport scroll."""
 

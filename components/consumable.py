@@ -499,26 +499,82 @@ class TeleportConsumable(Consumable):
         self.consume()
 
 
+FIREBALL_MAX_RANGE = 16
+
+
 def _fireball_get_action(consumable, consumer: Actor) -> ActionOrHandler:
-    from input_handlers import AreaRangedAttackHandler
+    from input_handlers import FireballProjectileHandler
     consumable.engine.message_log.add_message(
         "Select a target location.", color.needs_target
     )
-    return AreaRangedAttackHandler(
+    return FireballProjectileHandler(
         consumable.engine,
         radius=consumable.radius,
         callback=lambda xy: actions.ItemAction(consumer, consumable.parent, xy),
     )
 
 
+def _fireball_compute_impact(engine, origin, target):
+    """Compute projectile path from origin toward target.
+
+    Stops at the first wall or non-player actor. Returns (path, impact_xy).
+    """
+    px, py = origin
+    tx, ty = target
+    if (tx, ty) == (px, py):
+        return [], origin
+    gm = engine.game_map
+    dx = tx - px
+    dy = ty - py
+    length = max(abs(dx), abs(dy))
+    scale = (FIREBALL_MAX_RANGE + 2) / length
+    line = tcod.los.bresenham(
+        origin, (int(px + dx * scale), int(py + dy * scale))
+    ).tolist()
+    if line and (line[0][0], line[0][1]) == (px, py):
+        line = line[1:]
+    path: list = []
+    for lx, ly in line:
+        if len(path) >= FIREBALL_MAX_RANGE:
+            break
+        if not gm.in_bounds(lx, ly):
+            break
+        if not gm.tiles["walkable"][lx, ly]:
+            break
+        path.append((lx, ly))
+        actor = gm.get_actor_at_location(lx, ly)
+        if actor and actor is not engine.player:
+            break
+    if path:
+        return path, path[-1]
+    return [], origin
+
+
 def _fireball_activate(consumable, action: actions.ItemAction) -> None:
     from game_map import apply_explosion
-    target_xy = action.target_xy
-    x, y = target_xy
+    from render_functions import animate_fireball_projectile
+    import input_handlers as _ih
+
+    consumer = action.entity
+    origin = (consumer.x, consumer.y)
+    target = action.target_xy
+
+    if target == origin:
+        raise Impossible("Choose a direction to fire.")
+
+    path, impact = _fireball_compute_impact(consumable.engine, origin, target)
+    ix, iy = impact
     damage = consumable.damage
 
+    # Animate projectile travel + explosion
+    if _ih.context is not None and _ih.root_console is not None:
+        animate_fireball_projectile(
+            consumable.engine, path, ix, iy, consumable.radius,
+            _ih.root_console, _ih.context,
+        )
+
     _, grass_burned = apply_explosion(
-        consumable.engine, x, y, consumable.radius, damage,
+        consumable.engine, ix, iy, consumable.radius, damage,
         hit_message=lambda name: (
             f"The {name} is engulfed in a fiery explosion, taking {damage} damage!"
         ),
@@ -528,7 +584,7 @@ def _fireball_activate(consumable, action: actions.ItemAction) -> None:
             "The flames scorch the vegetation!", color.player_atk
         )
 
-    consumable.engine.emit_sound(target_xy, SoundTravel.FIREBALL, by_player=True)
+    consumable.engine.emit_sound(impact, SoundTravel.FIREBALL, by_player=True)
     consumable.consume()
 
 

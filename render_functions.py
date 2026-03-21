@@ -334,6 +334,32 @@ def animate_sound_wave(
         _end_frame(console, context, 0)
 
 
+def animate_fireball_projectile(
+    engine,
+    path: list[tuple[int, int]],
+    impact_x: int,
+    impact_y: int,
+    radius: int,
+    console,
+    context,
+) -> None:
+    """Animate a fireball projectile traveling along path, then exploding at impact."""
+    # Projectile travel
+    trail_color = (255, 140, 0)
+    tip_color = (255, 255, 100)
+    for i, (px, py) in enumerate(path):
+        if not engine.game_map.in_bounds(px, py) or not engine.game_map.visible[px, py]:
+            continue
+        _begin_frame(engine, console)
+        # Fading trail behind projectile
+        for j, (tx, ty) in enumerate(path[:i]):
+            if engine.game_map.in_bounds(tx, ty) and engine.game_map.visible[tx, ty]:
+                engine.print_at_world(console, tx, ty, string=".", fg=trail_color)
+        engine.print_at_world(console, px, py, string="*", fg=tip_color)
+        _end_frame(console, context, 0.04)
+
+
+
 def animate_projectile(
     engine,
     frames: list[tuple[int, int, str, tuple[int, int, int]]],
