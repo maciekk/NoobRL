@@ -90,7 +90,7 @@ def spawn_chest_of_wonder(game_map: GameMap) -> None:
     chest = Chest(name="Chest of Wonder")
     chest.stored_item_ids = item_ids
     chest.spawn(game_map, x, y)
-    sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+    sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
 
     game_map.engine.message_log.add_message("A Chest of Wonder appears!")
 
@@ -164,7 +164,7 @@ def spawn_trap(game_map: GameMap, trap_type: str, x: int, y: int) -> None:
 
     trap = Trap(trap_type=trap_type)
     trap.spawn(game_map, x, y)
-    sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+    sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
     game_map.engine.message_log.add_message(f"A {trap.name} appears!")
 
 
@@ -176,7 +176,7 @@ def spawn_entity(entity_id, game_map: GameMap, x: int, y: int):
             game_map.engine.message_log.add_message(
                 f"Your inventory is full; {item.name} dropped on floor."
             )
-        sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+        sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
         return item
 
     entity = game_map.engine.monster_manager.clone(entity_id)

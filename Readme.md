@@ -49,7 +49,7 @@ Ideas & efforts under way.
 - [x] reduce range of door open/close sound
 - [x] targeting cursor (e.g., for throw, cast) should remember & reuse "last location"
 - [x] should sound wave move through tall grass? maybe gets attenuated?
-- [ ] better sound triggering; logs-match should be secondary, allow explicit enum-based sfx calls in-code
+- [x] better sound triggering; logs-match should be secondary, allow explicit enum-based sfx calls in-code
 - [x] when using targeting Handler, and user takes cursor outside of viewport, then viewport should scroll
 - [x] occasionally, new monsters spawn at stair cases (or leave current level); this avoids empty levels
 - [x] current stats (str/dex/etc) should be shown on screen at all times (abbr.)

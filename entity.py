@@ -10,6 +10,7 @@ import numpy as np  # pylint: disable=import-error
 import tcod  # pylint: disable=import-error
 
 import enchantment_data
+import sounds
 from equipment_types import EquipmentType
 from location import Location
 from render_order import RenderOrder
@@ -269,6 +270,7 @@ class Chest(Entity):
         self.char = "_"
         self.opened = True
 
+        sounds.play_sfx(sounds.Sfx.CHEST_OPEN)
         if names:
             self.gamemap.engine.message_log.add_message(
                 "You open the chest and find:", stack=False,

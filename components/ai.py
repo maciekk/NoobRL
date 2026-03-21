@@ -9,6 +9,7 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 import numpy as np  # pylint: disable=import-error
 
 import color
+import sounds
 import tile_types
 from constants import ALL_DIRS
 from exceptions import Impossible
@@ -120,6 +121,7 @@ class ExplodingCorpseAI(BaseAI):
             self.explode()
         else:
             self.engine.message_log.add_message("Tick...", color.enemy_atk)
+            sounds.play_sfx(sounds.Sfx.BOMB_TICK)
 
     def explode(self) -> None:
         """Explode, damaging all nearby actors and removing the corpse from the map."""
@@ -131,6 +133,7 @@ class ExplodingCorpseAI(BaseAI):
         self.entity.ai = None
 
         engine.message_log.add_message("BOOM!", color.enemy_atk)
+        sounds.play_sfx(sounds.Sfx.BOMB_BOOM)
         engine.message_log.add_message(
             f"The {self.entity.name} explodes!", color.enemy_atk
         )
@@ -187,16 +190,18 @@ class HostileEnemy(BaseAI):
         if not self.entity.noticed_player:
             self.entity.noticed_player = True
             spotted_messages = {
-                "Dragon": ("You have been spotted by a dragon!", color.dragon_roar),
+                "Dragon": ("You have been spotted by a dragon!", color.dragon_roar, sounds.Sfx.DRAGON_SPOTTED),
                 "Ender Dragon": (
                     "You have been spotted by an ender dragon!",
                     color.dragon_roar_end,
+                    sounds.Sfx.ENDER_DRAGON_SPOTTED,
                 ),
-                "Hydra": ("You have been spotted by a hydra!", color.hydra_roar),
+                "Hydra": ("You have been spotted by a hydra!", color.hydra_roar, sounds.Sfx.HYDRA_SPOTTED),
             }
             if self.entity.name in spotted_messages:
-                msg, msg_color = spotted_messages[self.entity.name]
+                msg, msg_color, sfx = spotted_messages[self.entity.name]
                 self.engine.message_log.add_message(msg, msg_color)
+                sounds.play_sfx(sfx)
         self.last_known_target = (target.x, target.y)
         if distance <= self.entity.attack_range:
             if self.entity.ranged_attack:

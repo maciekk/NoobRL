@@ -1,4 +1,7 @@
-"""Sound effect playback triggered by message log content."""
+"""Sound effect playback via enum-based Sfx system and log-based triggers."""
+import enum
+import json
+import os
 import random
 import threading
 import time
@@ -20,175 +23,33 @@ def consume_sound_heard() -> bool:
     sound_heard = False
     return result
 
-_EFFECT_DEFS = [
-    (
-        "Hello and welcome",
-        [
-            "sfx/CantinaBand3.wav",
-        ],
-    ),
-    (
-        "[CRIT!]",
-        [
-            "sfx/mixkit-samurai-sword-impact-2789.wav",
-        ],
-    ),
-    (
-        "hit points",
-        [
-            "sfx/mixkit-sword-cutting-flesh-2788.wav",
-            "sfx/mixkit-metal-hit-woosh-1485.wav",
-            #"sfx/sword-whoosh-clang.mp3",
-            "sfx/foil-clang.wav",
-            #"sfx/sword-clang.wav",
-            "sfx/sword-clash-nice.wav",
-        ],
-    ),
-    (
-        "is dead!",
-        [
-            "sfx/mixkit-gore-video-game-blood-splash-263.wav",
-        ],
-    ),
-    (
-        "consume the Health Potion",
-        [
-            "sfx/mixkit-sip-of-water-1307.wav",
-            "sfx/water_drinkwav-14601.wav",
-        ],
-    ),
-    (
-        "You picked up",
-        [
-            "sfx/mixkit-retro-game-notification-212.wav",
-        ],
-    ),
-    (
-        "You are dead",
-        [
-            "sfx/mixkit-ominous-drums-227.wav",
-        ],
-    ),
-    (
-        "A lightning bolt strikes",
-        [
-            "sfx/zapsplat_science_fiction_laser_hit_thud_zap_delay_001_65399.wav",
-            "sfx/bug-zapper-47300.wav",
-            "sfx/electrocute-6247.wav",
-        ],
-    ),
-    (
-        "Dart hits",
-        [
-            "sfx/u_xjrmmgxfru-hit-armor-03-266300.mp3",
-        ],
-    ),
-    (
-        "clatters to the ground",
-        [
-            "sfx/dragon-studio-sword-clattering-to-the-ground-393838.mp3",
-        ],
-    ),
-    (
-        "for 1 damage!",
-        [
-            "sfx/floraphonic-metal-hit-96-200425.mp3",
-        ],
-    ),
-    (
-        "zapped for",
-        [
-            "sfx/155790__deleted_user_1941307__shipboard_railgun.mp3",
-        ],
-    ),
-    (
-        "sizzles through the air",
-        [
-            "sfx/155790__deleted_user_1941307__shipboard_railgun.mp3",
-        ],
-    ),
-    (
-        "starts to stumble around",
-        [
-            "sfx/evil-shreik-45560.wav",
-        ],
-    ),
-    (
-        "You have been spotted by a dragon!",
-        [
-            "sfx/mixkit-giant-monster-roar-1972.wav",
-        ],
-    ),
-    (
-        "You have been spotted by an ender dragon!",
-        [
-            "sfx/dragon-roar-high-intensity-36564.wav",
-        ],
-    ),
-    (
-        "You have been spotted by a hydra!",
-        [
-            "sfx/fire-breath-6922.wav",
-        ],
-    ),
-    ("You leveled up!", ["sfx/winharpsichord-39642.wav"]),
-    (
-        "You blinked.",
-        [
-            "sfx/teleport-36569.wav",
-            "sfx/PM_FN_Spawns_Portals_Teleports_5.wav",
-        ],
-    ),
-    (
-        "You teleport.",
-        [
-            "sfx/teleport-36569.wav",
-            "sfx/PM_FN_Spawns_Portals_Teleports_5.wav",
-        ],
-    ),
-    (
-        "You are filled in with rage!",
-        [
-            "sfx/mixkit-angry-dragon-roar-echo-1727.wav",
-        ],
-    ),
-    (
-        "but does no damage.",
-        [
-            "sfx/whoosh.wav",
-        ],
-    ),
-    (
-        "Tick...",
-        [
-            "sfx/clock-tick.wav",
-        ],
-    ),
-    (
-        "BOOM!",
-        [
-            "sfx/explosion1.wav",
-        ],
-    ),
-    (
-        "caught in the blast",
-        [
-            "sfx/explosion2.wav",
-        ],
-    ),
-    (
-        "open the chest",
-        [
-            "sfx/771164__steprock__treasure-chest-open.mp3",
-        ],
-    ),
-    (
-        "breaks",
-        [
-            "sfx/41348__datasoundsample__glass-shatter.wav",
-        ],
-    ),
-]
+
+# ---------------------------------------------------------------------------
+# Enum-based sound effects loaded from data/sfx.json
+# ---------------------------------------------------------------------------
+
+_SFX_JSON = os.path.join(os.path.dirname(__file__), "data", "sfx.json")
+with open(_SFX_JSON, encoding="utf-8") as _f:
+    _SFX_MAP_RAW: dict[str, list[str]] = json.load(_f)
+
+Sfx = enum.Enum("Sfx", {k: k for k in _SFX_MAP_RAW})
+
+_SFX_PATHS: dict[Sfx, list[str]] = {Sfx[k]: v for k, v in _SFX_MAP_RAW.items()}
+
+# Populated by init(); None means audio is unavailable.
+_LOADED_SFX: dict[Sfx, list] | None = None
+
+
+# ---------------------------------------------------------------------------
+# Log-based sound triggers (extensibility hook for custom triggers)
+# ---------------------------------------------------------------------------
+
+# Log-based sound triggers: add entries here to play sounds when specific
+# text appears in the message log. Each entry is (substring, [sound_files]).
+# First match wins; put specific triggers before broad ones.
+# Example:
+#   ("You found a secret door", ["sfx/secret-door.wav"]),
+_EFFECT_DEFS = []
 
 # Populated by init(); None means audio is unavailable.
 _LOADED_EFFECTS = None
@@ -199,11 +60,41 @@ def init():
 
     Must be called after pygame.mixer.init().
     """
-    global _LOADED_EFFECTS  # pylint: disable=global-statement
+    global _LOADED_SFX, _LOADED_EFFECTS  # pylint: disable=global-statement
+
+    _LOADED_SFX = {}
+    for sfx, paths in _SFX_PATHS.items():
+        _LOADED_SFX[sfx] = [pygame.mixer.Sound(path) for path in paths]
+
     _LOADED_EFFECTS = [
         (match_str, [pygame.mixer.Sound(path) for path in paths])
         for match_str, paths in _EFFECT_DEFS
     ]
+
+
+def play_sfx(sfx: Sfx):
+    """Play a random sound for the given Sfx enum member.
+
+    Returns the pygame Channel or None if audio is unavailable.
+    """
+    global _NEXT_PLAY_TIME, sound_heard  # pylint: disable=global-statement
+    if _LOADED_SFX is None:
+        return None
+    sounds = _LOADED_SFX.get(sfx)
+    if not sounds:
+        return None
+    sound = random.choice(sounds)
+    now = time.monotonic()
+    play_at = max(now, _NEXT_PLAY_TIME)
+    delay = play_at - now
+    if delay <= 0:
+        channel = sound.play()
+    else:
+        channel = None
+        threading.Timer(delay, sound.play).start()
+    _NEXT_PLAY_TIME = play_at + _STAGGER_SECS
+    sound_heard = True
+    return channel
 
 
 def maybe_play_sfx(log_line):
@@ -224,11 +115,3 @@ def maybe_play_sfx(log_line):
             _NEXT_PLAY_TIME = play_at + _STAGGER_SECS
             sound_heard = True
             return
-
-
-def play(fname):
-    """Play a sound file directly, returning the channel or None if audio is off."""
-    if not pygame.mixer.get_init():
-        return None
-    sound = pygame.mixer.Sound(fname)
-    return sound.play()

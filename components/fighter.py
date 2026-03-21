@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import random
 
 import color
+import sounds
 from components.base_component import BaseComponent
 from render_order import RenderOrder
 
@@ -84,11 +85,13 @@ class Fighter(BaseComponent):
                 f"You were {deathmessagelist[random.randint(0, 3)]}. You are dead."
             )
             death_message_color = color.player_die
+            sounds.play_sfx(sounds.Sfx.PLAYER_DEATH)
         else:
             death_message = (
                 f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
             )
             death_message_color = color.enemy_die
+            sounds.play_sfx(sounds.Sfx.ENEMY_DEATH)
             kills = self.engine.kill_counts
             kills[self.parent.name] = kills.get(self.parent.name, 0) + 1
 

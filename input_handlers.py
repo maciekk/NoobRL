@@ -210,6 +210,7 @@ class EventHandler(BaseEventHandler):
                 return GameOverEventHandler(self.engine)
             if self.engine.player.level.requires_level_up:
                 self.engine.message_log.add_message("You leveled up!", stack=False)
+                sounds.play_sfx(sounds.Sfx.LEVEL_UP)
                 return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)  # Return to the main handler.
         return self
@@ -2058,7 +2059,7 @@ class MainGameEventHandler(EventHandler):
             if wand:
                 wand.parent = self.engine.player.inventory
                 if self.engine.player.inventory.add(wand):
-                    sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+                    sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
                 self.engine.message_log.add_message(
                     "A Wand of Wishing appears in your pack!"
                 )

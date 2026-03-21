@@ -103,7 +103,7 @@ class WishAction(Action):
             self.engine.message_log.add_message(
                 f"You wished for a {item.name}, but your inventory is full!", color.impossible
             )
-        sounds.play("sfx/643876__sushiman2000__smoke-poof.ogg")
+        sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
         self.wand_item.consumable.consume()
 
 
@@ -150,6 +150,7 @@ class PickupAction(Action):
             self.engine.message_log.add_message(
                 f"You picked up the {item.display_name}{count_text}!"
             )
+            sounds.play_sfx(sounds.Sfx.ITEM_PICKUP)
 
 
 class ItemAction(Action):
@@ -379,12 +380,14 @@ class MeleeAction(ActionWithDirection):
                 f"{attack_desc} for {damage} hit points{breakdown}{crit_text}.",
                 attack_color,
             )
+            sounds.play_sfx(sounds.Sfx.CRIT_HIT if is_crit else sounds.Sfx.MELEE_HIT)
             target.fighter.take_damage(damage)
         else:
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.",
                 attack_color,
             )
+            sounds.play_sfx(sounds.Sfx.MISS)
         self.engine.emit_sound(self.dest_xy, SoundTravel.MELEE, by_player=self.entity is self.engine.player)
 
 
@@ -409,12 +412,14 @@ class RangedAttackAction(ActionWithDirection):
                 f"{attack_desc} for {damage} hit points." f"{crit_text}",
                 attack_color,
             )
+            sounds.play_sfx(sounds.Sfx.CRIT_HIT if is_crit else sounds.Sfx.MELEE_HIT)
             target.fighter.take_damage(damage)
         else:
             self.engine.message_log.add_message(
                 f"{attack_desc} but does no damage.",
                 attack_color,
             )
+            sounds.play_sfx(sounds.Sfx.MISS)
 
 
 class MovementAction(ActionWithDirection):
@@ -830,6 +835,7 @@ class ThrowAction(Action):
                         f"The {thrown_item.display_name} hits the {hit_actor.name} and breaks!",
                         color.player_atk,
                     )
+                    sounds.play_sfx(sounds.Sfx.ITEM_BREAK)
                 self._apply_consumable_effect(thrown_item, hit_actor)
                 return
             damage = self._compute_damage(thrown_item)
@@ -851,6 +857,7 @@ class ThrowAction(Action):
                     f"The {thrown_item.display_name} breaks against the wall!",
                     color.white,
                 )
+                sounds.play_sfx(sounds.Sfx.ITEM_BREAK)
                 return
 
         # Bombs always explode at their final position
@@ -862,4 +869,5 @@ class ThrowAction(Action):
             self.engine.message_log.add_message(
                 f"The {thrown_item.display_name} clatters to the ground.", color.white
             )
+            sounds.play_sfx(sounds.Sfx.ITEM_CLATTER)
         self._place_thrown_item(thrown_item, final_x, final_y, game_map)

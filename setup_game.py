@@ -62,6 +62,7 @@ def new_game() -> Engine:
         "Hello and welcome, adventurer, to yet another dungeon!",
         color.welcome_text,
     )
+    sounds.play_sfx(sounds.Sfx.WELCOME)
     engine.message_log.add_message("Press '?' to view all possible keybinds!")
     return engine
 
@@ -80,7 +81,7 @@ class MainMenu(input_handlers.BaseEventHandler):
     def __init__(self):
         super().__init__()
         _init_audio()
-        self.channel = sounds.play("sfx/POL-the-hordes-advance-short.wav")
+        self.channel = sounds.play_sfx(sounds.Sfx.MAIN_MENU_MUSIC)
 
     def on_render(self, console: tcod.Console) -> None:
         """Render the main menu on a background image."""

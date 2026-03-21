@@ -146,7 +146,7 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
             delay: number of global frames to skip before this layer starts.
             frames: iterable of frame lists (each frame is a list of render ops).
             sound_cues: dict mapping local frame index to a sound file path.
-                The sound is played via sounds.play() when that frame is reached.
+                The sound is played via sounds.play_sfx() when that frame is reached.
         console: tcod console to draw on.
         context: tcod context to present.
         frame_delay: seconds between frames.
@@ -179,7 +179,7 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
                 continue
             # Fire sound cue on the first frame this layer reaches local index.
             if cues and local in cues:
-                _sounds.play(cues[local])
+                _sounds.play_sfx(cues[local])
             for op in frames[local]:
                 x, y = op[0], op[1]
                 if not engine.game_map.in_bounds(x, y):
@@ -493,11 +493,12 @@ def animate_fireball_projectile(
     context,
 ) -> None:
     """Animate fireball projectile travel followed by explosion, using the compositor."""
+    import sounds as _sounds  # pylint: disable=import-outside-toplevel
     proj = projectile_frames(path)
     expl = explosion_frames(engine, impact_x, impact_y, radius)
     layers = [
         (0, proj),                # projectile travels first
-        (len(proj), expl, {0: "sfx/mixkit-fuel-explosion-1705.wav"}),
+        (len(proj), expl, {0: _sounds.Sfx.FIREBALL_EXPLOSION}),
     ]
     composite_animations(engine, layers, console, context, frame_delay=0.04)
 

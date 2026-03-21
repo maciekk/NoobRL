@@ -16,6 +16,7 @@ from render_functions import (
 import tile_types
 import actions
 import color
+import sounds
 import components.ai
 from components.effect import (
     InvisibilityEffect,
@@ -222,12 +223,14 @@ class LightningWandConsumable(WandConsumable):
             self.engine.message_log.add_message(
                 "The lightning bolt sizzles through the air.", color.player_atk
             )
+            sounds.play_sfx(sounds.Sfx.RANGED_ATTACK)
         else:
             for target in targets_hit:
                 self.engine.message_log.add_message(
                     f"The {target.name} is zapped for {self.damage} damage!",
                     color.player_atk,
                 )
+                sounds.play_sfx(sounds.Sfx.WAND_ZAP)
                 target.fighter.take_damage(self.damage)
             self.engine.emit_sound((tx, ty), SoundTravel.LIGHTNING_WAND, by_player=True)
 
@@ -349,6 +352,7 @@ class ConfusionConsumable(Consumable):
             f"The eyes of the {target.name} look vacant, as it starts to stumble around!",
             color.status_effect_applied,
         )
+        sounds.play_sfx(sounds.Sfx.CONFUSION)
         target.ai = components.ai.ConfusedEnemy(
             entity=target,
             previous_ai=target.ai,
@@ -376,6 +380,7 @@ class HealingConsumable(Consumable):
                 f"You consume the {self.parent.name}, and recover {amount_recovered} HP!",
                 color.health_recovered,
             )
+            sounds.play_sfx(sounds.Sfx.DRINK_POTION)
             self.consume()
         elif unidentified:
             self.engine.message_log.add_message(
@@ -404,6 +409,7 @@ class RageConsumable(Consumable):
             "You are filled in with rage! (Damage increased by +1)",
             color.damage_increased,
         )
+        sounds.play_sfx(sounds.Sfx.RAGE)
 
 
 class InvisibilityConsumable(Consumable):
@@ -460,6 +466,7 @@ class BlinkConsumable(Consumable):
                 and self.engine.game_map.get_blocking_entity_at_location(x, y) is None
             ):
                 self.engine.message_log.add_message("You blinked.")
+                sounds.play_sfx(sounds.Sfx.BLINK)
                 self.engine.player.x, self.engine.player.y = x, y
                 self.consume()
                 return
@@ -496,6 +503,7 @@ class TeleportConsumable(Consumable):
 
         self.engine.player.x, self.engine.player.y = target_xy
         self.engine.message_log.add_message("You teleport.")
+        sounds.play_sfx(sounds.Sfx.TELEPORT)
         self.consume()
 
 
@@ -580,7 +588,7 @@ def _fireball_activate(consumable, action: actions.ItemAction) -> None:
 
         layers = [
             (0, proj),
-            (explosion_start + 1, expl, {0: "sfx/mixkit-fuel-explosion-1705.wav"}),
+            (explosion_start + 1, expl, {0: sounds.Sfx.FIREBALL_EXPLOSION}),
         ]
 
         # Composite sound wave if sound animations are enabled
@@ -698,6 +706,7 @@ class LightningDamageConsumable(Consumable):
                 f"A lightning bolt strikes the {target.name}"
                 f" with a loud thunder, for {self.damage} damage!"
             )
+            sounds.play_sfx(sounds.Sfx.LIGHTNING_STRIKE)
             target.fighter.take_damage(self.damage)
             self.engine.emit_sound((target.x, target.y), SoundTravel.LIGHTNING, by_player=True)
             self.consume()
@@ -787,6 +796,7 @@ class BombConsumable(Consumable):
             ),
             hit_color=color.player_atk,
         )
+        sounds.play_sfx(sounds.Sfx.BLAST_HIT)
         engine.emit_sound((x, y), SoundTravel.BOMB, by_player=True)
         if grass_burned > 0:
             engine.message_log.add_message(
