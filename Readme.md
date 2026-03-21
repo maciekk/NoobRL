@@ -50,8 +50,8 @@ Ideas & efforts under way.
 - [x] targeting cursor (e.g., for throw, cast) should remember & reuse "last location"
 - [x] should sound wave move through tall grass? maybe gets attenuated?
 - [ ] better sound triggering; logs-match should be secondary, allow explicit enum-based sfx calls in-code
-- [ ] when using targeting Handler, and user takes cursor outside of viewport, then viewport should scroll
-- [ ] occasionally, new monsters spawn at stair cases (or leave current level); this avoids empty levels
+- [x] when using targeting Handler, and user takes cursor outside of viewport, then viewport should scroll
+- [x] occasionally, new monsters spawn at stair cases (or leave current level); this avoids empty levels
 - [x] current stats (str/dex/etc) should be shown on screen at all times (abbr.)
 - [x] does a popper explosion clear tall grass, like bombs?
 - [x] the 'V' view command should ideally show status of each enemy (e.g., asleep)
@@ -63,7 +63,7 @@ Ideas & efforts under way.
 - [ ] ideally explosion animation should happen while sfx is playing
 - [x] explosions should burn off tall grass
 - [ ] slow down the digging wand ray animation?
-- [ ] bombs should also be listed in WEAPONS section of Inventory, not Other
+- [x] bombs should also be listed in WEAPONS section of Inventory, not Other
 - [ ] when you read unidentified Scroll of Identify, there should be no going back (can't cancel out), the scroll is consumed regardless, and gets immediately identified itself
 - [x] add "fertilizer bomb" which causes a tall grass patch to grow at point of impact
 
@@ -72,9 +72,8 @@ Ideas & efforts under way.
 - [x] simulate noise and monster hearing
 - [ ] hunger and food items
 - [ ] item weights and maximum carry weight
-- [ ] track how many of a monster SEEN in a run? (if don't kill everything you see)
 - [ ] incremental monster knowledge (scales w/# killed)
-- [ ] maybe later add max stack size for consumables
+- [ ] max stack size for consumables?
 - [x] hidden traps: squeaky board, pit, fall-through to lower level, teleport trap
 - [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
 
