@@ -10,7 +10,7 @@ import numpy as np  # pylint: disable=import-error
 
 import color
 import sounds
-import tile_types
+from tile_types import TILE_DOOR_CLOSED, TILE_DOWN_STAIRS, TILE_UP_STAIRS
 from constants import ALL_DIRS
 from exceptions import Impossible
 from location import Location
@@ -48,7 +48,7 @@ class BaseAI(Action):
         entity = self.entity
         game_map = self.engine.game_map
         tile = game_map.tiles[entity.x, entity.y]
-        if tile != tile_types.down_stairs and tile != tile_types.up_stairs:
+        if tile != TILE_DOWN_STAIRS and tile != TILE_UP_STAIRS:
             return False
         # Don't leave if the player is visible
         player = self.engine.player
@@ -176,7 +176,7 @@ class HostileEnemy(BaseAI):
     def _try_wizard_door(self, dest_x: int, dest_y: int) -> bool:
         """Open a door if this is a Wizard and the destination is a closed door."""
         if (self.entity.name == "Wizard"
-                and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed):
+                and self.engine.game_map.tiles[dest_x, dest_y] == TILE_DOOR_CLOSED):
             OpenDoorAction(self.entity, dest_x, dest_y).perform()
             return True
         return False

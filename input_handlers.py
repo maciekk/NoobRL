@@ -27,7 +27,7 @@ from actions import (
 import color
 import exceptions
 import recorder as recorder_module
-import tile_types
+from tile_types import TILE_DOOR_CLOSED, TILE_DOOR_OPEN
 from entity import Actor, Chest, Item, Trap
 from equipment_types import EquipmentType
 
@@ -1305,7 +1305,7 @@ def find_openable_targets(engine: Engine) -> list:
             if not engine.game_map.in_bounds(x, y):
                 continue
 
-            if engine.game_map.tiles[x, y] == tile_types.door_closed:
+            if engine.game_map.tiles[x, y] == TILE_DOOR_CLOSED:
                 direction = _DOOR_DIRECTIONS.get((dx, dy), "")
                 targets.append(
                     (dx, dy, f"Door ({direction})", actions.OpenDoorAction(engine.player, x, y))
@@ -1380,7 +1380,7 @@ def find_closeable_doors(engine: Engine) -> list:
             if not engine.game_map.in_bounds(x, y):
                 continue
 
-            if engine.game_map.tiles[x, y] == tile_types.door_open:
+            if engine.game_map.tiles[x, y] == TILE_DOOR_OPEN:
                 direction = _DOOR_DIRECTIONS.get((dx, dy), "")
                 targets.append(
                     (dx, dy, f"Door ({direction})", actions.CloseDoorAction(engine.player, x, y))

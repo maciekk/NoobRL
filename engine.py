@@ -178,7 +178,7 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         """
         import random  # pylint: disable=import-outside-toplevel
         from procgen import enemy_chances, get_entities_at_random  # pylint: disable=import-outside-toplevel
-        import tile_types  # pylint: disable=import-outside-toplevel
+        from tile_types import TILE_UP_STAIRS, TILE_DOWN_STAIRS  # pylint: disable=import-outside-toplevel
 
         if random.random() >= 0.05:
             return
@@ -187,11 +187,11 @@ class Engine:  # pylint: disable=too-many-instance-attributes
         candidates = []
         # Upstairs: monster comes from the floor above (current_floor - 1)
         ux, uy = gm.upstairs_location
-        if gm.tiles[ux, uy] == tile_types.up_stairs:
+        if gm.tiles[ux, uy] == TILE_UP_STAIRS:
             candidates.append((ux, uy, self.game_world.current_floor - 1))
         # Downstairs: monster comes from the floor below (current_floor + 1)
         dx, dy = gm.downstairs_location
-        if gm.tiles[dx, dy] == tile_types.down_stairs:
+        if gm.tiles[dx, dy] == TILE_DOWN_STAIRS:
             candidates.append((dx, dy, self.game_world.current_floor + 1))
 
         if not candidates:
@@ -336,11 +336,11 @@ class Engine:  # pylint: disable=too-many-instance-attributes
 
         Tall grass tiles cost 2 to traverse (vs 1 for open tiles), dampening sound.
         """
-        from tile_types import tall_grass  # pylint: disable=import-outside-toplevel
+        from tile_types import TILE_TALL_GRASS  # pylint: disable=import-outside-toplevel
         gm = self.game_map
         walkable = gm.tiles["walkable"]
         tiles = gm.tiles
-        grass_check = tall_grass  # local ref for speed
+        grass_check = TILE_TALL_GRASS  # local ref for speed
         best: dict[Location, int] = {sound_location: 0}
         heap: list[tuple[int, Location]] = [(0, sound_location)]
         while heap:

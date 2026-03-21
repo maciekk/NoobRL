@@ -96,4 +96,4 @@ Ideas & efforts under way.
 - [ ] consider additional magic system: mana pool and spells/spellbooks
 - [ ] shop keepers
 - [ ] JSON-ify: spells?
-- [ ] JSON-ify: tile_types.py #next
+- [x] JSON-ify: tile_types.py

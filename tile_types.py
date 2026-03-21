@@ -1,4 +1,6 @@
 """Tile type definitions and NumPy dtypes for the game map."""
+import json
+import os
 from typing import Tuple
 
 import numpy as np  # type: ignore  # pylint: disable=import-error
@@ -36,61 +38,45 @@ def new_tile(
     return np.array((walkable, transparent, dark, revealed, light), dtype=tile_dt)
 
 
+def _parse_graphic(raw):
+    """Convert a JSON graphic entry [char, [r,g,b], [r,g,b]] to new_tile args."""
+    return (ord(raw[0]), tuple(raw[1]), tuple(raw[2]))
+
+
+def _load_tiles():
+    """Load tile definitions from data/tiles.json."""
+    data_path = os.path.join(os.path.dirname(__file__), "data", "tiles.json")
+    with open(data_path) as f:
+        entries = json.load(f)
+
+    tiles = {}
+    for entry in entries:
+        tile = new_tile(
+            walkable=entry["walkable"],
+            transparent=entry["transparent"],
+            dark=_parse_graphic(entry["dark"]),
+            revealed=_parse_graphic(entry["revealed"]),
+            light=_parse_graphic(entry["light"]),
+        )
+        tiles[entry["id"]] = tile
+    return tiles
+
+
 # SHROUD represents unexplored, unseen tiles
 SHROUD = np.array((ord(" "), (255, 255, 255), (0, 0, 0)), dtype=graphic_dt)
 
 # OUT_OF_BOUNDS represents areas beyond the map edge
 OUT_OF_BOUNDS = np.array((ord("X"), (20, 20, 20), (0, 0, 0)), dtype=graphic_dt)
 
-floor = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("."), (64, 64, 64), (0, 0, 0)),
-    revealed=(ord("."), (23, 23, 23), (0, 0, 0)),
-    light=(ord("."), (255, 255, 0), (32, 32, 0)),
-)
-wall = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("#"), (32, 32, 32), (50, 50, 100)),
-    revealed=(ord("#"), (12, 12, 12), (17, 17, 35)),
-    light=(ord("#"), (128, 128, 0), (64, 64, 32)),
-)
-down_stairs = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord(">"), (64, 64, 64), (0, 0, 0)),
-    revealed=(ord(">"), (23, 23, 23), (0, 0, 0)),
-    light=(ord(">"), (255, 255, 0), (32, 32, 0)),
-)
-up_stairs = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("<"), (64, 64, 64), (0, 0, 0)),
-    revealed=(ord("<"), (23, 23, 23), (0, 0, 0)),
-    light=(ord("<"), (255, 255, 0), (32, 32, 0)),
-)
-door_closed = new_tile(
-    walkable=False,
-    transparent=False,
-    dark=(ord("+"), (64, 50, 0), (0, 0, 0)),
-    revealed=(ord("+"), (64, 50, 0), (0, 0, 0)),
-    light=(ord("+"), (139, 69, 19), (50, 50, 50)),
-)
-door_open = new_tile(
-    walkable=True,
-    transparent=True,
-    dark=(ord("'"), (64, 64, 64), (0, 0, 0)),
-    revealed=(ord("'"), (64, 50, 0), (0, 0, 0)),
-    light=(ord("'"), (139, 69, 19), (32, 32, 0)),
-)
-tall_grass = new_tile(
-    walkable=True,
-    transparent=False,
-    dark=(ord(";"), (20, 80, 20), (0, 20, 0)),
-    revealed=(ord(";"), (10, 35, 10), (0, 8, 0)),
-    light=(ord(";"), (50, 200, 50), (10, 50, 10)),
-)
+_tiles = _load_tiles()
+
+TILE_FLOOR = _tiles["floor"]
+TILE_WALL = _tiles["wall"]
+TILE_DOWN_STAIRS = _tiles["down_stairs"]
+TILE_UP_STAIRS = _tiles["up_stairs"]
+TILE_DOOR_CLOSED = _tiles["door_closed"]
+TILE_DOOR_OPEN = _tiles["door_open"]
+TILE_TALL_GRASS = _tiles["tall_grass"]
 
 # Tiles that should cause careful movement to stop when stepped on.
-interesting_tiles = [down_stairs, up_stairs, door_closed, door_open, tall_grass]
+INTERESTING_TILES = [TILE_DOWN_STAIRS, TILE_UP_STAIRS, TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_TALL_GRASS]

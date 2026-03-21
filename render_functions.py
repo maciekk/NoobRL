@@ -5,7 +5,7 @@ import time
 from typing import TYPE_CHECKING
 
 import color
-import tile_types
+from tile_types import TILE_DOWN_STAIRS, TILE_FLOOR, TILE_TALL_GRASS, TILE_UP_STAIRS, TILE_WALL
 from entity import Actor, Item
 
 if TYPE_CHECKING:
@@ -32,15 +32,15 @@ def entity_brief(entity) -> str:
 def get_tile_name(x: int, y: int, game_map: GameMap) -> str:
     """Return a human-readable name for the tile at (x, y)."""
     tile = game_map.tiles[x, y]
-    if tile == tile_types.down_stairs:
+    if tile == TILE_DOWN_STAIRS:
         return "stairs down"
-    if tile == tile_types.up_stairs:
+    if tile == TILE_UP_STAIRS:
         return "stairs up"
-    if tile == tile_types.wall:
+    if tile == TILE_WALL:
         return "wall"
-    if tile == tile_types.floor:
+    if tile == TILE_FLOOR:
         return "floor"
-    if tile == tile_types.tall_grass:
+    if tile == TILE_TALL_GRASS:
         return "tall grass"
     return ""
 

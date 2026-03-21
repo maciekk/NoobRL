@@ -10,7 +10,7 @@ from tcod.console import Console  # pylint: disable=import-error
 
 from entity import Actor, Item
 from location import Location
-import tile_types
+from tile_types import OUT_OF_BOUNDS, SHROUD, TILE_FLOOR, TILE_TALL_GRASS, TILE_WALL
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -25,7 +25,7 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
         self.engine = engine
         self.width, self.height = width, height
         self.entities = set(entities)
-        self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
+        self.tiles = np.full((width, height), fill_value=TILE_WALL, order="F")
 
         self.visible = np.full(
             (width, height), fill_value=False, order="F"
@@ -122,13 +122,13 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
         dx, dy = mx1 - cx, my1 - cy
 
         # Fill entire viewport with OUT_OF_BOUNDS first, then paint the map slice on top
-        console.rgb[0:vp_w, 0:vp_h] = tile_types.OUT_OF_BOUNDS
+        console.rgb[0:vp_w, 0:vp_h] = OUT_OF_BOUNDS
         if mx2 > mx1 and my2 > my1:
             sw, sh = mx2 - mx1, my2 - my1
             console.rgb[dx:dx + sw, dy:dy + sh] = np.select(
                 condlist=[self.visible[mx1:mx2, my1:my2], self.explored[mx1:mx2, my1:my2], self.revealed[mx1:mx2, my1:my2]],
                 choicelist=[self.tiles["light"][mx1:mx2, my1:my2], self.tiles["dark"][mx1:mx2, my1:my2], self.tiles["revealed"][mx1:mx2, my1:my2]],
-                default=tile_types.SHROUD,
+                default=SHROUD,
             )
 
         # Track tiles with multiple items for pile display
@@ -267,8 +267,8 @@ def apply_explosion(
     for tx in range(x - radius, x + radius + 1):
         for ty in range(y - radius, y + radius + 1):
             if (tx - x) ** 2 + (ty - y) ** 2 <= radius ** 2:
-                if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.tall_grass:
-                    game_map.tiles[tx, ty] = tile_types.floor
+                if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == TILE_TALL_GRASS:
+                    game_map.tiles[tx, ty] = TILE_FLOOR
                     grass_burned += 1
 
     return actors_hit, grass_burned

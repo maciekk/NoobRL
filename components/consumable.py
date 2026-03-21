@@ -13,7 +13,7 @@ from render_functions import (
     animate_explosion,
     animate_grass_growth,
 )
-import tile_types
+from tile_types import TILE_FLOOR, TILE_TALL_GRASS
 import actions
 import color
 import sounds
@@ -277,7 +277,7 @@ class DiggingWandConsumable(WandConsumable):
         walls_dug = 0
         for lx, ly in path:
             if not gm.tiles["walkable"][lx, ly]:
-                gm.tiles[lx, ly] = tile_types.floor
+                gm.tiles[lx, ly] = TILE_FLOOR
                 walls_dug += 1
             actor = gm.get_actor_at_location(lx, ly)
             if actor and actor is not consumer:
@@ -824,8 +824,8 @@ class FertilizerBombConsumable(BombConsumable):
         for tx in range(x - self.radius, x + self.radius + 1):
             for ty in range(y - self.radius, y + self.radius + 1):
                 if (tx - x) ** 2 + (ty - y) ** 2 <= self.radius ** 2:
-                    if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == tile_types.floor:
-                        game_map.tiles[tx, ty] = tile_types.tall_grass
+                    if game_map.in_bounds(tx, ty) and game_map.tiles[tx, ty] == TILE_FLOOR:
+                        game_map.tiles[tx, ty] = TILE_TALL_GRASS
                         tiles_grown += 1
 
         if tiles_grown > 0:

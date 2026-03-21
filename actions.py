@@ -26,7 +26,7 @@ from components.effect import (
 from equipment_types import EquipmentType
 import exceptions
 import options
-import tile_types
+from tile_types import INTERESTING_TILES, TILE_DOOR_CLOSED, TILE_DOOR_OPEN
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -235,8 +235,8 @@ class OpenDoorAction(Action):
             raise exceptions.Impossible("There is no door there.")
 
         tile = self.engine.game_map.tiles[self.x, self.y]
-        if tile == tile_types.door_closed:
-            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_open
+        if tile == TILE_DOOR_CLOSED:
+            self.engine.game_map.tiles[self.x, self.y] = TILE_DOOR_OPEN
             self.engine.message_log.add_message("You open the door.", color.white)
             self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
         else:
@@ -263,8 +263,8 @@ class CloseDoorAction(Action):
                 raise exceptions.Impossible("There is something in the way.")
 
         tile = self.engine.game_map.tiles[self.x, self.y]
-        if tile == tile_types.door_open:
-            self.engine.game_map.tiles[self.x, self.y] = tile_types.door_closed
+        if tile == TILE_DOOR_OPEN:
+            self.engine.game_map.tiles[self.x, self.y] = TILE_DOOR_CLOSED
             self.engine.message_log.add_message("You close the door.", color.white)
             self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
         else:
@@ -460,14 +460,14 @@ class BumpAction(ActionWithDirection):
         if self.engine.game_map.in_bounds(dest_x, dest_y):
             if (dest_x, dest_y) in (self.engine.game_map.secret_doors):
                 self.engine.game_map.secret_doors.discard((dest_x, dest_y))
-                self.engine.game_map.tiles[dest_x, dest_y] = tile_types.door_closed
+                self.engine.game_map.tiles[dest_x, dest_y] = TILE_DOOR_CLOSED
                 self.engine.message_log.add_message(
                     "You discover a secret door!", color.white
                 )
                 return
             if (
                 options.auto_open_doors
-                and self.engine.game_map.tiles[dest_x, dest_y] == tile_types.door_closed
+                and self.engine.game_map.tiles[dest_x, dest_y] == TILE_DOOR_CLOSED
             ):
                 OpenDoorAction(self.entity, dest_x, dest_y).perform()
                 return
@@ -553,7 +553,7 @@ class CarefulMovementAction(MovementAction):
     def _on_interesting_tile(self) -> bool:
         """True if standing on a notable feature or item."""
         tile = self.engine.game_map.tiles[self.entity.x, self.entity.y]
-        if any(tile == t for t in tile_types.interesting_tiles):
+        if any(tile == t for t in INTERESTING_TILES):
             return True
         px, py = self.entity.x, self.entity.y
         return any(item.x == px and item.y == py for item in self.engine.game_map.items)

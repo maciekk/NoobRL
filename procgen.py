@@ -12,7 +12,10 @@ import tcod  # pylint: disable=import-error
 
 import enchantment_data
 import options
-import tile_types
+from tile_types import (
+    TILE_DOOR_CLOSED, TILE_DOOR_OPEN, TILE_DOWN_STAIRS, TILE_FLOOR,
+    TILE_TALL_GRASS, TILE_UP_STAIRS, TILE_WALL,
+)
 from components.effect import SleepEffect
 from dice import roll
 from entity import Actor, Chest, Trap
@@ -394,11 +397,11 @@ def place_grass_patches(dungeon: GameMap, rooms: List[RectangularRoom]) -> None:
                     continue
                 # Only convert floor and wall tiles
                 tile = dungeon.tiles[x, y]
-                if tile in (tile_types.floor, tile_types.wall) and (
+                if tile in (TILE_FLOOR, TILE_WALL) and (
                     x,
                     y,
                 ) not in dungeon.secret_doors:
-                    dungeon.tiles[x, y] = tile_types.tall_grass
+                    dungeon.tiles[x, y] = TILE_TALL_GRASS
 
 
 def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None:
@@ -413,14 +416,14 @@ def place_doors(dungeon: GameMap, door_locations: List[Tuple[int, int]]) -> None
             pass
         elif rand_val < 0.70:  # 0.20 + 0.50
             # Open door
-            dungeon.tiles[x, y] = tile_types.door_open
+            dungeon.tiles[x, y] = TILE_DOOR_OPEN
         else:
             # Closed door (10% chance to be secret)
             if random.random() < 0.1:
                 dungeon.secret_doors.add((x, y))
-                dungeon.tiles[x, y] = tile_types.wall
+                dungeon.tiles[x, y] = TILE_WALL
             else:
-                dungeon.tiles[x, y] = tile_types.door_closed
+                dungeon.tiles[x, y] = TILE_DOOR_CLOSED
 
 
 def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches
@@ -459,7 +462,7 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
         # If there are no intersections then the room is valid.
 
         # Dig out this rooms inner area.
-        dungeon.tiles[new_room.inner] = tile_types.floor
+        dungeon.tiles[new_room.inner] = TILE_FLOOR
 
         # Track room tiles for door placement
         for x in range(new_room.x1 + 1, new_room.x2):
@@ -482,7 +485,7 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
             for x, y in tunnel_tiles:
                 if _would_create_wide_corridor(dungeon.tiles, x, y, tunnel_set):
                     continue
-                dungeon.tiles[x, y] = tile_types.floor
+                dungeon.tiles[x, y] = TILE_FLOOR
             center_of_last_room = new_room.center
 
         place_entities(new_room, dungeon, engine.game_world.current_floor)
@@ -493,29 +496,29 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
     # Place staircases after all rooms and tunnels are dug.
     if ascending:
         # Came from below: downstairs at spawn only, upstairs at far end.
-        dungeon.tiles[center_of_first_room] = tile_types.down_stairs
+        dungeon.tiles[center_of_first_room] = TILE_DOWN_STAIRS
         dungeon.downstairs_location = center_of_first_room
         if engine.game_world.current_floor > 1:
-            dungeon.tiles[center_of_last_room] = tile_types.up_stairs
+            dungeon.tiles[center_of_last_room] = TILE_UP_STAIRS
             dungeon.upstairs_location = center_of_last_room
     elif trapdoor:
         # Fell through trapdoor: downstairs at far end, upstairs in a random
         # room that is NOT the first room (where the player lands).
-        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
+        dungeon.tiles[center_of_last_room] = TILE_DOWN_STAIRS
         dungeon.downstairs_location = center_of_last_room
         if engine.game_world.current_floor > 1:
             other_rooms = rooms[1:] if len(rooms) > 1 else rooms
             # Prefer not putting upstairs in the last room (has downstairs) if avoidable
             candidates = other_rooms[:-1] if len(other_rooms) > 1 else other_rooms
             up_room = random.choice(candidates)
-            dungeon.tiles[up_room.center] = tile_types.up_stairs
+            dungeon.tiles[up_room.center] = TILE_UP_STAIRS
             dungeon.upstairs_location = up_room.center
     else:
         # Came from above (or initial): downstairs at far end, upstairs at spawn.
-        dungeon.tiles[center_of_last_room] = tile_types.down_stairs
+        dungeon.tiles[center_of_last_room] = TILE_DOWN_STAIRS
         dungeon.downstairs_location = center_of_last_room
         if engine.game_world.current_floor > 1:
-            dungeon.tiles[center_of_first_room] = tile_types.up_stairs
+            dungeon.tiles[center_of_first_room] = TILE_UP_STAIRS
             dungeon.upstairs_location = center_of_first_room
 
     # Place doors at corridor-room junctions.
