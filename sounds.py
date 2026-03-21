@@ -114,13 +114,6 @@ _EFFECT_DEFS = [
         ],
     ),
     (
-        "engulfed in a fiery explosion",
-        [
-            "sfx/mixkit-fuel-explosion-1705.wav",
-            "sfx/mixkit-explosion-with-rocks-debris-1703.wav",
-        ],
-    ),
-    (
         "You have been spotted by a dragon!",
         [
             "sfx/mixkit-giant-monster-roar-1972.wav",

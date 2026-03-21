@@ -580,7 +580,7 @@ def _fireball_activate(consumable, action: actions.ItemAction) -> None:
 
         layers = [
             (0, proj),
-            (explosion_start + 1, expl),
+            (explosion_start + 1, expl, {0: "sfx/mixkit-fuel-explosion-1705.wav"}),
         ]
 
         # Composite sound wave if sound animations are enabled

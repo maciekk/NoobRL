@@ -140,9 +140,13 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
 
     Args:
         engine: the Engine (for rendering and world-to-screen conversion).
-        layers: list of (delay, frames) tuples.
+        layers: list of layer tuples. Each is either:
+            (delay, frames) — no sound cues, or
+            (delay, frames, sound_cues) — with sound cues.
             delay: number of global frames to skip before this layer starts.
             frames: iterable of frame lists (each frame is a list of render ops).
+            sound_cues: dict mapping local frame index to a sound file path.
+                The sound is played via sounds.play() when that frame is reached.
         console: tcod console to draw on.
         context: tcod context to present.
         frame_delay: seconds between frames.
@@ -150,20 +154,32 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
     Render ops are processed in layer order — later layers paint over earlier
     ones on the same tile, giving predictable compositing.
     """
-    # Materialize all layers so we can index by frame number.
-    materialized = [(delay, list(frames)) for delay, frames in layers]
+    import sounds as _sounds
+
+    # Normalize layers to 3-tuples and materialize frames.
+    materialized = []
+    for layer in layers:
+        if len(layer) == 3:
+            delay, frames, cues = layer
+        else:
+            delay, frames = layer
+            cues = None
+        materialized.append((delay, list(frames), cues))
 
     total = max(
-        (delay + len(frames) for delay, frames in materialized),
+        (delay + len(frames) for delay, frames, _cues in materialized),
         default=0,
     )
 
     for frame_idx in range(total):
         _begin_frame(engine, console)
-        for delay, frames in materialized:
+        for delay, frames, cues in materialized:
             local = frame_idx - delay
             if local < 0 or local >= len(frames):
                 continue
+            # Fire sound cue on the first frame this layer reaches local index.
+            if cues and local in cues:
+                _sounds.play(cues[local])
             for op in frames[local]:
                 x, y = op[0], op[1]
                 if not engine.game_map.in_bounds(x, y):
@@ -481,7 +497,7 @@ def animate_fireball_projectile(
     expl = explosion_frames(engine, impact_x, impact_y, radius)
     layers = [
         (0, proj),                # projectile travels first
-        (len(proj), expl),        # explosion starts when projectile arrives
+        (len(proj), expl, {0: "sfx/mixkit-fuel-explosion-1705.wav"}),
     ]
     composite_animations(engine, layers, console, context, frame_delay=0.04)
 
