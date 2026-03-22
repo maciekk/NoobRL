@@ -5,6 +5,7 @@ import time
 from typing import TYPE_CHECKING
 
 import color
+import options
 from tile_types import TILE_DOWN_STAIRS, TILE_FLOOR, TILE_TALL_GRASS, TILE_UP_STAIRS, TILE_WALL
 from entity import Actor, Item
 
@@ -458,8 +459,8 @@ def animate_sound_wave(
             _end_frame(console, context, 0.03)
             trail_visited.extend(player_ring)
             rendered_any = True
-        if rendered_any:
-            time.sleep(0.12)
+        if rendered_any and options.sound_wave_linger > 0:
+            time.sleep(options.sound_wave_linger)
         # Erase trail
         if trail_visited:
             _begin_frame(engine, console)

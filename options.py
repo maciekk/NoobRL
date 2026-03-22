@@ -18,6 +18,10 @@ grass_patch_chance = 0.1
 # Show the sound wave ripple animation when a noise is made.
 show_sound = True
 
+# Extra delay (seconds) after the last sound wave frame before erasing the trail.
+# Set to 0 to skip the delay entirely.
+sound_wave_linger = 0.0
+
 # Terminal size in tiles. Larger values give more visible world.
 n_cols = 80
 n_rows = 34
