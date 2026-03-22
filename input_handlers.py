@@ -27,7 +27,7 @@ from actions import (
 import color
 import exceptions
 import recorder as recorder_module
-from tile_types import TILE_DOOR_CLOSED, TILE_DOOR_OPEN
+from tile_types import OUT_OF_BOUNDS, TILE_DOOR_CLOSED, TILE_DOOR_OPEN
 from entity import Actor, Chest, Item, Trap
 from equipment_types import EquipmentType
 
@@ -77,6 +77,29 @@ CONFIRM_KEYS = {
 }
 
 SCROLL_SPEED = 5
+
+# Block chars for 2x2 wall patterns in overview map (CP437-safe).
+# Index = TL*8 + TR*4 + BL*2 + BR*1 where 1=wall, 0=floor.
+# Only uses █▀▄▌▐ and space, which exist in all CP437 tilesets.
+# Single-quadrant and three-quarter patterns use the closest half-block.
+QUADRANT_CHARS = (
+    ord(" "),  # 0000 - all floor
+    0x2584,    # 0001 - BR only → lower half
+    0x2584,    # 0010 - BL only → lower half
+    0x2584,    # 0011 - bottom half (exact)
+    0x2580,    # 0100 - TR only → upper half
+    0x2590,    # 0101 - right half (exact)
+    0x2588,    # 0110 - BL+TR diagonal → full block
+    0x2588,    # 0111 - missing TL → full block
+    0x2580,    # 1000 - TL only → upper half
+    0x2588,    # 1001 - TL+BR diagonal → full block
+    0x258C,    # 1010 - left half (exact)
+    0x2588,    # 1011 - missing TR → full block
+    0x2580,    # 1100 - upper half (exact)
+    0x2588,    # 1101 - missing BR → full block
+    0x2588,    # 1110 - missing BL → full block
+    0x2588,    # 1111 - full block (exact)
+)
 
 MIN_FRAME_INTERVAL = 0.025
 
@@ -2182,6 +2205,8 @@ class MainGameEventHandler(EventHandler):
             return ReadHandler(self.engine)
         elif key == tcod.event.KeySym.t:
             return ThrowItemHandler(self.engine)
+        elif key == tcod.event.KeySym.z:
+            return OverviewMapHandler(self.engine)
         elif is_shifted(event, tcod.event.KeySym.N2):
             return DebugHandler(self.engine)
         # No valid key was pressed
@@ -2319,6 +2344,188 @@ class HistoryViewer(EventHandler):
         return None
 
 
+class OverviewMapHandler(EventHandler):
+    """Zoomed-out overview of the entire dungeon floor using 2x2 block mapping."""
+
+    def on_render(self, console: tcod.Console) -> None:
+        """Render normal game, then replace map viewport with overview."""
+        super().on_render(console)
+        self._render_overview(console)
+
+    def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        """Return to main game on 'z' or Escape."""
+        if event.sym in (tcod.event.KeySym.z, tcod.event.KeySym.ESCAPE):
+            return MainGameEventHandler(self.engine)
+        return None
+
+    def _render_overview(self, console: tcod.Console) -> None:
+        engine = self.engine
+        game_map = engine.game_map
+        mw, mh = game_map.width, game_map.height
+        vp_w = engine.viewport_width
+        vp_h = engine.viewport_height
+
+        # Overview grid dimensions (ceil division for odd map sizes)
+        ov_w = (mw + 1) // 2
+        ov_h = (mh + 1) // 2
+
+        # Camera: center on player's overview cell, clamp to bounds
+        player = engine.player
+        p_ox, p_oy = player.x // 2, player.y // 2
+        cam_x = p_ox - vp_w // 2
+        cam_y = p_oy - vp_h // 2
+        # Include 1-cell border for boundary X markers
+        if ov_w + 2 <= vp_w:
+            cam_x = -(vp_w - (ov_w + 2)) // 2 - 1
+        else:
+            cam_x = max(-1, min(cam_x, ov_w - vp_w + 1))
+        if ov_h + 2 <= vp_h:
+            cam_y = -(vp_h - (ov_h + 2)) // 2 - 1
+        else:
+            cam_y = max(-1, min(cam_y, ov_h - vp_h + 1))
+
+        # Fill viewport with OUT_OF_BOUNDS (X), then black out the map area
+        console.rgb[0:vp_w, 0:vp_h] = OUT_OF_BOUNDS
+        # Compute console region that covers the actual map (not border)
+        map_cx = max(0, -cam_x)
+        map_cy = max(0, -cam_y)
+        map_cw = min(vp_w, ov_w + max(0, -cam_x)) - map_cx
+        map_ch = min(vp_h, ov_h + max(0, -cam_y)) - map_cy
+        if map_cw > 0 and map_ch > 0:
+            console.rgb[map_cx:map_cx + map_cw, map_cy:map_cy + map_ch] = (
+                ord(" "), (0, 0, 0), (0, 0, 0)
+            )
+
+        walkable = game_map.tiles["walkable"]
+        visible = game_map.visible
+        explored = game_map.explored
+        revealed = game_map.revealed
+        known = visible | explored | revealed
+
+        # Terrain pass
+        for sx in range(min(vp_w, ov_w)):
+            for sy in range(min(vp_h, ov_h)):
+                ox = sx + max(0, cam_x)
+                oy = sy + max(0, cam_y)
+                if ox >= ov_w or oy >= ov_h:
+                    continue
+                cx = sx + max(0, -cam_x)
+                cy = sy + max(0, -cam_y)
+                if cx >= vp_w or cy >= vp_h:
+                    continue
+
+                wx0, wy0 = ox * 2, oy * 2
+                wx1, wy1 = min(wx0 + 1, mw - 1), min(wy0 + 1, mh - 1)
+
+                tl_known = known[wx0, wy0]
+                tr_known = known[wx1, wy0] if wx1 < mw else False
+                bl_known = known[wx0, wy1] if wy1 < mh else False
+                br_known = known[wx1, wy1] if wx1 < mw and wy1 < mh else False
+
+                if not (tl_known or tr_known or bl_known or br_known):
+                    continue
+
+                tl_wall = not walkable[wx0, wy0] or not tl_known
+                tr_wall = (wx0 + 1 >= mw) or not walkable[wx0 + 1, wy0] or not tr_known
+                bl_wall = (wy0 + 1 >= mh) or not walkable[wx0, wy0 + 1] or not bl_known
+                br_wall = (wx0 + 1 >= mw or wy0 + 1 >= mh) or not walkable[wx0 + 1, wy0 + 1] or not br_known
+
+                idx = tl_wall * 8 + tr_wall * 4 + bl_wall * 2 + br_wall
+                ch = QUADRANT_CHARS[idx]
+
+                any_visible = (
+                    visible[wx0, wy0]
+                    or (wx0 + 1 < mw and visible[wx0 + 1, wy0])
+                    or (wy0 + 1 < mh and visible[wx0, wy0 + 1])
+                    or (wx0 + 1 < mw and wy0 + 1 < mh and visible[wx0 + 1, wy0 + 1])
+                )
+                # fg = wall (filled quadrants), bg = floor (empty quadrants)
+                # Colors match actual tile bg colors from tiles.json
+                if any_visible:
+                    fg = (64, 64, 32)   # wall light bg
+                    bg = (32, 32, 0)    # floor light bg
+                else:
+                    fg = (50, 50, 100)  # wall dark bg
+                    bg = (0, 0, 0)      # floor dark bg
+
+                console.ch[cx, cy] = ch
+                console.fg[cx, cy] = fg
+                console.bg[cx, cy] = bg
+
+        # Entity overlay: build dict of highest-priority entity per overview cell
+        entity_cells: dict[tuple[int, int], tuple[int, str, tuple[int, int, int]]] = {}
+
+        # Player always shown
+        entity_cells[(p_ox, p_oy)] = (5, "@", (255, 255, 255))
+
+        # Stairs
+        ds_x, ds_y = game_map.downstairs_location
+        if known[ds_x, ds_y]:
+            ds_key = (ds_x // 2, ds_y // 2)
+            if ds_key not in entity_cells or entity_cells[ds_key][0] < 4:
+                entity_cells[ds_key] = (4, ">", (255, 255, 0))
+        us_x, us_y = game_map.upstairs_location
+        if us_x != 0 or us_y != 0:
+            if known[us_x, us_y]:
+                us_key = (us_x // 2, us_y // 2)
+                if us_key not in entity_cells or entity_cells[us_key][0] < 4:
+                    entity_cells[us_key] = (4, "<", (255, 255, 0))
+
+        # Actors and items
+        for entity in game_map.entities:
+            if entity is player:
+                continue
+            should_show = visible[entity.x, entity.y]
+            if not should_show and player.is_detecting_monsters and isinstance(entity, Actor) and entity.is_alive:
+                should_show = True
+            if not should_show and player.is_detecting_items and isinstance(entity, Item):
+                should_show = True
+            if not should_show:
+                continue
+
+            ekey = (entity.x // 2, entity.y // 2)
+            if isinstance(entity, Actor) and entity.is_alive:
+                prio = 3
+                existing = entity_cells.get(ekey)
+                if existing and existing[0] > prio:
+                    continue
+                if existing and existing[0] == prio and existing[1] != entity.char:
+                    entity_cells[ekey] = (prio, "M", (255, 100, 100))
+                    continue
+                entity_cells[ekey] = (prio, entity.char, entity.color)
+            elif isinstance(entity, Item):
+                prio = 2
+                existing = entity_cells.get(ekey)
+                if existing and existing[0] > prio:
+                    continue
+                if existing and existing[0] == prio and existing[1] != entity.char:
+                    entity_cells[ekey] = (prio, "&", (255, 255, 255))
+                    continue
+                fg = entity.display_color if hasattr(entity, "display_color") else entity.color
+                entity_cells[ekey] = (prio, entity.char, fg)
+
+        # Paint entities
+        for (ox, oy), (_, char, fg) in entity_cells.items():
+            cx = ox - max(0, cam_x) + max(0, -cam_x)
+            cy = oy - max(0, cam_y) + max(0, -cam_y)
+            if 0 <= cx < vp_w and 0 <= cy < vp_h:
+                console.ch[cx, cy] = ord(char)
+                console.fg[cx, cy] = fg
+                # Background hint: dark if mostly wall
+                wx0, wy0 = ox * 2, oy * 2
+                wall_count = sum(
+                    1 for wx, wy in ((wx0, wy0), (wx0 + 1, wy0), (wx0, wy0 + 1), (wx0 + 1, wy0 + 1))
+                    if wx < mw and wy < mh and not walkable[wx, wy]
+                )
+                if wall_count >= 2:
+                    console.bg[cx, cy] = (20, 20, 50)
+
+        # Label
+        label = " OVERVIEW "
+        lx = (vp_w - len(label)) // 2
+        console.print(x=lx, y=0, string=label, fg=(255, 255, 0), bg=(0, 0, 40))
+
+
 class ViewKeybinds(AskUserEventHandler):
     """Print the history on a larger window which can be navigated."""
 
@@ -2339,6 +2546,7 @@ class ViewKeybinds(AskUserEventHandler):
         "v: examine dungeon (Enter: inspect)",
         "V: view surroundings",
         "w: walk",
+        "z: overview map",
     ]
 
     def on_render(self, console: tcod.Console) -> None:
