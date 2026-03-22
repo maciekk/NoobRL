@@ -132,9 +132,10 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
             )
 
         # Track tiles with multiple items for pile display
+        detecting_items = engine.player.is_detecting_items
         item_counts: dict[tuple[int, int], int] = {}
         for entity in self.entities:
-            if isinstance(entity, Item) and self.visible[entity.x, entity.y]:
+            if isinstance(entity, Item) and (self.visible[entity.x, entity.y] or detecting_items):
                 pos = (entity.x, entity.y)
                 item_counts[pos] = item_counts.get(pos, 0) + 1
 
@@ -142,15 +143,14 @@ class GameMap:  # pylint: disable=too-many-instance-attributes
             sx, sy = engine.world_to_screen(entity.x, entity.y)
             if not (0 <= sx < vp_w and 0 <= sy < vp_h):
                 continue
-            # Render if visible, or if detecting monsters and entity is a non-player Actor
+            # Render if visible, or if detecting monsters/items
             should_render = self.visible[entity.x, entity.y]
-            if (
-                not should_render
-                and engine.player.is_detecting_monsters
-                and isinstance(entity, Actor)
-                and entity is not engine.player
-            ):
-                should_render = True
+            if not should_render and engine.player.is_detecting_monsters:
+                if isinstance(entity, Actor) and entity is not engine.player:
+                    should_render = True
+            if not should_render and engine.player.is_detecting_items:
+                if isinstance(entity, Item):
+                    should_render = True
 
             detecting_this_trap = (
                 engine.player.is_detecting_traps

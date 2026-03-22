@@ -23,6 +23,7 @@ from components.effect import (
     RageEffect,
     SpeedEffect,
     DetectMonsterEffect,
+    DetectItemEffect,
     SleepEffect,
     BlindnessEffect,
 )
@@ -757,6 +758,21 @@ class DetectMonsterConsumable(Consumable):
         consumer = action.entity
         eff = DetectMonsterEffect(engine=self.engine, duration=self.duration)
         self._apply_effect(consumer, eff, "You sense the presence of monsters!")
+
+
+class DetectItemConsumable(Consumable):
+    """Reveals all items on the map for a set duration."""
+
+    def __init__(self, duration: int):
+        self.duration = duration
+
+    def get_description(self) -> list[str]:
+        return [f"Reveals all items for {self.duration} turns"]
+
+    def activate(self, action: actions.ItemAction) -> None:
+        consumer = action.entity
+        eff = DetectItemEffect(engine=self.engine, duration=self.duration)
+        self._apply_effect(consumer, eff, "You sense the presence of items!")
 
 
 class SleepConsumable(Consumable):

@@ -53,6 +53,15 @@
         }
     },
     {
+        "id": "s_detect_items",
+        "name": "scroll of Detect Items",
+        "char": "?",
+        "consumable": {
+            "name": "DetectItemConsumable",
+            "duration": 10
+        }
+    },
+    {
         "id": "s_identify",
         "name": "scroll of Identification",
         "char": "?",
@@ -309,6 +318,19 @@
         ],
         "equippable": {
             "name": "AmuletOfDetectMonster"
+        }
+    },
+    {
+        "id": "amulet_detect_item",
+        "name": "Amulet of Detect Items",
+        "char": "\"",
+        "color": [
+            255,
+            215,
+            0
+        ],
+        "equippable": {
+            "name": "AmuletOfDetectItem"
         }
     },
     {

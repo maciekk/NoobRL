@@ -195,6 +195,7 @@ class Actor(Entity):  # pylint: disable=too-many-instance-attributes
         self.energy = 0
         self.is_hasted = False
         self.is_detecting_monsters = False
+        self.is_detecting_items = False
         self.is_detecting_traps = False
         self.death_explosion = death_explosion
         self.sight_range = sight_range

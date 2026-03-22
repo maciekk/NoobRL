@@ -36,6 +36,7 @@ CONSUMABLE_MAP = {
     "FertilizerBombConsumable": consumable.FertilizerBombConsumable,
     "BlindnessConsumable": consumable.BlindnessConsumable,
     "IdentificationConsumable": consumable.IdentificationConsumable,
+    "DetectItemConsumable": consumable.DetectItemConsumable,
     "DetectTrapsConsumable": consumable.DetectTrapsConsumable,
     "EnchantWeaponConsumable": consumable.EnchantWeaponConsumable,
     "EnchantArmourConsumable": consumable.EnchantArmourConsumable,
@@ -43,6 +44,7 @@ CONSUMABLE_MAP = {
 EQUIPPABLE_MAP = {
     "AmuletOfClairvoyance": equippable.AmuletOfClairvoyance,
     "AmuletOfDetectMonster": equippable.AmuletOfDetectMonster,
+    "AmuletOfDetectItem": equippable.AmuletOfDetectItem,
 }
 AI_MAP = {
     "HostileEnemy": components.ai.HostileEnemy,

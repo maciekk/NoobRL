@@ -27,6 +27,7 @@ def _flag_effect(attr: str):
 _EFFECT_REGISTRY = {
     "clairvoyance": (lambda eq: apply_clairvoyance(eq.engine), None, lambda eq: apply_clairvoyance(eq.engine)),
     "detect_monster": (*_flag_effect("is_detecting_monsters"), None),
+    "detect_item": (*_flag_effect("is_detecting_items"), None),
     "trap_detection": (*_flag_effect("is_detecting_traps"), None),
 }
 
@@ -123,5 +124,26 @@ class AmuletOfDetectMonster(Equippable):
         self.actor.is_detecting_monsters = False
         self.engine.message_log.add_message(
             "Your monster sense fades.",
+            (0x80, 0x80, 0x80),
+        )
+
+
+class AmuletOfDetectItem(Equippable):
+    """An amulet that reveals all items while equipped."""
+
+    def __init__(self) -> None:
+        super().__init__(equipment_type=EquipmentType.AMULET)
+
+    def on_equip(self) -> None:
+        self.actor.is_detecting_items = True
+        self.engine.message_log.add_message(
+            "You sense the presence of items!",
+            (0xFF, 0xD7, 0x00),
+        )
+
+    def on_unequip(self) -> None:
+        self.actor.is_detecting_items = False
+        self.engine.message_log.add_message(
+            "Your item sense fades.",
             (0x80, 0x80, 0x80),
         )

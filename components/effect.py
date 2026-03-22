@@ -106,6 +106,18 @@ class DetectMonsterEffect(FlagEffect):
         )
 
 
+class DetectItemEffect(FlagEffect):
+    """Reveals the location of all items on the map."""
+    name = "Detect Items"
+    flag_name = "is_detecting_items"
+
+    def expire(self) -> None:
+        super().expire()
+        self.engine.message_log.add_message(
+            "Your item sense fades.", (0x80, 0x80, 0x80)
+        )
+
+
 class SleepEffect(FlagEffect):
     """Puts the actor to sleep for a duration; wakes up if attacked."""
     name = "Sleep"

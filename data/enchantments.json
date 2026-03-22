@@ -20,6 +20,16 @@
         "unequip_message": ["Your monster sense fades.", [128, 128, 128]]
     },
     {
+        "id": "detect_item",
+        "label": "Detect Items",
+        "effect": "detect_item",
+        "applies_to": {
+            "ARMOR": { "min_floor": 4, "chance": 0.05 }
+        },
+        "equip_message": ["You sense the presence of items!", [255, 215, 0]],
+        "unequip_message": ["Your item sense fades.", [128, 128, 128]]
+    },
+    {
         "id": "trap_detection",
         "label": "Trap Detection",
         "effect": "trap_detection",
