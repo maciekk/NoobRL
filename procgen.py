@@ -121,13 +121,23 @@ def get_entities_at_random(
 
 
 class RectangularRoom:
-    """A rectangular room defined by its top-left corner and dimensions."""
+    """A room defined by its bounding rectangle, with an optional non-rectangular shape.
+
+    floor_tiles stores the actual walkable (x, y) coords. By default it covers
+    the full inner rectangle, but shape generators can replace it with a subset.
+    """
 
     def __init__(self, x: int, y: int, width: int, height: int):
         self.x1 = x
         self.y1 = y
         self.x2 = x + width
         self.y2 = y + height
+        # Default: all inner tiles are floor.
+        self.floor_tiles: set = {
+            (tx, ty)
+            for tx in range(self.x1 + 1, self.x2)
+            for ty in range(self.y1 + 1, self.y2)
+        }
 
     @property
     def center(self) -> Tuple[int, int]:
@@ -152,6 +162,112 @@ class RectangularRoom:
         )
 
 
+def _shape_circular(room: RectangularRoom) -> set:
+    """Carve an ellipse inscribed in the room's bounding rect."""
+    cx = (room.x1 + room.x2) / 2.0
+    cy = (room.y1 + room.y2) / 2.0
+    # Semi-axes cover the inner area (minus walls).
+    rx = (room.x2 - room.x1 - 2) / 2.0
+    ry = (room.y2 - room.y1 - 2) / 2.0
+    tiles = set()
+    for tx in range(room.x1 + 1, room.x2):
+        for ty in range(room.y1 + 1, room.y2):
+            dx = (tx - cx) / rx
+            dy = (ty - cy) / ry
+            if dx * dx + dy * dy <= 1.05:
+                tiles.add((tx, ty))
+    return tiles
+
+
+def _shape_l(room: RectangularRoom) -> set:
+    """Carve an L-shape: full width on one half, partial width on the other."""
+    w = room.x2 - room.x1 - 1  # inner width
+    h = room.y2 - room.y1 - 1  # inner height
+    if w < 4 or h < 4:
+        return room.floor_tiles  # Too small, keep rectangular.
+    # Split roughly in half; the L gets one horizontal and one vertical arm.
+    split_x = room.x1 + 1 + random.randint(w // 3, 2 * w // 3)
+    split_y = room.y1 + 1 + random.randint(h // 3, 2 * h // 3)
+    # Pick one of 4 L orientations.
+    orientation = random.randint(0, 3)
+    tiles = set()
+    for tx in range(room.x1 + 1, room.x2):
+        for ty in range(room.y1 + 1, room.y2):
+            if orientation == 0:  # bottom-left L
+                if tx < split_x or ty >= split_y:
+                    tiles.add((tx, ty))
+            elif orientation == 1:  # bottom-right L
+                if tx >= split_x or ty >= split_y:
+                    tiles.add((tx, ty))
+            elif orientation == 2:  # top-left L
+                if tx < split_x or ty < split_y:
+                    tiles.add((tx, ty))
+            else:  # top-right L
+                if tx >= split_x or ty < split_y:
+                    tiles.add((tx, ty))
+    return tiles
+
+
+def _shape_cross(room: RectangularRoom) -> set:
+    """Carve a cross/plus shape: horizontal and vertical bars through center."""
+    w = room.x2 - room.x1 - 1
+    h = room.y2 - room.y1 - 1
+    if w < 5 or h < 5:
+        return room.floor_tiles
+    cx = (room.x1 + room.x2) // 2
+    cy = (room.y1 + room.y2) // 2
+    # Arm thickness: roughly 40-60% of the dimension.
+    arm_w = max(2, random.randint(w * 2 // 5, w * 3 // 5))
+    arm_h = max(2, random.randint(h * 2 // 5, h * 3 // 5))
+    x_lo = cx - arm_w // 2
+    x_hi = cx + (arm_w - arm_w // 2)
+    y_lo = cy - arm_h // 2
+    y_hi = cy + (arm_h - arm_h // 2)
+    tiles = set()
+    for tx in range(room.x1 + 1, room.x2):
+        for ty in range(room.y1 + 1, room.y2):
+            in_h_bar = y_lo <= ty < y_hi  # horizontal bar (full width)
+            in_v_bar = x_lo <= tx < x_hi  # vertical bar (full height)
+            if in_h_bar or in_v_bar:
+                tiles.add((tx, ty))
+    return tiles
+
+
+def _shape_pillared(room: RectangularRoom) -> set:
+    """Regular rectangle with interior wall pillars in a grid pattern."""
+    w = room.x2 - room.x1 - 1
+    h = room.y2 - room.y1 - 1
+    if w < 5 or h < 5:
+        return room.floor_tiles
+    tiles = set(room.floor_tiles)
+    # Place pillars every 2-3 tiles, offset from walls by 1.
+    spacing = random.choice([2, 3])
+    for tx in range(room.x1 + 2, room.x2 - 1, spacing):
+        for ty in range(room.y1 + 2, room.y2 - 1, spacing):
+            tiles.discard((tx, ty))
+    return tiles
+
+
+# Shape functions and their weights. Rectangular (None) is most common.
+_ROOM_SHAPES = [
+    (None, 50),         # plain rectangle
+    (_shape_circular, 20),
+    (_shape_l, 10),
+    (_shape_cross, 10),
+    (_shape_pillared, 10),
+]
+
+
+def _apply_room_shape(room: RectangularRoom) -> None:
+    """Randomly select and apply a non-rectangular shape to a room."""
+    funcs, weights = zip(*_ROOM_SHAPES)
+    chosen = random.choices(funcs, weights=weights, k=1)[0]
+    if chosen is not None:
+        room.floor_tiles = chosen(room)
+        # Ensure center is always walkable (needed for tunnel connections).
+        room.floor_tiles.add(room.center)
+
+
 def place_entities(  # pylint: disable=too-many-locals
     room: RectangularRoom,
     dungeon: GameMap,
@@ -172,6 +288,12 @@ def place_entities(  # pylint: disable=too-many-locals
         dungeon.engine, item_chances, number_of_items, floor_number
     )
 
+    valid_tiles = list(room.floor_tiles) if room.floor_tiles else [
+        (x, y)
+        for x in range(room.x1 + 1, room.x2)
+        for y in range(room.y1 + 1, room.y2)
+    ]
+
     for entity in monsters + items:
         if entity is None:
             print(
@@ -179,8 +301,7 @@ def place_entities(  # pylint: disable=too-many-locals
                 f"(floor {floor_number}, room at {room.x1},{room.y1})"
             )
             continue
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
+        x, y = random.choice(valid_tiles)
 
         if not any(entity.x == x and entity.y == y for entity in dungeon.entities):
             if entity is None:
@@ -204,22 +325,19 @@ def place_entities(  # pylint: disable=too-many-locals
 
     # 15% chance to place a trapdoor trap in the room.
     if random.random() < 0.15:
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
+        x, y = random.choice(valid_tiles)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
             Trap(trap_type="trapdoor").spawn(dungeon, x, y)
 
     # 20% chance to place a squeaky board trap in the room.
     if random.random() < 0.20:
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
+        x, y = random.choice(valid_tiles)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
             Trap(trap_type="squeaky_board").spawn(dungeon, x, y)
 
     # 10% chance to place a chest in the room.
     if random.random() < 0.10:
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
+        x, y = random.choice(valid_tiles)
         if not any(e.x == x and e.y == y for e in dungeon.entities):
             num_items = roll("1d3") + 1
             floor = dungeon.engine.game_world.current_floor
@@ -461,13 +579,15 @@ def generate_dungeon(  # pylint: disable=too-many-arguments,too-many-positional-
             continue  # This room intersects, so go to the next attempt.
         # If there are no intersections then the room is valid.
 
-        # Dig out this rooms inner area.
-        dungeon.tiles[new_room.inner] = TILE_FLOOR
+        # Apply a random shape to the room.
+        _apply_room_shape(new_room)
+
+        # Dig out this room's floor tiles.
+        for tx, ty in new_room.floor_tiles:
+            dungeon.tiles[tx, ty] = TILE_FLOOR
 
         # Track room tiles for door placement
-        for x in range(new_room.x1 + 1, new_room.x2):
-            for y in range(new_room.y1 + 1, new_room.y2):
-                room_tiles.add((x, y))
+        room_tiles.update(new_room.floor_tiles)
 
         if len(rooms) == 0:
             # The first room, where the player starts.

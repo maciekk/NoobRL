@@ -57,7 +57,7 @@ Ideas & efforts under way.
 
 ### Dungeon
 - [ ] locked doors (requiring keys or lockpicking)
-- [ ] improved map generation - make them more interesting, perhaps sometimes variations of rooms
+- [x] improved map generation - make them more interesting, perhaps sometimes variations of rooms
 - [ ] consider POI/room set pieces, that are just "pasted" in the worldgen
 
 ### Monsters
