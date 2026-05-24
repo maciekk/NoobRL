@@ -8,26 +8,14 @@ NoobRL is a traditional turn-based roguelike dungeon crawler written in Python 3
 
 ## Running
 
-```bash
-SDL_VIDEODRIVER=x11 python main.py
-```
-
-If you get error about tcod missing, you likely need to do:
-
-```
-source venv/bin/activate
-```
-
-If the system Python has been upgraded (e.g., 3.13 → 3.14), the venv will break because its compiled packages are version-specific. Recreate it:
+Use `uv` for environment management:
 
 ```bash
-python3 -m venv venv --clear
-venv/bin/pip install tcod numpy pygame
+uv sync --group dev
+uv run SDL_VIDEODRIVER=x11 python main.py
 ```
 
-```
-```
-Dependencies: `tcod`, `numpy`, `pygame`. No requirements.txt exists; install manually via pip.
+Dependencies are managed in `pyproject.toml`.
 
 The Makefile only generates ctags (`make ctags`).
 
@@ -36,11 +24,10 @@ The Makefile only generates ctags (`make ctags`).
 Run the test suite before every commit:
 
 ```bash
-source venv/bin/activate
-python -m pytest
+uv run pytest
 ```
 
-Tests require `pytest` in the venv (`pip install pytest`). They mock `tcod` and `pygame` so no display is needed.
+Tests mock `tcod` and `pygame` so no display is needed.
 
 ## Architecture Overview
 

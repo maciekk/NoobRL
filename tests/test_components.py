@@ -82,10 +82,9 @@ class TestBlinkConsumable:
 
         blink = BlinkConsumable()
         blink.parent = MagicMock()
-        blink.parent.gamemap = None
+        blink.parent.gamemap = MagicMock(engine=engine)
         blink.parent.parent = None
         blink.parent.stack_count = 1
-        blink.engine = engine
         blink.consume = MagicMock()
 
         # First try: (-1, 0) => out of bounds. Second try: (1, 1) => valid.

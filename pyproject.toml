@@ -1,0 +1,16 @@
+[project]
+name = "noobrl"
+version = "0.1.0"
+description = "Traditional turn-based roguelike dungeon crawler"
+readme = "Readme.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy",
+  "pygame",
+  "tcod",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+]
