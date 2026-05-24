@@ -2,6 +2,7 @@
 # pylint: disable=missing-class-docstring, missing-function-docstring
 from unittest.mock import MagicMock
 
+from components.consumable import BlinkConsumable
 from components.fighter import Fighter
 from components.level import Level
 
@@ -51,6 +52,52 @@ class TestFighter:
     def test_heal_at_full_hp_returns_zero(self):
         f = self._make(hp=10)
         assert f.heal(5) == 0
+
+
+class TestBlinkConsumable:
+    def test_blink_skips_out_of_bounds_then_teleports(self, monkeypatch):
+        class WalkableGrid:
+            def __getitem__(self, pos):
+                x, y = pos
+                if x < 0 or y < 0 or x >= 3 or y >= 3:
+                    raise AssertionError("Out-of-bounds walkable index accessed")
+                return True
+
+        player = MagicMock()
+        player.x = 0
+        player.y = 0
+
+        game_map = MagicMock()
+        game_map.width = 3
+        game_map.height = 3
+        game_map.tiles = {"walkable": WalkableGrid()}
+        game_map.get_blocking_entity_at_location.return_value = None
+
+        message_log = MagicMock()
+
+        engine = MagicMock()
+        engine.player = player
+        engine.game_map = game_map
+        engine.message_log = message_log
+
+        blink = BlinkConsumable()
+        blink.parent = MagicMock()
+        blink.parent.gamemap = None
+        blink.parent.parent = None
+        blink.parent.stack_count = 1
+        blink.engine = engine
+        blink.consume = MagicMock()
+
+        # First try: (-1, 0) => out of bounds. Second try: (1, 1) => valid.
+        rolls = iter([-1, 0, 1, 1])
+        monkeypatch.setattr("components.consumable.random.randint", lambda a, b: next(rolls))
+        monkeypatch.setattr("components.consumable.sounds.play_sfx", lambda *args, **kwargs: None)
+
+        blink.activate(MagicMock())
+
+        assert (player.x, player.y) == (1, 1)
+        blink.consume.assert_called_once()
+        message_log.add_message.assert_any_call("You blinked.")
 
 
 class TestLevel:

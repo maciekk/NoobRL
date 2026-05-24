@@ -455,16 +455,18 @@ class BlinkConsumable(Consumable):
         # TODO: make this more robust; e.g., ask GameMap to give you all possible
         # free locations within max_range.
         max_tries = 10
+        game_map = self.engine.game_map
         for _ in range(max_tries):
             dx, dy = random.randint(-max_range, max_range), random.randint(
                 -max_range, max_range
             )
             x = self.engine.player.x + dx
             y = self.engine.player.y + dy
-            # TODO: check for out of bounds (x,y)
+            if not (0 <= x < game_map.width and 0 <= y < game_map.height):
+                continue
             if (
-                self.engine.game_map.tiles["walkable"][x, y]
-                and self.engine.game_map.get_blocking_entity_at_location(x, y) is None
+                game_map.tiles["walkable"][x, y]
+                and game_map.get_blocking_entity_at_location(x, y) is None
             ):
                 self.engine.message_log.add_message("You blinked.")
                 sounds.play_sfx(sounds.Sfx.BLINK)
