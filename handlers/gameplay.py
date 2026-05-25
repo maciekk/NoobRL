@@ -1,4 +1,5 @@
 """Gameplay handlers split from input_handlers.py."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,too-many-return-statements,unused-argument
 
 from __future__ import annotations
 
@@ -58,7 +59,7 @@ class QuitConfirmHandler(__import__("input_handlers").EventHandler):
 class MainGameEventHandler(__import__("input_handlers").EventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         from debug import DebugHandler
-        from input_handlers import CharacterScreenEventHandler, LevelUpEventHandler, ViewSurroundingsHandler
+        from input_handlers import CharacterScreenEventHandler, ViewSurroundingsHandler
 
         action: Optional[Action] = None
         key = event.sym

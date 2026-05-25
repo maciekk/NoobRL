@@ -1,42 +1,27 @@
 """Keyboard and mouse input handling via a state machine of handler classes."""
-# pylint: disable=too-many-lines,fixme,cyclic-import,duplicate-code
+# pylint: disable=too-many-lines,fixme,cyclic-import,duplicate-code,wrong-import-position,ungrouped-imports,unused-import
 
 from __future__ import annotations
 
-import os
 import time
-from typing import Optional, Tuple, TYPE_CHECKING, Union
+from typing import Optional, TYPE_CHECKING, Union
 
 import tcod  # pylint: disable=import-error
 from tcod import libtcodpy  # pylint: disable=import-error
 
-import actions
 import sounds
-from actions import (
-    Action,
-    BumpAction,
-    CarefulMovementAction,
-    MovementRepeatedAction,
-    PickupAction,
-    WaitAction,
-)
+from actions import Action
 import color
 import exceptions
 import recorder as recorder_module
-from entity import Actor, Chest, Item, Trap
+from entity import Actor, Chest, Trap
 from handlers.keys import (
     CONFIRM_KEYS,
     INVENTORY_CURSOR_DOWN_KEYS,
     INVENTORY_CURSOR_UP_KEYS,
-    MOVE_KEYS,
-    SCROLL_SPEED,
-    WAIT_KEYS,
     _INVENTORY_KEYS,
     _INVENTORY_KEY_TO_INDEX,
-    has_alt,
-    has_ctrl,
     has_shift,
-    is_ctrl,
     is_shifted,
 )
 

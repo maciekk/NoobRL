@@ -1,4 +1,5 @@
 """Screen-style handlers split out from input_handlers.py."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel
 
 from __future__ import annotations
 
@@ -42,7 +43,7 @@ class HistoryViewer(__import__("input_handlers").EventHandler):
     def on_render(self, console: tcod.Console) -> None:
         super().on_render(console)
 
-        log_console = tcod.Console(console.width - 6, console.height - 6)
+        log_console = tcod.console.Console(console.width - 6, console.height - 6)
         log_console.draw_frame(0, 0, log_console.width, log_console.height)
         log_console.print_box(0, 0, log_console.width, 1, "┤Message history├", alignment=tcod.CENTER)
 

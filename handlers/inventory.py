@@ -1,4 +1,5 @@
 """Inventory-related handlers split from input_handlers.py."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,unused-argument,attribute-defined-outside-init
 
 from __future__ import annotations
 
@@ -10,6 +11,7 @@ import actions
 import color
 from entity import Actor, Item
 from equipment_types import EquipmentType
+from handlers.keys import CONFIRM_KEYS, _INVENTORY_KEYS
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -114,8 +116,6 @@ class InventoryEventHandler(__import__("input_handlers").ListSelectionHandler):
                 rows.append(("header", _SECTION_NAMES[cat]))
                 prev_cat = cat
             rows.append(("item", idx, item))
-
-        from handlers.keys import _INVENTORY_KEYS
 
         row_data = []
         for row in rows:
@@ -289,7 +289,6 @@ class DropQuantityHandler(__import__("input_handlers").AskUserEventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         from handlers.gameplay import MainGameEventHandler
-        from handlers.keys import CONFIRM_KEYS
 
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:

@@ -13,4 +13,16 @@ dependencies = [
 [dependency-groups]
 dev = [
   "pytest",
+  "pylint",
+]
+
+[tool.pylint.main]
+py-version = "3.10"
+ignore-patterns = ["^tests/.*$"]
+
+[tool.pylint."messages control"]
+disable = [
+  "missing-module-docstring",
+  "missing-class-docstring",
+  "missing-function-docstring",
 ]

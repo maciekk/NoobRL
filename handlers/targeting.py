@@ -1,4 +1,5 @@
 """Targeting/look handlers split from input_handlers.py."""
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,unused-argument
 
 from __future__ import annotations
 
@@ -11,6 +12,7 @@ import color
 from actions import Action, TargetMovementAction, ThrowAction
 from entity import Actor, Item
 from handlers.inventory import _item_type_and_stat_lines
+from handlers.keys import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift, is_shifted
 
 if TYPE_CHECKING:
     from engine import Engine
@@ -74,8 +76,6 @@ class SelectIndexHandler(__import__("input_handlers").AskUserEventHandler):
             console.rgb["fg"][sx, sy] = color.black
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        from handlers.keys import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
-
         key = event.sym
         if key in MOVE_KEYS:
             modifier = 1
@@ -256,8 +256,6 @@ class FloorItemDetailHandler(__import__("input_handlers").AskUserEventHandler):
 
 class WalkChoiceHandler(SelectIndexHandler):
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        from input_handlers import is_shifted
-
         game_map = self.engine.game_map
         if is_shifted(event, tcod.event.KeySym.PERIOD):
             sx, sy = game_map.downstairs_location
@@ -473,7 +471,6 @@ class ThrowTargetHandler(SelectIndexHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         from handlers.inventory import ThrowItemHandler
-        from handlers.keys import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
 
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:
