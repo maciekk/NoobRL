@@ -505,7 +505,7 @@ class TeleportConsumable(Consumable):
         if self.engine.game_map.get_blocking_entity_at_location(*target_xy):
             raise Impossible("Something is blocking that location.")
 
-        self.engine.player.x, self.engine.player.y = target_xy
+        action.entity.x, action.entity.y = target_xy
         self.engine.message_log.add_message("You teleport.")
         sounds.play_sfx(sounds.Sfx.TELEPORT)
         self.consume()
