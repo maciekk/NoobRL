@@ -255,12 +255,11 @@ class CloseDoorAction(Action):
         if not self.engine.game_map.in_bounds(self.x, self.y):
             raise exceptions.Impossible("There is no door there.")
 
-        # Check for entities at the door location (including the player)
-        for entity in self.engine.game_map.entities:
-            if entity.x == self.x and entity.y == self.y:
-                if entity is self.entity:
-                    raise exceptions.Impossible("You are standing in the doorway.")
-                raise exceptions.Impossible("There is something in the way.")
+        # Only blockers (actors, etc.) should prevent door closing; floor items should not.
+        if self.entity.x == self.x and self.entity.y == self.y:
+            raise exceptions.Impossible("You are standing in the doorway.")
+        if self.engine.game_map.get_blocking_entity_at_location(self.x, self.y):
+            raise exceptions.Impossible("There is something in the way.")
 
         tile = self.engine.game_map.tiles[self.x, self.y]
         if tile == TILE_DOOR_OPEN:
