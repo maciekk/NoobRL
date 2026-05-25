@@ -5,6 +5,7 @@ import os
 import random
 import threading
 import time
+from typing import Dict, List, Optional
 
 import pygame.mixer  # pylint: disable=import-error
 
@@ -37,7 +38,7 @@ Sfx = enum.Enum("Sfx", {k: k for k in _SFX_MAP_RAW})
 _SFX_PATHS: dict[Sfx, list[str]] = {Sfx[k]: v for k, v in _SFX_MAP_RAW.items()}
 
 # Populated by init(); None means audio is unavailable.
-_LOADED_SFX: dict[Sfx, list] | None = None
+_LOADED_SFX: Optional[Dict[Sfx, List]] = None
 
 
 # ---------------------------------------------------------------------------
