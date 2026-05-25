@@ -16,7 +16,7 @@ class TimedEffect(BaseComponent):
     parent: Actor
     name = "<unknown>"
 
-    def __init__(self, engine: "Engine"):  # pylint: disable=unused-argument
+    def __init__(self, _engine: "Engine"):
         self.max_turns = 0
         self.turns_left = 0
 

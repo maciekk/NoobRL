@@ -1,5 +1,5 @@
 """Inventory-related handlers split from input_handlers.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,unused-argument,attribute-defined-outside-init
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,attribute-defined-outside-init
 
 from __future__ import annotations
 
@@ -88,7 +88,7 @@ class InventoryEventHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return sorted(self.engine.player.inventory.items, key=_item_category)
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         return item.display_name
 
     def _get_display_suffix(self, item) -> str:
@@ -152,10 +152,10 @@ class InventoryEventHandler(__import__("input_handlers").ListSelectionHandler):
                     fg_suffix = color.black if highlighted else cyan
                     console.print(x + 1 + len(base), row_y, suffix, fg=fg_suffix, bg=bg)
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         return self.on_item_selected(item)
 
-    def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
+    def on_item_selected(self, _item: Item) -> Optional[ActionOrHandler]:
         raise NotImplementedError()
 
 
@@ -183,13 +183,13 @@ class QuaffHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return [item for item in self.engine.player.inventory.items if item.char == "!"]
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         s = item.display_name
         if item.stackable and item.stack_count > 1:
             s += f" [x{item.stack_count}]"
         return s
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         return item.consumable.get_action(self.engine.player)
 
 
@@ -201,13 +201,13 @@ class ReadHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return [item for item in self.engine.player.inventory.items if item.char == "?"]
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         s = item.display_name
         if item.stackable and item.stack_count > 1:
             s += f" [x{item.stack_count}]"
         return s
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         return item.consumable.get_action(self.engine.player)
 
 
@@ -326,10 +326,10 @@ class WishItemHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return self._item_list
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         return item[1]
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         item_id, _ = item
         return actions.WishAction(self.engine.player, self.wand_item, item_id)
 
@@ -345,10 +345,10 @@ class IdentifyItemHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return [item for item in self.engine.player.inventory.items if item.display_name != item.name]
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         return item.display_name
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         return actions.IdentifyAction(self.engine.player, self.scroll_item, item)
 
 

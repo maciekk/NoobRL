@@ -1,5 +1,5 @@
 """Targeting/look handlers split from input_handlers.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel
 
 from __future__ import annotations
 
@@ -218,10 +218,10 @@ class FloorItemListHandler(__import__("input_handlers").ListSelectionHandler):
     def get_items(self) -> list:
         return self.items_list
 
-    def get_display_string(self, index: int, item) -> str:
+    def get_display_string(self, _index: int, item) -> str:
         return item.display_name
 
-    def on_selection(self, index: int, item) -> Optional[ActionOrHandler]:
+    def on_selection(self, _index: int, item) -> Optional[ActionOrHandler]:
         return FloorItemDetailHandler(self.engine, item, self.back_handler)
 
     def on_exit(self) -> Optional[ActionOrHandler]:

@@ -1,5 +1,5 @@
 """Tests that JSON data files are well-formed and internally consistent."""
-# pylint: disable=missing-function-docstring, import-error, unused-argument
+# pylint: disable=missing-function-docstring, import-error
 import json
 import os
 
@@ -57,8 +57,8 @@ def test_loot_table_is_dict():
     assert isinstance(load("loot_table.json"), dict)
 
 
-@pytest.mark.parametrize("floor_key,entries", load("loot_table.json").items())
-def test_loot_table_floor_keys_are_integers(floor_key, entries):
+@pytest.mark.parametrize("floor_key,_entries", load("loot_table.json").items())
+def test_loot_table_floor_keys_are_integers(floor_key, _entries):
     assert int(floor_key) >= 0
 
 
@@ -89,8 +89,8 @@ def test_enemy_table_is_dict():
     assert isinstance(load("enemy_table.json"), dict)
 
 
-@pytest.mark.parametrize("floor_key,entries", load("enemy_table.json").items())
-def test_enemy_table_floor_keys_are_integers(floor_key, entries):
+@pytest.mark.parametrize("floor_key,_entries", load("enemy_table.json").items())
+def test_enemy_table_floor_keys_are_integers(floor_key, _entries):
     assert int(floor_key) >= 0
 
 

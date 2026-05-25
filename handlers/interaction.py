@@ -1,5 +1,5 @@
 """Directional interaction helpers and handlers."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel
 
 from __future__ import annotations
 
@@ -79,7 +79,7 @@ class OpenableSelectionHandler(__import__("input_handlers").DirectionalSelection
     def get_directional_items(self) -> list:
         return self.targets
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(self, _dx: int, _dy: int, target) -> Optional[ActionOrHandler]:
         if isinstance(target, Action):
             return target
         try:
@@ -102,7 +102,7 @@ class PickupDirectionHandler(__import__("input_handlers").DirectionalSelectionHa
     def get_directional_items(self) -> list:
         return self.targets
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(self, dx: int, dy: int, _target) -> Optional[ActionOrHandler]:
         px, py = self.engine.player.x, self.engine.player.y
         return actions.PickupAction(self.engine.player, px + dx, py + dy)
 
@@ -135,5 +135,5 @@ class CloseableSelectionHandler(__import__("input_handlers").DirectionalSelectio
     def get_directional_items(self) -> list:
         return self.targets
 
-    def on_directional_selection(self, dx: int, dy: int, target) -> Optional[ActionOrHandler]:
+    def on_directional_selection(self, _dx: int, _dy: int, target) -> Optional[ActionOrHandler]:
         return target

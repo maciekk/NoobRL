@@ -1,5 +1,5 @@
 """Gameplay handlers split from input_handlers.py."""
-# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,too-many-return-statements,unused-argument
+# pylint: disable=missing-function-docstring,missing-class-docstring,import-outside-toplevel,too-many-return-statements
 
 from __future__ import annotations
 
@@ -214,7 +214,7 @@ class GameOverEventHandler(__import__("input_handlers").EventHandler):
 
         console.print(console.width // 2, prompt_y, "Press Enter for Main Menu, Esc to quit", fg=color.white, alignment=tcod.constants.CENTER)
 
-    def ev_quit(self, event: tcod.event.Quit) -> None:
+    def ev_quit(self, _event: tcod.event.Quit) -> None:
         self.on_quit()
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[BaseEventHandler]:
