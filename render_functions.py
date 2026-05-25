@@ -493,12 +493,11 @@ def animate_fireball_projectile(
     context,
 ) -> None:
     """Animate fireball projectile travel followed by explosion, using the compositor."""
-    import sounds as _sounds  # pylint: disable=import-outside-toplevel
     proj = projectile_frames(path)
     expl = explosion_frames(engine, impact_x, impact_y, radius)
     layers = [
         (0, proj),                # projectile travels first
-        (len(proj), expl, {0: _sounds.Sfx.FIREBALL_EXPLOSION}),
+        (len(proj), expl, {0: sounds.Sfx.FIREBALL_EXPLOSION}),
     ]
     composite_animations(engine, layers, console, context, frame_delay=0.04)
 
