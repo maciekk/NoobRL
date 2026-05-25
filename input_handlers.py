@@ -2080,12 +2080,16 @@ class MainGameEventHandler(EventHandler):
         if is_shifted(event, tcod.event.KeySym.N1):
             wand = self.engine.item_manager.clone("wand_wishing")
             if wand:
-                wand.parent = self.engine.player.inventory
                 if self.engine.player.inventory.add(wand):
                     sounds.play_sfx(sounds.Sfx.SMOKE_POOF)
-                self.engine.message_log.add_message(
-                    "A Wand of Wishing appears in your pack!"
-                )
+                    self.engine.message_log.add_message(
+                        "A Wand of Wishing appears in your pack!"
+                    )
+                else:
+                    wand.place(self.engine.player.x, self.engine.player.y, self.engine.game_map)
+                    self.engine.message_log.add_message(
+                        "A Wand of Wishing appears at your feet!"
+                    )
             return None
 
         if is_shifted(event, tcod.event.KeySym.COMMA):
