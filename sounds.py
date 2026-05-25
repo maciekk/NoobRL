@@ -31,11 +31,11 @@ def consume_sound_heard() -> bool:
 
 _SFX_JSON = os.path.join(os.path.dirname(__file__), "data", "sfx.json")
 with open(_SFX_JSON, encoding="utf-8") as _f:
-    _SFX_MAP_RAW: dict[str, list[str]] = json.load(_f)
+    _SFX_MAP_RAW: Dict[str, List[str]] = json.load(_f)
 
 Sfx = enum.Enum("Sfx", {k: k for k in _SFX_MAP_RAW})
 
-_SFX_PATHS: dict[Sfx, list[str]] = {Sfx[k]: v for k, v in _SFX_MAP_RAW.items()}
+_SFX_PATHS: Dict[Sfx, List[str]] = {Sfx[k]: v for k, v in _SFX_MAP_RAW.items()}
 
 # Populated by init(); None means audio is unavailable.
 _LOADED_SFX: Optional[Dict[Sfx, List]] = None
