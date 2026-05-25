@@ -456,12 +456,13 @@ class BlinkConsumable(Consumable):
         # free locations within max_range.
         max_tries = 10
         game_map = self.engine.game_map
+        consumer = action.entity
         for _ in range(max_tries):
             dx, dy = random.randint(-max_range, max_range), random.randint(
                 -max_range, max_range
             )
-            x = self.engine.player.x + dx
-            y = self.engine.player.y + dy
+            x = consumer.x + dx
+            y = consumer.y + dy
             if not (0 <= x < game_map.width and 0 <= y < game_map.height):
                 continue
             if (
@@ -470,7 +471,7 @@ class BlinkConsumable(Consumable):
             ):
                 self.engine.message_log.add_message("You blinked.")
                 sounds.play_sfx(sounds.Sfx.BLINK)
-                self.engine.player.x, self.engine.player.y = x, y
+                consumer.x, consumer.y = x, y
                 self.consume()
                 return
         self.engine.message_log.add_message(
