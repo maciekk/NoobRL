@@ -262,12 +262,53 @@ class CloseDoorAction(Action):
             raise exceptions.Impossible("There is something in the way.")
 
         tile = self.engine.game_map.tiles[self.x, self.y]
-        if tile == TILE_DOOR_OPEN:
-            self.engine.game_map.tiles[self.x, self.y] = TILE_DOOR_CLOSED
-            self.engine.message_log.add_message("You close the door.", color.white)
-            self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
-        else:
+        if tile != TILE_DOOR_OPEN:
             raise exceptions.Impossible("There is no open door there.")
+
+        from entity import Item  # pylint: disable=import-outside-toplevel
+
+        gm = self.engine.game_map
+        doorway_items = [
+            ent for ent in gm.entities
+            if isinstance(ent, Item) and ent.x == self.x and ent.y == self.y
+        ]
+
+        if doorway_items:
+            dx = self.x - self.entity.x
+            dy = self.y - self.entity.y
+            preferred = (self.x + dx, self.y + dy)
+
+            def is_valid_destination(tx: int, ty: int) -> bool:
+                if not gm.in_bounds(tx, ty):
+                    return False
+                if not gm.tiles["walkable"][tx, ty]:
+                    return False
+                blocker = gm.get_blocking_entity_at_location(tx, ty)
+                if blocker is None:
+                    return True
+                return blocker is self.engine.player
+
+            def find_destination() -> Optional[Tuple[int, int]]:
+                if is_valid_destination(*preferred):
+                    return preferred
+                for radius in range(1, max(gm.width, gm.height)):
+                    for tx in range(self.x - radius, self.x + radius + 1):
+                        for ty in range(self.y - radius, self.y + radius + 1):
+                            if max(abs(tx - self.x), abs(ty - self.y)) != radius:
+                                continue
+                            if is_valid_destination(tx, ty):
+                                return tx, ty
+                return None
+
+            for item in doorway_items:
+                dest = find_destination()
+                if dest is None:
+                    raise exceptions.Impossible("There is no room to move items out of the doorway.")
+                item.x, item.y = dest
+
+        gm.tiles[self.x, self.y] = TILE_DOOR_CLOSED
+        self.engine.message_log.add_message("You close the door.", color.white)
+        self.engine.emit_sound((self.x, self.y), SoundTravel.DOOR, by_player=self.entity is self.engine.player)
 
 
 class WaitAction(Action):
