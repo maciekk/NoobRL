@@ -48,6 +48,7 @@ class Inventory(BaseComponent):
             return False
 
         item.stack_count = count
+        item.parent = self
         self.items.append(item)
         return True
 
