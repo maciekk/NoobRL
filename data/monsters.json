@@ -90,6 +90,7 @@
     "ai_cls": "HostileEnemy",
     "base_speed": 50,
     "sight_range": 8,
+    "crit_chance": 0.3,
     "equipment": {
     },
     "fighter": {
@@ -112,6 +113,7 @@
     "ai_cls": "HostileEnemy",
     "base_speed": 50,
     "sight_range": 8,
+    "crit_chance": 0.3,
     "equipment": {
     },
     "fighter": {
@@ -133,6 +135,7 @@
     "color": [0, 224, 150],
     "ai_cls": "HostileEnemy",
     "base_speed": 50,
+    "crit_chance": 0.3,
     "equipment": {
     },
     "fighter": {

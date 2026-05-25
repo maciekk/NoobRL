@@ -153,6 +153,7 @@ class Actor(Entity):  # pylint: disable=too-many-instance-attributes
         ranged_attack: bool = False,
         death_explosion: dict = None,
         sight_range: int = 6,
+        crit_chance: float = 0.05,
     ):
         super().__init__(
             x=x,
@@ -199,6 +200,7 @@ class Actor(Entity):  # pylint: disable=too-many-instance-attributes
         self.is_detecting_traps = False
         self.death_explosion = death_explosion
         self.sight_range = sight_range
+        self.crit_chance = crit_chance
 
     @property
     def speed(self) -> int:

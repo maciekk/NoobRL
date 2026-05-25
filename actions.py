@@ -341,11 +341,7 @@ class MeleeAction(ActionWithDirection):
         if not target:
             raise exceptions.Impossible("Nothing to attack.")
 
-        big_monsters = ("Dragon", "Ender Dragon", "Hydra")
-        if self.entity.name in big_monsters:
-            crit_chance = 0.3
-        else:
-            crit_chance = 0.05
+        crit_chance = getattr(self.entity, "crit_chance", 0.05)
         base_power = self.entity.fighter.power
         weapon_roll = 0
         if self.entity.equipment and self.entity.equipment.weapon:
