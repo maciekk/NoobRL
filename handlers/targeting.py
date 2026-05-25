@@ -74,7 +74,7 @@ class SelectIndexHandler(__import__("input_handlers").AskUserEventHandler):
             console.rgb["fg"][sx, sy] = color.black
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        from input_handlers import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
+        from handlers.keys import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
 
         key = event.sym
         if key in MOVE_KEYS:
@@ -473,7 +473,7 @@ class ThrowTargetHandler(SelectIndexHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         from handlers.inventory import ThrowItemHandler
-        from input_handlers import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
+        from handlers.keys import CONFIRM_KEYS, MOVE_KEYS, has_alt, has_ctrl, has_shift
 
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:

@@ -115,7 +115,7 @@ class InventoryEventHandler(__import__("input_handlers").ListSelectionHandler):
                 prev_cat = cat
             rows.append(("item", idx, item))
 
-        from input_handlers import _INVENTORY_KEYS
+        from handlers.keys import _INVENTORY_KEYS
 
         row_data = []
         for row in rows:
@@ -288,7 +288,8 @@ class DropQuantityHandler(__import__("input_handlers").AskUserEventHandler):
         console.print(x + 1, 1, f"{prompt} {self.text}_")
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
-        from input_handlers import CONFIRM_KEYS, MainGameEventHandler
+        from handlers.keys import CONFIRM_KEYS
+        from input_handlers import MainGameEventHandler
 
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:

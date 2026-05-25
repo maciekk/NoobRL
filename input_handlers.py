@@ -24,85 +24,31 @@ import color
 import exceptions
 import recorder as recorder_module
 from entity import Actor, Chest, Item, Trap
+from handlers.keys import (
+    CONFIRM_KEYS,
+    INVENTORY_CURSOR_DOWN_KEYS,
+    INVENTORY_CURSOR_UP_KEYS,
+    MOVE_KEYS,
+    SCROLL_SPEED,
+    WAIT_KEYS,
+    _INVENTORY_KEYS,
+    _INVENTORY_KEY_TO_INDEX,
+    has_alt,
+    has_ctrl,
+    has_shift,
+    is_ctrl,
+    is_shifted,
+)
 
 if TYPE_CHECKING:
     from engine import Engine
 
-
-MOVE_KEYS = {
-    # Arrow keys.
-    tcod.event.KeySym.UP: (0, -1),
-    tcod.event.KeySym.DOWN: (0, 1),
-    tcod.event.KeySym.LEFT: (-1, 0),
-    tcod.event.KeySym.RIGHT: (1, 0),
-    tcod.event.KeySym.HOME: (-1, -1),
-    tcod.event.KeySym.END: (-1, 1),
-    tcod.event.KeySym.PAGEUP: (1, -1),
-    tcod.event.KeySym.PAGEDOWN: (1, 1),
-    # Numpad keys.
-    tcod.event.KeySym.KP_1: (-1, 1),
-    tcod.event.KeySym.KP_2: (0, 1),
-    tcod.event.KeySym.KP_3: (1, 1),
-    tcod.event.KeySym.KP_4: (-1, 0),
-    tcod.event.KeySym.KP_6: (1, 0),
-    tcod.event.KeySym.KP_7: (-1, -1),
-    tcod.event.KeySym.KP_8: (0, -1),
-    tcod.event.KeySym.KP_9: (1, -1),
-    # Vi keys.
-    tcod.event.KeySym.h: (-1, 0),
-    tcod.event.KeySym.j: (0, 1),
-    tcod.event.KeySym.k: (0, -1),
-    tcod.event.KeySym.l: (1, 0),
-    tcod.event.KeySym.y: (-1, -1),
-    tcod.event.KeySym.u: (1, -1),
-    tcod.event.KeySym.b: (-1, 1),
-    tcod.event.KeySym.n: (1, 1),
-}
-
-WAIT_KEYS = {
-    tcod.event.KeySym.PERIOD,
-    tcod.event.KeySym.KP_5,
-    tcod.event.KeySym.CLEAR,
-}
-
-CONFIRM_KEYS = {
-    tcod.event.KeySym.RETURN,
-    tcod.event.KeySym.KP_ENTER,
-}
-
-SCROLL_SPEED = 5
 
 MIN_FRAME_INTERVAL = 0.025
 
 # Set by main.py so handle_action can render between repeated steps.
 context: Optional["tcod.context.Context"] = None  # pylint: disable=invalid-name
 root_console: Optional["tcod.console.Console"] = None  # pylint: disable=invalid-name
-
-
-# Modifier key helpers
-def has_shift(mod: int) -> bool:
-    """Check if Shift modifier is held."""
-    return bool(mod & (tcod.event.Modifier.LSHIFT | tcod.event.Modifier.RSHIFT))
-
-
-def has_ctrl(mod: int) -> bool:
-    """Check if Ctrl modifier is held."""
-    return bool(mod & (tcod.event.Modifier.LCTRL | tcod.event.Modifier.RCTRL))
-
-
-def has_alt(mod: int) -> bool:
-    """Check if Alt modifier is held."""
-    return bool(mod & (tcod.event.Modifier.LALT | tcod.event.Modifier.RALT))
-
-
-def is_shifted(event: tcod.event.KeyDown, key: tcod.event.KeySym) -> bool:
-    """Check if a specific key was pressed with Shift modifier."""
-    return event.sym == key and has_shift(event.mod)
-
-
-def is_ctrl(event: tcod.event.KeyDown, key: tcod.event.KeySym) -> bool:
-    """Check if a specific key was pressed with Ctrl modifier."""
-    return event.sym == key and has_ctrl(event.mod)
 
 
 # TODO: theoretically newer notation is preferred:
@@ -300,14 +246,6 @@ class AskUserEventHandler(EventHandler):
     def on_exit(self) -> Optional[ActionOrHandler]:
         """Called when the user exits or cancels; default returns to main handler."""
         return MainGameEventHandler(self.engine)
-
-
-_MOTION_KEYS = frozenset("jk")
-_INVENTORY_KEYS = (
-    [c for c in "abcdefghijklmnopqrstuvwxyz" if c not in _MOTION_KEYS]
-    + [c for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if c.lower() not in _MOTION_KEYS]
-)
-_INVENTORY_KEY_TO_INDEX = {c: i for i, c in enumerate(_INVENTORY_KEYS)}
 
 
 class ListSelectionHandler(AskUserEventHandler):
@@ -803,18 +741,6 @@ class LevelUpEventHandler(AskUserEventHandler):
         """Don't allow the player to click to exit the menu, like normal."""
         return None
 
-
-INVENTORY_CURSOR_UP_KEYS = {
-    tcod.event.KeySym.UP,
-    tcod.event.KeySym.k,
-    tcod.event.KeySym.KP_8,
-}
-
-INVENTORY_CURSOR_DOWN_KEYS = {
-    tcod.event.KeySym.DOWN,
-    tcod.event.KeySym.j,
-    tcod.event.KeySym.KP_2,
-}
 
 from handlers.interaction import (
     CloseableSelectionHandler,
