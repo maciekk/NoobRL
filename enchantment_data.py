@@ -8,12 +8,11 @@ from typing import Dict, List, Tuple
 
 _DATA: List[Dict] = []
 _BY_ID: Dict[str, Dict] = {}
-_LOADED = False
+_STATE = {"loaded": False}
 
 
 def _load() -> None:
-    global _LOADED
-    if _LOADED:
+    if _STATE["loaded"]:
         return
     path = os.path.join(os.path.dirname(__file__), "data", "enchantments.json")
     with open(path, encoding="utf-8") as f:
@@ -22,7 +21,7 @@ def _load() -> None:
     _DATA.extend(data)
     _BY_ID.clear()
     _BY_ID.update({entry["id"]: entry for entry in _DATA})
-    _LOADED = True
+    _STATE["loaded"] = True
 
 
 def get(enchantment_id: str) -> Dict | None:
