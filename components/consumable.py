@@ -456,7 +456,13 @@ class BlinkConsumable(Consumable):
         # free locations within max_range.
         max_tries = 10
         game_map = self.engine.game_map
-        consumer = action.entity
+        consumer = getattr(action, "entity", None)
+        if not (
+            consumer is not None
+            and isinstance(getattr(consumer, "x", None), int)
+            and isinstance(getattr(consumer, "y", None), int)
+        ):
+            consumer = self.engine.player
         for _ in range(max_tries):
             dx, dy = random.randint(-max_range, max_range), random.randint(
                 -max_range, max_range
@@ -505,7 +511,10 @@ class TeleportConsumable(Consumable):
         if self.engine.game_map.get_blocking_entity_at_location(*target_xy):
             raise Impossible("Something is blocking that location.")
 
-        action.entity.x, action.entity.y = target_xy
+        consumer = getattr(action, "entity", None)
+        if consumer is None:
+            consumer = self.engine.player
+        consumer.x, consumer.y = target_xy
         self.engine.message_log.add_message("You teleport.")
         sounds.play_sfx(sounds.Sfx.TELEPORT)
         self.consume()
