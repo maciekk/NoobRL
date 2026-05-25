@@ -54,6 +54,29 @@ Ideas & efforts under way.
 - [ ] incremental monster knowledge (scales w/# killed)
 - [ ] max stack size for consumables?
 - [ ] need 'kick' ability: damages/breaks doors, but can also hurt monster, and maybe shove them 1sq away
+- [ ] add Shrines (risk/reward altar interactions in dungeon rooms)
+  - rare interactable room feature; player chooses one of 2-3 effects when used
+  - each blessing should have a cost/tradeoff (HP loss, spawn danger, temporary debuff, cursed gear, etc.)
+  - examples:
+    - Shrine of Blood: lose ~30% HP, gain +power for N turns
+    - Shrine of Echoes: identify all carried items, but summon/spawn an elite nearby
+    - Shrine of Motion: permanent +base_speed, but -defense
+    - Shrine of Greed: duplicate one consumable stack, but curse one equipped item
+  - good implementation fit: new interact action + small selection handler + timed effects/stat mutations
+  - worldgen: low spawn chance, slightly increasing by floor depth
+  - MVP checklist:
+    - [ ] single shrine type can spawn in rooms (very low chance)
+    - [ ] interact flow from adjacent tile (`BumpAction`/interact action)
+    - [ ] simple menu with 2 choices: one boon + one cost
+    - [ ] one temporary effect implementation (timed power/speed buff)
+    - [ ] one permanent tradeoff implementation (e.g., +speed/-defense)
+    - [ ] shrine is single-use and visually marked as spent
+  - Stretch goals:
+    - [ ] shrine pool with weighted selection by floor depth
+    - [ ] shrine-specific VFX/SFX and message flavor
+    - [ ] mini-encounter shrines (spawn enemies, trap pulses, curse wave)
+    - [ ] rare "double-edge jackpot" outcomes with larger upside/downside
+    - [ ] telemetry in run summary (shrines used, outcomes chosen)
 
 ### Dungeon
 - [ ] locked doors (requiring keys or lockpicking)
