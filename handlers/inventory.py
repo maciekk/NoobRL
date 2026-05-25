@@ -262,7 +262,7 @@ class ItemDetailHandler(__import__("input_handlers").AskUserEventHandler):
         if key == tcod.event.KeySym.a and item.consumable:
             return item.consumable.get_action(player)
         if key == tcod.event.KeySym.t:
-            from input_handlers import ThrowTargetHandler
+            from handlers.targeting import ThrowTargetHandler
 
             return ThrowTargetHandler(self.engine, item)
         if key == tcod.event.KeySym.d:
@@ -357,6 +357,6 @@ class ThrowItemHandler(InventoryEventHandler):
     use_cursor = True
 
     def on_item_selected(self, item: Item) -> Optional[ActionOrHandler]:
-        from input_handlers import ThrowTargetHandler
+        from handlers.targeting import ThrowTargetHandler
 
         return ThrowTargetHandler(self.engine, item)
