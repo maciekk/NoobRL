@@ -70,7 +70,7 @@ class HistoryViewer(__import__("input_handlers").EventHandler):
         elif event.sym == tcod.event.KeySym.END:
             self.cursor = self.log_length - 1
         else:
-            from input_handlers import MainGameEventHandler
+            from handlers.gameplay import MainGameEventHandler
 
             return MainGameEventHandler(self.engine)
         return None
@@ -85,7 +85,7 @@ class OverviewMapHandler(__import__("input_handlers").EventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
         if event.sym in (tcod.event.KeySym.z, tcod.event.KeySym.ESCAPE):
-            from input_handlers import MainGameEventHandler
+            from handlers.gameplay import MainGameEventHandler
 
             return MainGameEventHandler(self.engine)
         return None

@@ -85,7 +85,7 @@ class OpenableSelectionHandler(__import__("input_handlers").DirectionalSelection
             target.open(self.engine.player)
         except exceptions.Impossible as exc:
             self.engine.message_log.add_message(exc.args[0], color.impossible)
-        from input_handlers import MainGameEventHandler
+        from handlers.gameplay import MainGameEventHandler
 
         return MainGameEventHandler(self.engine)
 

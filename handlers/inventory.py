@@ -288,8 +288,8 @@ class DropQuantityHandler(__import__("input_handlers").AskUserEventHandler):
         console.print(x + 1, 1, f"{prompt} {self.text}_")
 
     def ev_keydown(self, event: tcod.event.KeyDown) -> Optional[ActionOrHandler]:
+        from handlers.gameplay import MainGameEventHandler
         from handlers.keys import CONFIRM_KEYS
-        from input_handlers import MainGameEventHandler
 
         key = event.sym
         if key == tcod.event.KeySym.ESCAPE:

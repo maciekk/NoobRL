@@ -15,15 +15,14 @@ import recorder as recorder_module
 import sounds
 from engine import Engine
 from game_map import GameMap
+from handlers.gameplay import GameOverEventHandler, MainGameEventHandler
+from handlers.targeting import SelectIndexHandler
 from input_handlers import (
     AskUserEventHandler,
     BaseEventHandler,
     EventHandler,
-    GameOverEventHandler,
     LevelUpEventHandler,
     ListSelectionHandler,
-    MainGameEventHandler,
-    SelectIndexHandler,
 )
 
 CHEST_OF_WONDER_ID = "__chest_of_wonder__"
