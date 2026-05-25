@@ -46,7 +46,7 @@ def _parse_graphic(raw):
 def _load_tiles():
     """Load tile definitions from data/tiles.json."""
     data_path = os.path.join(os.path.dirname(__file__), "data", "tiles.json")
-    with open(data_path) as f:
+    with open(data_path, encoding="utf-8") as f:
         entries = json.load(f)
 
     tiles = {}

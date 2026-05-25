@@ -48,7 +48,7 @@ class BaseAI(Action):
         entity = self.entity
         game_map = self.engine.game_map
         tile = game_map.tiles[entity.x, entity.y]
-        if tile != TILE_DOWN_STAIRS and tile != TILE_UP_STAIRS:
+        if tile not in (TILE_DOWN_STAIRS, TILE_UP_STAIRS):
             return False
         # Don't leave if the player is visible
         player = self.engine.player

@@ -10,7 +10,6 @@ import tcod.los  # pylint: disable=import-error
 from render_functions import (
     animate_lightning_ray,
     animate_digging_ray,
-    animate_explosion,
     animate_grass_growth,
 )
 from tile_types import TILE_FLOOR, TILE_TALL_GRASS
@@ -608,7 +607,9 @@ def _fireball_activate(consumable, action: actions.ItemAction) -> None:
         if options.show_sound:
             from engine import Location
             sound_by_dist: dict = {}
-            engine._bfs_sound(Location(*impact), int(SoundTravel.FIREBALL), sound_by_dist, {})
+            engine._bfs_sound(  # pylint: disable=protected-access
+                Location(*impact), int(SoundTravel.FIREBALL), sound_by_dist, {}
+            )
             sw_frames = sound_wave_frames(engine, sound_by_dist, {})
             if sw_frames:
                 layers.append((explosion_start, sw_frames))
@@ -738,7 +739,6 @@ class DetectTrapsConsumable(Consumable):
 
         engine = self.engine
         game_map = engine.game_map
-        player = engine.player
         found = 0
         for entity in game_map.entities:
             if isinstance(entity, Trap) and not entity.is_revealed:
@@ -813,7 +813,7 @@ class BombConsumable(Consumable):
     def get_description(self) -> list[str]:
         return [f"Explodes for {self.damage} damage in radius {self.radius}"]
 
-    def explode(self, x: int, y: int, game_map, engine) -> None:
+    def explode(self, x: int, y: int, _game_map, engine) -> None:
         """Explode at the given location, damaging all actors in radius."""
         from game_map import apply_explosion  # pylint: disable=import-outside-toplevel
         damage = self.damage

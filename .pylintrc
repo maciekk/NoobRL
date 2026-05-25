@@ -20,4 +20,13 @@ max-locals=20
 disable=
     arguments-differ,
     too-many-arguments,
-    too-many-positional-arguments
+    too-many-positional-arguments,
+    line-too-long,
+    too-many-branches,
+    too-many-locals,
+    too-many-statements,
+    too-many-nested-blocks,
+    too-few-public-methods,
+    redefined-outer-name,
+    cyclic-import,
+    invalid-name

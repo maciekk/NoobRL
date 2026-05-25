@@ -6,23 +6,24 @@ import json
 import os
 from typing import Dict, List, Optional, Tuple
 
-_data: Optional[List[Dict]] = None
-_by_id: Optional[Dict[str, Dict]] = None
+_CACHE: Dict[str, Optional[object]] = {"data": None, "by_id": None}
 
 
 def _load() -> None:
-    global _data, _by_id
     path = os.path.join(os.path.dirname(__file__), "data", "enchantments.json")
     with open(path, encoding="utf-8") as f:
-        _data = json.load(f)
-    _by_id = {entry["id"]: entry for entry in _data}
+        data = json.load(f)
+    _CACHE["data"] = data
+    _CACHE["by_id"] = {entry["id"]: entry for entry in data}
 
 
 def get(enchantment_id: str) -> Optional[Dict]:
     """Return the full enchantment entry for the given id, or None."""
-    if _by_id is None:
+    by_id = _CACHE["by_id"]
+    if by_id is None:
         _load()
-    return _by_id.get(enchantment_id)
+        by_id = _CACHE["by_id"]
+    return by_id.get(enchantment_id)
 
 
 def get_label(enchantment_id: str) -> str:
@@ -33,12 +34,20 @@ def get_label(enchantment_id: str) -> str:
     return entry["label"]
 
 
+def all_entries() -> List[Dict]:
+    """Return all enchantment entries."""
+    data = _CACHE["data"]
+    if data is None:
+        _load()
+        data = _CACHE["data"]
+    return data
+
+
 def candidates_for(equipment_type_name: str, floor: int) -> List[Tuple[str, float]]:
     """Return list of (id, chance) for enchantments eligible on this equipment type and floor."""
-    if _data is None:
-        _load()
+    data = all_entries()
     result = []
-    for entry in _data:
+    for entry in data:
         slot = entry["applies_to"].get(equipment_type_name)
         if slot is not None and floor >= slot["min_floor"]:
             result.append((entry["id"], slot["chance"]))

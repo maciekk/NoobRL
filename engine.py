@@ -4,8 +4,7 @@ from __future__ import annotations
 import heapq
 import lzma
 import pickle
-from collections import deque
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from tcod.console import Console  # pylint: disable=import-error
 from tcod.map import compute_fov  # pylint: disable=import-error

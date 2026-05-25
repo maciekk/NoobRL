@@ -332,8 +332,7 @@ class DebugHandler(AskUserEventHandler):
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 self.engine.message_log.add_message(f"Load failed: {exc}")
                 return MainGameEventHandler(self.engine)
-            import random as rand_mod  # pylint: disable=import-outside-toplevel
-            rand_mod.setstate(rand_state)
+            random.setstate(rand_state)
             recorder_module.playback_active = True
             engine.message_log.add_message(
                 f"Playing back {len(keystrokes)} keystrokes from {filename}"
@@ -383,10 +382,8 @@ class DebugEnchantPickHandler(ListSelectionHandler):
         super().__init__(engine)
         self.target_item = target_item
         # Gather all enchantments that apply to this equipment type.
-        if enchantment_data._data is None:
-            enchantment_data._load()
         self._enchantments = []
-        for entry in enchantment_data._data:
+        for entry in enchantment_data.all_entries():
             if slot_name in entry["applies_to"]:
                 self._enchantments.append(entry)
 
@@ -400,9 +397,9 @@ class DebugEnchantPickHandler(ListSelectionHandler):
         eq = self.target_item.equippable
         # Remove old named enchantment if present.
         if eq.enchantment_name:
-            eq._apply_enchantment("unequip")
+            eq.apply_named_enchantment("unequip")
         eq.enchantment_name = item["id"]
-        eq._apply_enchantment("equip")
+        eq.apply_named_enchantment("equip")
         self.engine.message_log.add_message(
             f"Applied '{item['label']}' to {self.target_item.name}."
         )

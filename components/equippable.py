@@ -74,6 +74,10 @@ class Equippable(BaseComponent):
             text, color = msg
             self.engine.message_log.add_message(text, tuple(color))
 
+    def apply_named_enchantment(self, event: str) -> None:
+        """Apply/remove named enchantment effects for debug/editor flows."""
+        self._apply_enchantment(event)
+
     def on_equip(self) -> None:
         """Called when this equippable is equipped; can be overridden for special effects."""
         self._apply_enchantment("equip")

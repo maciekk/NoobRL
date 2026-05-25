@@ -59,7 +59,7 @@ def _mod_to_names(mod: int) -> List[str]:
 def _names_to_mod(names: List[str]) -> int:
     """Convert a list of modifier flag names back to a bitmask."""
     mod = 0
-    flag_map = {name: flag for name, flag in _MOD_FLAGS}
+    flag_map = dict(_MOD_FLAGS)
     for n in names:
         if n in flag_map:
             mod |= flag_map[n]
@@ -138,7 +138,7 @@ class Recorder:
             parts.append(_sym_to_name(sym))
             ks_lines.append("+".join(parts))
 
-        with open(fname, "w") as f:
+        with open(fname, "w", encoding="utf-8") as f:
             f.write("=== NOOBRL RECORDING ===\n")
             f.write(f"Floor: {floor}, Turn: {turn}\n")
             f.write("\n=== MAP ===\n")
@@ -154,7 +154,7 @@ class Recorder:
 
 def load_recording(filename: str):
     """Parse a recording file and return (engine, random_state, keystrokes)."""
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         content = f.read()
 
     sections = {}
