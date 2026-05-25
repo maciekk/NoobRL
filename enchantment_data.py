@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import os
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, cast
 
 _CACHE: Dict[str, Optional[object]] = {"data": None, "by_id": None}
 
@@ -23,7 +23,7 @@ def get(enchantment_id: str) -> Optional[Dict]:
     if by_id is None:
         _load()
         by_id = _CACHE["by_id"]
-    return by_id.get(enchantment_id)
+    return cast(Dict[str, Dict], by_id).get(enchantment_id)
 
 
 def get_label(enchantment_id: str) -> str:
@@ -40,7 +40,7 @@ def all_entries() -> List[Dict]:
     if data is None:
         _load()
         data = _CACHE["data"]
-    return data
+    return cast(List[Dict], data)
 
 
 def candidates_for(equipment_type_name: str, floor: int) -> List[Tuple[str, float]]:

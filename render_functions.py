@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import color
 import options
+import sounds
 from tile_types import TILE_DOWN_STAIRS, TILE_FLOOR, TILE_TALL_GRASS, TILE_UP_STAIRS, TILE_WALL
 from entity import Actor, Item
 
@@ -155,8 +156,6 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
     Render ops are processed in layer order — later layers paint over earlier
     ones on the same tile, giving predictable compositing.
     """
-    import sounds as _sounds
-
     # Normalize layers to 3-tuples and materialize frames.
     materialized = []
     for layer in layers:
@@ -180,7 +179,7 @@ def composite_animations(engine, layers, console, context, frame_delay=0.04):
                 continue
             # Fire sound cue on the first frame this layer reaches local index.
             if cues and local in cues:
-                _sounds.play_sfx(cues[local])
+                sounds.play_sfx(cues[local])
             for op in frames[local]:
                 x, y = op[0], op[1]
                 if not engine.game_map.in_bounds(x, y):
@@ -261,7 +260,7 @@ def projectile_frames(path, trail_color=(255, 140, 0), tip_color=(255, 255, 100)
     return frames
 
 
-def sound_wave_frames(engine, player_by_dist, monster_by_dist):
+def sound_wave_frames(_engine, player_by_dist, monster_by_dist):
     """Generate sound wave frame data from BFS distance dicts."""
     wave_color = (255, 255, 255)
     wave_char = ","
