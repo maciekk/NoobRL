@@ -80,16 +80,13 @@ class Fighter(BaseComponent):
             "beat to death",
             "butchered",
         ]
+        death_phrase = random.choice(deathmessagelist)
         if self.engine.player is self.parent:
-            death_message = (
-                f"You were {deathmessagelist[random.randint(0, 3)]}. You are dead."
-            )
+            death_message = f"You were {death_phrase}. You are dead."
             death_message_color = color.player_die
             sounds.play_sfx(sounds.Sfx.PLAYER_DEATH)
         else:
-            death_message = (
-                f"{self.parent.name} was {deathmessagelist[random.randint(0, 3)]}!"
-            )
+            death_message = f"{self.parent.name} was {death_phrase}!"
             death_message_color = color.enemy_die
             sounds.play_sfx(sounds.Sfx.ENEMY_DEATH)
             kills = self.engine.kill_counts
